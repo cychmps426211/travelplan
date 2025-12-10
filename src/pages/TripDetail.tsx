@@ -6,10 +6,11 @@ import type { Trip, Activity, FlightInfo } from '../types';
 import { activityService } from '../services/activityService';
 import { tripService } from '../services/tripService';
 import { format, eachDayOfInterval, isSameDay } from 'date-fns';
-import { MapPin, ArrowLeft, Plus, Utensils, Bed, Car, Camera, Calendar } from 'lucide-react';
+import { MapPin, ArrowLeft, Plus, Utensils, Bed, Car, Camera, Calendar, Edit2, Trash2 } from 'lucide-react';
 import CreateActivityModal from '../components/CreateActivityModal';
 import CreateFlightModal from '../components/CreateFlightModal';
 import FlightCard from '../components/FlightCard';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 type Tab = 'overview' | string; // string will be ISO date
 
@@ -23,11 +24,17 @@ export default function TripDetail() {
 
     // Modals
     const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
+    const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
     const [flightModal, setFlightModal] = useState<{
         isOpen: boolean;
         type: 'outbound' | 'return';
         data?: FlightInfo;
     }>({ isOpen: false, type: 'outbound' });
+    const [deleteActivityConfirm, setDeleteActivityConfirm] = useState<{
+        isOpen: boolean;
+        activityId: string;
+        activityTitle: string;
+    }>({ isOpen: false, activityId: '', activityTitle: '' });
 
     useEffect(() => {
         if (!id) return;
@@ -63,13 +70,29 @@ export default function TripDetail() {
         };
     }, [id, navigate]);
 
-    const handleAddActivity = async (activityData: any) => {
+    const handleActivitySubmit = async (activityData: any) => {
         if (!id) return;
         try {
-            await activityService.addActivity(id, activityData);
+            if (editingActivity) {
+                await activityService.updateActivity(id, editingActivity.id, activityData);
+            } else {
+                await activityService.addActivity(id, activityData);
+            }
+            setIsActivityModalOpen(false);
+            setEditingActivity(null);
         } catch (error) {
-            console.error("Error adding activity: ", error);
-            alert("Failed to add activity");
+            console.error("Error saving activity: ", error);
+            alert("Failed to save activity");
+        }
+    };
+
+    const handleDeleteActivity = async (activityId: string) => {
+        if (!id) return;
+        try {
+            await activityService.deleteActivity(id, activityId);
+        } catch (error) {
+            console.error("Error deleting activity: ", error);
+            alert("刪除活動失敗");
         }
     };
 
@@ -86,28 +109,9 @@ export default function TripDetail() {
 
     const handleDeleteFlight = async (type: 'outbound' | 'return') => {
         if (!trip) return;
-        if (!window.confirm('Remove this flight information?')) return;
-
-        // Firestore doesn't strictly support "deleting" a field easily with update without using deleteField(), 
-        // but setting to null or a special update object works if mapped correctly. 
-        // For simplicity in this helper, we recreate the object without the field or set it to null.
-        // HOWEVER, Firestore update helper usually merges. We might need logic in service. 
-        // Let's rely on tripService.updateTrip handling the Partial object.
-        // Wait, standard updateDoc simply merges. Passing undefined might ignore it. Passing null writes null.
-        // Let's update tripService to handle this or just pass null and update types to Allow null? 
-        // Or cleaner: use deleteField() from firestore. 
-        // Since I can't easily import deleteField in the UI without making it messy, 
-        // I'll just write { outboundFlight: null } effectively (though types say optional).
-        // Actual fix: Force cast to any or fix types to allow null if I want to "delete".
-        // Or better, let's just make the service method robust or overwrite with empty? 
-        // Let's try passing null casting as any for now.
-
         const updates: any = {};
         if (type === 'outbound') updates.outboundFlight = null;
         else updates.returnFlight = null;
-
-        // Note: Firestore treats null as a valid value, effectively "deleting" the map structure if using doc() update? 
-        // Actually no, it sets the field to null. That's fine for our UI checks (if !flight).
         await tripService.updateTrip(trip.id, updates);
     };
 
@@ -306,7 +310,7 @@ export default function TripDetail() {
                                 </div>
                             ) : (
                                 currentDayActivities.map(activity => (
-                                    <div key={activity.id} className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex gap-4 hover:shadow-md transition-shadow">
+                                    <div key={activity.id} className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex gap-4 hover:shadow-md transition-shadow group relative pr-12">
                                         <div className="flex flex-col items-center gap-1 w-16 pt-1 text-slate-500">
                                             <span className="font-bold text-slate-900">{format(activity.startTime.toDate(), 'HH:mm')}</span>
                                             {activity.endTime && (
@@ -337,6 +341,37 @@ export default function TripDetail() {
                                                 </div>
                                             </div>
                                         </div>
+
+                                        {/* Edit/Delete Actions */}
+                                        <div className="absolute right-2 top-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setEditingActivity(activity);
+                                                    setIsActivityModalOpen(true);
+                                                }}
+                                                className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                title="編輯"
+                                            >
+                                                <Edit2 className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setDeleteActivityConfirm({
+                                                        isOpen: true,
+                                                        activityId: activity.id,
+                                                        activityTitle: activity.title
+                                                    });
+                                                }}
+                                                className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                title="刪除"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
                                     </div>
                                 ))
                             )}
@@ -347,9 +382,13 @@ export default function TripDetail() {
 
             <CreateActivityModal
                 isOpen={isActivityModalOpen}
-                onClose={() => setIsActivityModalOpen(false)}
-                onSubmit={handleAddActivity}
+                onClose={() => {
+                    setIsActivityModalOpen(false);
+                    setEditingActivity(null);
+                }}
+                onSubmit={handleActivitySubmit}
                 selectedDate={activeTab === 'overview' ? tripStartDate : new Date(activeTab)}
+                initialData={editingActivity}
             />
 
             <CreateFlightModal
@@ -358,6 +397,18 @@ export default function TripDetail() {
                 onSubmit={handleSaveFlight}
                 initialData={flightModal.data}
                 type={flightModal.type}
+            />
+
+            {/* Delete Activity Confirmation Dialog */}
+            <ConfirmDialog
+                isOpen={deleteActivityConfirm.isOpen}
+                title="刪除活動"
+                message={`確定要刪除「${deleteActivityConfirm.activityTitle}」嗎？`}
+                onConfirm={() => {
+                    handleDeleteActivity(deleteActivityConfirm.activityId);
+                    setDeleteActivityConfirm({ isOpen: false, activityId: '', activityTitle: '' });
+                }}
+                onCancel={() => setDeleteActivityConfirm({ isOpen: false, activityId: '', activityTitle: '' })}
             />
         </div>
     );

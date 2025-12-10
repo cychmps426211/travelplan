@@ -34,9 +34,7 @@ export default function Dashboard() {
     };
 
     const handleDeleteTrip = async (id: string) => {
-        if (window.confirm('確定要刪除此旅程嗎？')) {
-            await tripService.deleteTrip(id);
-        }
+        await tripService.deleteTrip(id);
     };
 
     const handleEditTrip = (trip: Trip) => {
@@ -129,8 +127,8 @@ export default function Dashboard() {
                             <TripCard
                                 key={trip.id}
                                 trip={trip}
-                                onDelete={() => handleDeleteTrip(trip.id)}
                                 onEdit={() => handleEditTrip(trip)}
+                                onDelete={() => handleDeleteTrip(trip.id)}
                             />
                         ))}
                     </div>

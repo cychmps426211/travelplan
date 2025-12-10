@@ -1,28 +1,19 @@
-import React from 'react';
+import { useState } from 'react';
 import type { Trip } from '../types';
 import { Calendar, MapPin, Trash2, Clock, CheckCircle2, Edit2 } from 'lucide-react';
 import { format, differenceInDays, differenceInCalendarDays } from 'date-fns';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import ConfirmDialog from './ConfirmDialog';
 
 interface TripCardProps {
     trip: Trip;
-    onDelete: (id: string) => void;
     onEdit: () => void;
+    onDelete: () => void;
 }
 
-export default function TripCard({ trip, onDelete, onEdit }: TripCardProps) {
-    const handleDelete = (e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        onDelete(trip.id);
-    };
-
-    const handleEdit = (e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        onEdit();
-    };
-
+export default function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
+    const navigate = useNavigate();
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const days = differenceInDays(trip.endDate.toDate(), trip.startDate.toDate()) + 1;
 
     // Status Logic
@@ -59,9 +50,36 @@ export default function TripCard({ trip, onDelete, onEdit }: TripCardProps) {
         );
     }
 
+    const handleCardClick = () => {
+        navigate(`/trip/${trip.id}`);
+    };
+
+    const handleEditClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        onEdit();
+    };
+
+    const handleDeleteClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setShowDeleteConfirm(true);
+    };
+
+    const handleConfirmDelete = () => {
+        setShowDeleteConfirm(false);
+        onDelete();
+    };
+
+    const handleCancelDelete = () => {
+        setShowDeleteConfirm(false);
+    };
+
     return (
-        <Link to={`/trip/${trip.id}`} className="group block h-full">
-            <div className="bg-white rounded-2xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-200 h-full flex flex-col">
+        <>
+            <div
+                className="group block h-full bg-white rounded-2xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col cursor-pointer"
+                onClick={handleCardClick}
+            >
+                {/* Image Container */}
                 <div className="relative h-48 bg-gray-100 overflow-hidden">
                     <img
                         src={trip.coverImage || `https://source.unsplash.com/800x600/?${trip.destination},travel`}
@@ -70,17 +88,20 @@ export default function TripCard({ trip, onDelete, onEdit }: TripCardProps) {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"></div>
 
-                    <div className="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                    {/* Action Buttons - Always visible */}
+                    <div className="absolute top-3 right-3 flex gap-2 z-50">
                         <button
-                            onClick={handleEdit}
-                            className="p-2 bg-white/10 hover:bg-blue-500/90 text-white rounded-full backdrop-blur-sm transition-colors"
+                            type="button"
+                            onClick={handleEditClick}
+                            className="p-2 bg-white/20 hover:bg-blue-500 text-white rounded-full backdrop-blur-sm transition-colors"
                             title="編輯旅程"
                         >
                             <Edit2 className="w-4 h-4" />
                         </button>
                         <button
-                            onClick={handleDelete}
-                            className="p-2 bg-white/10 hover:bg-red-500/90 text-white rounded-full backdrop-blur-sm transition-colors"
+                            type="button"
+                            onClick={handleDeleteClick}
+                            className="p-2 bg-white/20 hover:bg-red-500 text-white rounded-full backdrop-blur-sm transition-colors"
                             title="刪除旅程"
                         >
                             <Trash2 className="w-4 h-4" />
@@ -96,6 +117,7 @@ export default function TripCard({ trip, onDelete, onEdit }: TripCardProps) {
                     </div>
                 </div>
 
+                {/* Content Body */}
                 <div className="p-5 flex-1 flex flex-col justify-between">
                     <div className="space-y-3">
                         <div className="flex items-center gap-2 text-gray-500 text-sm">
@@ -115,6 +137,15 @@ export default function TripCard({ trip, onDelete, onEdit }: TripCardProps) {
                     </div>
                 </div>
             </div>
-        </Link>
+
+            {/* Delete Confirmation Dialog */}
+            <ConfirmDialog
+                isOpen={showDeleteConfirm}
+                title="刪除旅程"
+                message={`確定要刪除「${trip.title}」嗎？此操作無法復原。`}
+                onConfirm={handleConfirmDelete}
+                onCancel={handleCancelDelete}
+            />
+        </>
     );
 }
