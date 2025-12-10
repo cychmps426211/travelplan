@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { X, MapPin, Image } from 'lucide-react';
+import { X, MapPin, Palette } from 'lucide-react';
 import { format } from 'date-fns';
+import { GRADIENT_COLORS, DEFAULT_GRADIENT, type GradientColorKey } from '../constants/gradients';
 
 interface CreateTripModalProps {
     isOpen: boolean;
@@ -16,7 +17,7 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
         destination: '',
         startDate: '',
         endDate: '',
-        coverImage: ''
+        coverColor: DEFAULT_GRADIENT
     });
 
     useEffect(() => {
@@ -26,7 +27,7 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
                 destination: initialData.destination,
                 startDate: format(initialData.startDate.toDate(), 'yyyy-MM-dd'),
                 endDate: format(initialData.endDate.toDate(), 'yyyy-MM-dd'),
-                coverImage: initialData.coverImage || ''
+                coverColor: initialData.coverColor || DEFAULT_GRADIENT
             });
         } else {
             setFormData({
@@ -34,7 +35,7 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
                 destination: '',
                 startDate: '',
                 endDate: '',
-                coverImage: ''
+                coverColor: DEFAULT_GRADIENT
             });
         }
     }, [initialData, isOpen]);
@@ -86,16 +87,36 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">封面圖片網址 (選填)</label>
-                        <div className="relative">
-                            <Image className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                            <input
-                                type="url"
-                                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                                placeholder="https://example.com/image.jpg"
-                                value={formData.coverImage}
-                                onChange={e => setFormData({ ...formData, coverImage: e.target.value })}
-                            />
+                        <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                            <Palette className="w-4 h-4" />
+                            選擇封面顏色
+                        </label>
+                        <div className="grid grid-cols-3 gap-3">
+                            {Object.entries(GRADIENT_COLORS).map(([key, color]) => (
+                                <button
+                                    key={key}
+                                    type="button"
+                                    onClick={() => setFormData({ ...formData, coverColor: key as GradientColorKey })}
+                                    className={`relative h-20 rounded-lg bg-gradient-to-br ${color.gradient} transition-all ${formData.coverColor === key
+                                        ? 'ring-4 ring-blue-500 ring-offset-2 scale-105'
+                                        : 'hover:scale-105 hover:shadow-lg'
+                                        }`}
+                                    title={color.name}
+                                >
+                                    {formData.coverColor === key && (
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg">
+                                                <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className="absolute bottom-1 left-0 right-0 text-center">
+                                        <span className="text-xs font-medium text-white drop-shadow-lg">{color.name}</span>
+                                    </div>
+                                </button>
+                            ))}
                         </div>
                     </div>
 

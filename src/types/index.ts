@@ -29,7 +29,7 @@ export interface Trip {
     createdAt: Timestamp;
     outboundFlight?: FlightInfo;
     returnFlight?: FlightInfo;
-    coverImage?: string;
+    coverColor?: string;
 }
 
 export interface Activity {

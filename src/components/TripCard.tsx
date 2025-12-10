@@ -4,6 +4,7 @@ import { Calendar, MapPin, Trash2, Clock, CheckCircle2, Edit2 } from 'lucide-rea
 import { format, differenceInDays, differenceInCalendarDays } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import ConfirmDialog from './ConfirmDialog';
+import { GRADIENT_COLORS, DEFAULT_GRADIENT } from '../constants/gradients';
 
 interface TripCardProps {
     trip: Trip;
@@ -79,12 +80,12 @@ export default function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
                 className="group block h-full bg-white rounded-2xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col cursor-pointer"
                 onClick={handleCardClick}
             >
-                {/* Image Container */}
-                <div className="relative h-48 bg-gray-100 overflow-hidden">
-                    <img
-                        src={trip.coverImage || `https://source.unsplash.com/800x600/?${trip.destination},travel`}
-                        alt={trip.destination}
-                        className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
+                {/* Gradient Background Container */}
+                <div className="relative h-48 overflow-hidden">
+                    <div
+                        className={`absolute inset-0 bg-gradient-to-br ${GRADIENT_COLORS[trip.coverColor as keyof typeof GRADIENT_COLORS]?.gradient ||
+                            GRADIENT_COLORS[DEFAULT_GRADIENT].gradient
+                            }`}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"></div>
 
