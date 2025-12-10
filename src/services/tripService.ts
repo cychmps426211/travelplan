@@ -40,12 +40,9 @@ export const tripService = {
         }
     },
 
-    // Subscribe to trips for real-time updates
-    subscribeToUserTrips: (userId: string, callback: (trips: Trip[]) => void) => {
-        const q = query(
-            collection(db, TRIPS_COLLECTION),
-            where('members', 'array-contains', userId)
-        );
+    // Subscribe to all trips for real-time updates
+    subscribeToAllTrips: (callback: (trips: Trip[]) => void) => {
+        const q = query(collection(db, TRIPS_COLLECTION));
 
         return onSnapshot(q, (snapshot) => {
             const trips = snapshot.docs.map(doc => ({

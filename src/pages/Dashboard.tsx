@@ -15,7 +15,7 @@ export default function Dashboard() {
 
     useEffect(() => {
         if (user) {
-            const unsubscribe = tripService.subscribeToUserTrips(user.uid, (data) => {
+            const unsubscribe = tripService.subscribeToAllTrips((data) => {
                 setTrips(data);
                 setLoading(false);
             });
