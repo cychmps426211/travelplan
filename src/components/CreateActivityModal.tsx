@@ -1,0 +1,188 @@
+import { useState, useEffect } from 'react';
+import { X, Clock, MapPin, AlignLeft } from 'lucide-react';
+import { Timestamp } from 'firebase/firestore';
+
+interface CreateActivityModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSubmit: (data: any) => Promise<void>;
+    selectedDate: Date | null;
+    initialData?: any;
+}
+
+const ACTIVITY_TYPES = [
+    { value: 'sightseeing', label: '觀光', icon: '📷' },
+    { value: 'food', label: '美食', icon: '🍽️' },
+    { value: 'shopping', label: '購物', icon: '🛍️' },
+    { value: 'transport', label: '交通', icon: '🚆' },
+    { value: 'lodging', label: '住宿', icon: '🏨' },
+    { value: 'other', label: '其他', icon: '📍' }
+];
+
+export default function CreateActivityModal({ isOpen, onClose, onSubmit, selectedDate, initialData }: CreateActivityModalProps) {
+    const [loading, setLoading] = useState(false);
+    const [formData, setFormData] = useState({
+        title: '',
+        type: 'sightseeing',
+        startTime: '09:00',
+        endTime: '10:00',
+        location: '',
+        notes: ''
+    });
+
+    useEffect(() => {
+        if (initialData) {
+            setFormData({
+                title: initialData.title,
+                type: initialData.type,
+                startTime: initialData.startTime ? new Date(initialData.startTime.seconds * 1000).toTimeString().slice(0, 5) : '09:00',
+                endTime: initialData.endTime ? new Date(initialData.endTime.seconds * 1000).toTimeString().slice(0, 5) : '10:00',
+                location: initialData.location || '',
+                notes: initialData.notes || ''
+            });
+        }
+    }, [initialData, isOpen]);
+
+    if (!isOpen) return null;
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedDate) return;
+
+        setLoading(true);
+        try {
+            // Construct standard Javascript Date objects combining selectedDate (year/month/day) with time input (hours/minutes)
+            const [startHour, startMinute] = formData.startTime.split(':');
+            const startDate = new Date(selectedDate);
+            startDate.setHours(parseInt(startHour), parseInt(startMinute));
+
+            const [endHour, endMinute] = formData.endTime.split(':');
+            const endDate = new Date(selectedDate);
+            endDate.setHours(parseInt(endHour), parseInt(endMinute));
+
+            await onSubmit({
+                ...formData,
+                startTime: Timestamp.fromDate(startDate),
+                endTime: Timestamp.fromDate(endDate)
+            });
+            onClose();
+            setFormData({
+                title: '',
+                type: 'sightseeing',
+                startTime: '09:00',
+                endTime: '10:00',
+                location: '',
+                notes: ''
+            });
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
+            <div
+                className="bg-white rounded-2xl w-full max-w-lg shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div className="flex justify-between items-center p-6 border-b border-gray-100 sticky top-0 bg-white z-10">
+                    <h2 className="text-xl font-bold text-gray-800">{initialData ? '編輯活動' : '新增活動'}</h2>
+                    <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                        <X className="w-5 h-5 text-gray-500" />
+                    </button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">標題</label>
+                        <input
+                            type="text"
+                            required
+                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                            placeholder="例如：參觀淺草寺"
+                            value={formData.title}
+                            onChange={e => setFormData({ ...formData, title: e.target.value })}
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">類型</label>
+                            <select
+                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                value={formData.type}
+                                onChange={e => setFormData({ ...formData, type: e.target.value })}
+                            >
+                                {ACTIVITY_TYPES.map(type => (
+                                    <option key={type.value} value={type.value}>{type.icon} {type.label}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">位置 (選填)</label>
+                            <input
+                                type="text"
+                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                placeholder="例如：淺草站"
+                                value={formData.location}
+                                onChange={e => setFormData({ ...formData, location: e.target.value })}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">開始時間</label>
+                            <input
+                                type="time"
+                                required
+                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                value={formData.startTime}
+                                onChange={e => setFormData({ ...formData, startTime: e.target.value })}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">結束時間 (選填)</label>
+                            <input
+                                type="time"
+                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                value={formData.endTime}
+                                onChange={e => setFormData({ ...formData, endTime: e.target.value })}
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">備註 (選填)</label>
+                        <textarea
+                            rows={3}
+                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"
+                            placeholder="任何細節或筆記..."
+                            value={formData.notes}
+                            onChange={e => setFormData({ ...formData, notes: e.target.value })}
+                        />
+                    </div>
+
+                    <div className="pt-4 flex gap-3">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                        >
+                            取消
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition-colors flex items-center justify-center"
+                        >
+                            {loading ? '儲存中...' : '儲存活動'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
