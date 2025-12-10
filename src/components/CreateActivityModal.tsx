@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Clock, MapPin, AlignLeft } from 'lucide-react';
+import { X } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
 
 interface CreateActivityModalProps {

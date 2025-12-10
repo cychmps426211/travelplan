@@ -1,4 +1,4 @@
-import React from 'react';
+// React import removed as it is not used directly
 import { Plane, Edit2, Trash2, Clock, CheckCircle2 } from 'lucide-react';
 import type { FlightInfo } from '../types';
 import { format, differenceInDays, differenceInHours, differenceInMinutes } from 'date-fns';

@@ -6,7 +6,7 @@ import type { Trip, Activity, FlightInfo } from '../types';
 import { activityService } from '../services/activityService';
 import { tripService } from '../services/tripService';
 import { format, eachDayOfInterval, isSameDay } from 'date-fns';
-import { MapPin, ArrowLeft, Plus, Utensils, Bed, Car, Camera, Plane, LayoutDashboard, Calendar } from 'lucide-react';
+import { MapPin, ArrowLeft, Plus, Utensils, Bed, Car, Camera, Calendar } from 'lucide-react';
 import CreateActivityModal from '../components/CreateActivityModal';
 import CreateFlightModal from '../components/CreateFlightModal';
 import FlightCard from '../components/FlightCard';

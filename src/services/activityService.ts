@@ -1,8 +1,8 @@
 import { db } from '../firebase';
-import { collection, addDoc, query, where, getDocs, Timestamp, orderBy, deleteDoc, doc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { collection, addDoc, query, orderBy, deleteDoc, doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import type { Activity } from '../types';
 
-const ACTIVITIES_COLLECTION = 'activities';
+// Constant removed as it was unused
 
 export const activityService = {
     // Subscribe to activities for a real-time list
