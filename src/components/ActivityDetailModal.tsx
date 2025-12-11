@@ -1,6 +1,7 @@
 import { X, MapPin, Clock, FileText, Utensils, Bed, Car, Camera, Tag, Navigation, ExternalLink } from 'lucide-react';
 import type { Activity } from '../types';
 import { format } from 'date-fns';
+import GoogleMapRoute from './GoogleMapRoute';
 
 interface ActivityDetailModalProps {
     activity: Activity | null;
@@ -19,36 +20,35 @@ const ACTIVITY_TYPE_INFO: Record<string, { label: string; icon: React.ReactNode;
 // Get Google Maps API key from environment
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
 
-function getMapUrl(activity: Activity): string | null {
-    // For transport type with departure and arrival
-    if (activity.type === 'transport') {
-        if (activity.departureLocation && activity.arrivalLocation) {
-            // Show directions between two locations
-            const origin = encodeURIComponent(activity.departureLocation);
-            const destination = encodeURIComponent(activity.arrivalLocation);
-            return `https://www.google.com/maps/embed/v1/directions?key=${GOOGLE_MAPS_API_KEY}&origin=${origin}&destination=${destination}&mode=transit`;
-        } else if (activity.departureLocation || activity.arrivalLocation) {
-            // Show single location
-            const location = encodeURIComponent(activity.departureLocation || activity.arrivalLocation || '');
-            return `https://www.google.com/maps/embed/v1/place?key=${GOOGLE_MAPS_API_KEY}&q=${location}`;
-        }
-    } else if (activity.location) {
-        // For other types with location
-        const location = encodeURIComponent(activity.location);
-        return `https://www.google.com/maps/embed/v1/place?key=${GOOGLE_MAPS_API_KEY}&q=${location}`;
+// Map travel mode to Google Maps URL travelmode parameter
+function getUrlTravelMode(travelMode?: string): string {
+    switch (travelMode) {
+        case 'DRIVING': return 'driving';
+        case 'WALKING': return 'walking';
+        case 'BICYCLING': return 'bicycling';
+        case 'TRANSIT':
+        default: return 'transit';
     }
-
-    return null;
 }
+
+
+// Travel mode display info
+const TRAVEL_MODE_DISPLAY: Record<string, { label: string; icon: string }> = {
+    'TRANSIT': { label: '大眾運輸', icon: '🚇' },
+    'DRIVING': { label: '開車', icon: '🚗' },
+    'WALKING': { label: '步行', icon: '🚶' },
+    'BICYCLING': { label: '自行車', icon: '🚲' },
+};
 
 // Generate external Google Maps URL (for opening in new tab/app)
 function getExternalMapUrl(activity: Activity): string | null {
     if (activity.type === 'transport') {
         if (activity.departureLocation && activity.arrivalLocation) {
-            // Directions URL
+            // Directions URL with travel mode
             const origin = encodeURIComponent(activity.departureLocation);
             const destination = encodeURIComponent(activity.arrivalLocation);
-            return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=transit`;
+            const mode = getUrlTravelMode(activity.travelMode);
+            return `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=${mode}`;
         } else if (activity.departureLocation || activity.arrivalLocation) {
             const location = encodeURIComponent(activity.departureLocation || activity.arrivalLocation || '');
             return `https://www.google.com/maps/search/?api=1&query=${location}`;
@@ -64,9 +64,9 @@ export default function ActivityDetailModal({ activity, onClose }: ActivityDetai
     if (!activity) return null;
 
     const typeInfo = ACTIVITY_TYPE_INFO[activity.type] || ACTIVITY_TYPE_INFO.other;
-    const mapUrl = getMapUrl(activity);
     const externalMapUrl = getExternalMapUrl(activity);
     const hasRoute = activity.type === 'transport' && activity.departureLocation && activity.arrivalLocation;
+    const hasMapContent = hasRoute || activity.location || activity.departureLocation || activity.arrivalLocation;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
@@ -125,16 +125,24 @@ export default function ActivityDetailModal({ activity, onClose }: ActivityDetai
                                             <span className="font-medium">{activity.arrivalLocation}</span>
                                         </div>
                                     )}
-                                    {activity.estimatedDuration && (
-                                        <div className="pt-1">
+                                    <div className="pt-1 flex flex-wrap gap-2">
+                                        {/* Travel Mode Badge */}
+                                        {activity.travelMode && TRAVEL_MODE_DISPLAY[activity.travelMode] && (
+                                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-700 text-sm font-medium">
+                                                <span>{TRAVEL_MODE_DISPLAY[activity.travelMode].icon}</span>
+                                                {TRAVEL_MODE_DISPLAY[activity.travelMode].label}
+                                            </span>
+                                        )}
+                                        {/* Duration Badge */}
+                                        {activity.estimatedDuration && (
                                             <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium">
                                                 <Clock className="w-3.5 h-3.5" />
                                                 預估 {activity.estimatedDuration >= 60
                                                     ? `${Math.floor(activity.estimatedDuration / 60)} 小時${activity.estimatedDuration % 60 > 0 ? ` ${activity.estimatedDuration % 60} 分鐘` : ''}`
                                                     : `${activity.estimatedDuration} 分鐘`}
                                             </span>
-                                        </div>
-                                    )}
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         )
@@ -168,8 +176,8 @@ export default function ActivityDetailModal({ activity, onClose }: ActivityDetai
                         </a>
                     )}
 
-                    {/* Map Section */}
-                    {mapUrl && GOOGLE_MAPS_API_KEY && (
+                    {/* Map Section - Using JavaScript API for full transit preference support */}
+                    {hasMapContent && GOOGLE_MAPS_API_KEY && (
                         <div className="space-y-3">
                             <div className="flex items-center gap-2 text-gray-700">
                                 <MapPin className="w-5 h-5 text-blue-500" />
@@ -177,23 +185,12 @@ export default function ActivityDetailModal({ activity, onClose }: ActivityDetai
                                     {hasRoute ? '交通路線' : '地圖位置'}
                                 </span>
                             </div>
-                            <div className="rounded-xl overflow-hidden border border-gray-200 shadow-sm">
-                                <iframe
-                                    width="100%"
-                                    height="300"
-                                    style={{ border: 0 }}
-                                    loading="lazy"
-                                    allowFullScreen
-                                    referrerPolicy="no-referrer-when-downgrade"
-                                    src={mapUrl}
-                                    title="Google Map"
-                                />
-                            </div>
+                            <GoogleMapRoute activity={activity} height={300} />
                         </div>
                     )}
 
                     {/* No map message if no API key */}
-                    {mapUrl && !GOOGLE_MAPS_API_KEY && (
+                    {hasMapContent && !GOOGLE_MAPS_API_KEY && (
                         <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 text-sm">
                             需要設定 VITE_GOOGLE_MAPS_API_KEY 環境變數才能顯示地圖
                         </div>

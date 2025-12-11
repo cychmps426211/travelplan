@@ -161,6 +161,16 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
             if (formData.estimatedDuration && formData.estimatedDuration.trim()) {
                 activityData.estimatedDuration = parseInt(formData.estimatedDuration);
             }
+            // Save travel mode settings for transport activities
+            if (formData.type === 'transport') {
+                activityData.travelMode = formData.travelMode;
+                if (formData.transitModes.length > 0) {
+                    activityData.transitModes = formData.transitModes;
+                }
+                if (formData.transitRoutingPreference) {
+                    activityData.transitRoutingPreference = formData.transitRoutingPreference;
+                }
+            }
             if (formData.notes && formData.notes.trim()) {
                 activityData.notes = formData.notes.trim();
             }
@@ -278,8 +288,8 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                                             type="button"
                                             onClick={() => setFormData({ ...formData, travelMode: mode.value as TravelModeType })}
                                             className={`px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-1 text-sm ${formData.travelMode === mode.value
-                                                    ? 'bg-blue-600 text-white'
-                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                ? 'bg-blue-600 text-white'
+                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                                 }`}
                                         >
                                             <span>{mode.icon}</span>
@@ -301,8 +311,8 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                                                     type="button"
                                                     onClick={() => handleTransitModeToggle(mode.value as TransitModeType)}
                                                     className={`px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1 text-sm ${formData.transitModes.includes(mode.value as TransitModeType)
-                                                            ? 'bg-blue-600 text-white'
-                                                            : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                                                        ? 'bg-blue-600 text-white'
+                                                        : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
                                                         }`}
                                                 >
                                                     <span>{mode.icon}</span>

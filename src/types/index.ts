@@ -43,5 +43,8 @@ export interface Activity {
     departureLocation?: string; // For transport type
     arrivalLocation?: string;   // For transport type
     estimatedDuration?: number; // For transport type: estimated travel time in minutes
+    travelMode?: 'TRANSIT' | 'DRIVING' | 'WALKING' | 'BICYCLING'; // For transport type
+    transitModes?: ('SUBWAY' | 'BUS' | 'TRAIN' | 'TRAM' | 'RAIL')[]; // For transit preferences
+    transitRoutingPreference?: 'LESS_WALKING' | 'FEWER_TRANSFERS'; // For transit route preference
     notes?: string;
 }
