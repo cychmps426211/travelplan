@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Loader2, Navigation2 } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
+import { getTravelDuration } from '../utils/googleMaps';
 
 interface CreateActivityModalProps {
     isOpen: boolean;
@@ -21,6 +22,7 @@ const ACTIVITY_TYPES = [
 
 export default function CreateActivityModal({ isOpen, onClose, onSubmit, selectedDate, initialData }: CreateActivityModalProps) {
     const [loading, setLoading] = useState(false);
+    const [fetchingDuration, setFetchingDuration] = useState(false);
     const [formData, setFormData] = useState({
         title: '',
         type: 'sightseeing',
@@ -29,8 +31,27 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
         location: '',
         departureLocation: '',
         arrivalLocation: '',
+        estimatedDuration: '',
         notes: ''
     });
+
+    const handleFetchDuration = async () => {
+        if (!formData.departureLocation || !formData.arrivalLocation) return;
+
+        setFetchingDuration(true);
+        try {
+            const result = await getTravelDuration(formData.departureLocation, formData.arrivalLocation);
+            setFormData(prev => ({
+                ...prev,
+                estimatedDuration: result.durationMinutes.toString()
+            }));
+        } catch (error) {
+            console.error('Failed to fetch travel duration:', error);
+            alert('無法取得預估時間，請確認地點名稱是否正確');
+        } finally {
+            setFetchingDuration(false);
+        }
+    };
 
     useEffect(() => {
         if (initialData) {
@@ -42,6 +63,7 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                 location: initialData.location || '',
                 departureLocation: initialData.departureLocation || '',
                 arrivalLocation: initialData.arrivalLocation || '',
+                estimatedDuration: initialData.estimatedDuration?.toString() || '',
                 notes: initialData.notes || ''
             });
         } else {
@@ -53,6 +75,7 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                 location: '',
                 departureLocation: '',
                 arrivalLocation: '',
+                estimatedDuration: '',
                 notes: ''
             });
         }
@@ -78,7 +101,8 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
             await onSubmit({
                 ...formData,
                 startTime: Timestamp.fromDate(startDate),
-                endTime: Timestamp.fromDate(endDate)
+                endTime: Timestamp.fromDate(endDate),
+                estimatedDuration: formData.estimatedDuration ? parseInt(formData.estimatedDuration) : undefined
             });
             onClose();
             setFormData({
@@ -89,6 +113,7 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                 location: '',
                 departureLocation: '',
                 arrivalLocation: '',
+                estimatedDuration: '',
                 notes: ''
             });
         } catch (error) {
@@ -174,6 +199,34 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                                     value={formData.arrivalLocation}
                                     onChange={e => setFormData({ ...formData, arrivalLocation: e.target.value })}
                                 />
+                            </div>
+                            <div className="col-span-2">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">預估交通時間 (分鐘，選填)</label>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                        placeholder="例如：120"
+                                        value={formData.estimatedDuration}
+                                        onChange={e => setFormData({ ...formData, estimatedDuration: e.target.value })}
+                                    />
+                                    <button
+                                        type="button"
+                                        disabled={!formData.departureLocation || !formData.arrivalLocation || fetchingDuration}
+                                        onClick={handleFetchDuration}
+                                        className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap"
+                                    >
+                                        {fetchingDuration ? (
+                                            <><Loader2 className="w-4 h-4 animate-spin" /> 查詢中...</>
+                                        ) : (
+                                            <><Navigation2 className="w-4 h-4" /> 自動取得</>
+                                        )}
+                                    </button>
+                                </div>
+                                {!formData.departureLocation || !formData.arrivalLocation ? (
+                                    <p className="text-xs text-gray-400 mt-1">請先填寫出發和到達地點</p>
+                                ) : null}
                             </div>
                         </div>
                     )}

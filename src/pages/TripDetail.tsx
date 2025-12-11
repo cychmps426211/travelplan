@@ -11,6 +11,7 @@ import CreateActivityModal from '../components/CreateActivityModal';
 import CreateFlightModal from '../components/CreateFlightModal';
 import FlightCard from '../components/FlightCard';
 import ConfirmDialog from '../components/ConfirmDialog';
+import ActivityDetailModal from '../components/ActivityDetailModal';
 
 type Tab = 'overview' | string; // string will be ISO date
 
@@ -35,6 +36,7 @@ export default function TripDetail() {
         activityId: string;
         activityTitle: string;
     }>({ isOpen: false, activityId: '', activityTitle: '' });
+    const [selectedActivityForDetail, setSelectedActivityForDetail] = useState<Activity | null>(null);
 
     useEffect(() => {
         if (!id) return;
@@ -310,7 +312,11 @@ export default function TripDetail() {
                                 </div>
                             ) : (
                                 currentDayActivities.map(activity => (
-                                    <div key={activity.id} className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex gap-4 hover:shadow-md transition-shadow group relative pr-12">
+                                    <div
+                                        key={activity.id}
+                                        className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex gap-4 hover:shadow-md transition-shadow group relative pr-12 cursor-pointer"
+                                        onClick={() => setSelectedActivityForDetail(activity)}
+                                    >
                                         <div className="flex flex-col items-center gap-1 w-16 pt-1 text-slate-500">
                                             <span className="font-bold text-slate-900">{format(activity.startTime.toDate(), 'HH:mm')}</span>
                                             {activity.endTime && (
@@ -336,6 +342,13 @@ export default function TripDetail() {
                                                         <div className="flex items-center gap-1 text-sm text-slate-500 mt-1">
                                                             <MapPin className="w-3 h-3" />
                                                             {activity.departureLocation || '?'} → {activity.arrivalLocation || '?'}
+                                                            {activity.estimatedDuration && (
+                                                                <span className="ml-2 text-blue-600 font-medium">
+                                                                    ({activity.estimatedDuration >= 60
+                                                                        ? `${Math.floor(activity.estimatedDuration / 60)}小時${activity.estimatedDuration % 60 > 0 ? ` ${activity.estimatedDuration % 60}分鐘` : ''}`
+                                                                        : `${activity.estimatedDuration}分鐘`})
+                                                                </span>
+                                                            )}
                                                         </div>
                                                     )}
                                                     {activity.notes && (
@@ -415,6 +428,12 @@ export default function TripDetail() {
                     setDeleteActivityConfirm({ isOpen: false, activityId: '', activityTitle: '' });
                 }}
                 onCancel={() => setDeleteActivityConfirm({ isOpen: false, activityId: '', activityTitle: '' })}
+            />
+
+            {/* Activity Detail Modal */}
+            <ActivityDetailModal
+                activity={selectedActivityForDetail}
+                onClose={() => setSelectedActivityForDetail(null)}
             />
         </div>
     );

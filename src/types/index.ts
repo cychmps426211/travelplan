@@ -42,5 +42,6 @@ export interface Activity {
     location?: string;
     departureLocation?: string; // For transport type
     arrivalLocation?: string;   // For transport type
+    estimatedDuration?: number; // For transport type: estimated travel time in minutes
     notes?: string;
 }
