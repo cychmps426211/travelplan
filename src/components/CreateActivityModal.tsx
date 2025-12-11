@@ -98,12 +98,33 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
             const endDate = new Date(selectedDate);
             endDate.setHours(parseInt(endHour), parseInt(endMinute));
 
-            await onSubmit({
-                ...formData,
+            // Build activity data, only including optional fields if they have values
+            // Firestore does NOT accept undefined values
+            const activityData: Record<string, any> = {
+                title: formData.title,
+                type: formData.type,
                 startTime: Timestamp.fromDate(startDate),
                 endTime: Timestamp.fromDate(endDate),
-                estimatedDuration: formData.estimatedDuration ? parseInt(formData.estimatedDuration) : undefined
-            });
+            };
+
+            // Only add optional fields if they have values
+            if (formData.location && formData.location.trim()) {
+                activityData.location = formData.location.trim();
+            }
+            if (formData.departureLocation && formData.departureLocation.trim()) {
+                activityData.departureLocation = formData.departureLocation.trim();
+            }
+            if (formData.arrivalLocation && formData.arrivalLocation.trim()) {
+                activityData.arrivalLocation = formData.arrivalLocation.trim();
+            }
+            if (formData.estimatedDuration && formData.estimatedDuration.trim()) {
+                activityData.estimatedDuration = parseInt(formData.estimatedDuration);
+            }
+            if (formData.notes && formData.notes.trim()) {
+                activityData.notes = formData.notes.trim();
+            }
+
+            await onSubmit(activityData);
             onClose();
             setFormData({
                 title: '',

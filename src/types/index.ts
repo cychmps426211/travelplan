@@ -36,7 +36,7 @@ export interface Activity {
     id: string;
     tripId: string;
     title: string;
-    type: 'sightseeing' | 'food' | 'transport' | 'lodging' | 'other';
+    type: 'sightseeing' | 'food' | 'shopping' | 'transport' | 'lodging' | 'other';
     startTime: Timestamp;
     endTime?: Timestamp;
     location?: string;
