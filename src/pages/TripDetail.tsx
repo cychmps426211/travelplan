@@ -326,10 +326,16 @@ export default function TripDetail() {
                                             <div className="flex items-start justify-between">
                                                 <div>
                                                     <h3 className="font-bold text-slate-900">{activity.title}</h3>
-                                                    {activity.location && (
+                                                    {activity.location && activity.type !== 'transport' && (
                                                         <div className="flex items-center gap-1 text-sm text-slate-500 mt-1">
                                                             <MapPin className="w-3 h-3" />
                                                             {activity.location}
+                                                        </div>
+                                                    )}
+                                                    {activity.type === 'transport' && (activity.departureLocation || activity.arrivalLocation) && (
+                                                        <div className="flex items-center gap-1 text-sm text-slate-500 mt-1">
+                                                            <MapPin className="w-3 h-3" />
+                                                            {activity.departureLocation || '?'} → {activity.arrivalLocation || '?'}
                                                         </div>
                                                     )}
                                                     {activity.notes && (

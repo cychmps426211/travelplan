@@ -27,6 +27,8 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
         startTime: '09:00',
         endTime: '10:00',
         location: '',
+        departureLocation: '',
+        arrivalLocation: '',
         notes: ''
     });
 
@@ -38,7 +40,20 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                 startTime: initialData.startTime ? new Date(initialData.startTime.seconds * 1000).toTimeString().slice(0, 5) : '09:00',
                 endTime: initialData.endTime ? new Date(initialData.endTime.seconds * 1000).toTimeString().slice(0, 5) : '10:00',
                 location: initialData.location || '',
+                departureLocation: initialData.departureLocation || '',
+                arrivalLocation: initialData.arrivalLocation || '',
                 notes: initialData.notes || ''
+            });
+        } else {
+            setFormData({
+                title: '',
+                type: 'sightseeing',
+                startTime: '09:00',
+                endTime: '10:00',
+                location: '',
+                departureLocation: '',
+                arrivalLocation: '',
+                notes: ''
             });
         }
     }, [initialData, isOpen]);
@@ -72,6 +87,8 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                 startTime: '09:00',
                 endTime: '10:00',
                 location: '',
+                departureLocation: '',
+                arrivalLocation: '',
                 notes: ''
             });
         } catch (error) {
@@ -120,17 +137,46 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                                 ))}
                             </select>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">位置 (選填)</label>
-                            <input
-                                type="text"
-                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                                placeholder="例如：淺草站"
-                                value={formData.location}
-                                onChange={e => setFormData({ ...formData, location: e.target.value })}
-                            />
-                        </div>
+                        {formData.type !== 'transport' ? (
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">位置 (選填)</label>
+                                <input
+                                    type="text"
+                                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                    placeholder="例如：淺草站"
+                                    value={formData.location}
+                                    onChange={e => setFormData({ ...formData, location: e.target.value })}
+                                />
+                            </div>
+                        ) : (
+                            <div className="col-span-1" />
+                        )}
                     </div>
+
+                    {formData.type === 'transport' && (
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">出發地點 (選填)</label>
+                                <input
+                                    type="text"
+                                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                    placeholder="例如：東京車站"
+                                    value={formData.departureLocation}
+                                    onChange={e => setFormData({ ...formData, departureLocation: e.target.value })}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">到達地點 (選填)</label>
+                                <input
+                                    type="text"
+                                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                    placeholder="例如：大阪站"
+                                    value={formData.arrivalLocation}
+                                    onChange={e => setFormData({ ...formData, arrivalLocation: e.target.value })}
+                                />
+                            </div>
+                        </div>
+                    )}
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>

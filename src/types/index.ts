@@ -40,5 +40,7 @@ export interface Activity {
     startTime: Timestamp;
     endTime?: Timestamp;
     location?: string;
+    departureLocation?: string; // For transport type
+    arrivalLocation?: string;   // For transport type
     notes?: string;
 }
