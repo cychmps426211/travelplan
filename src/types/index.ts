@@ -47,4 +47,12 @@ export interface Activity {
     transitModes?: ('SUBWAY' | 'BUS' | 'TRAIN' | 'TRAM' | 'RAIL')[]; // For transit preferences
     transitRoutingPreference?: 'LESS_WALKING' | 'FEWER_TRANSFERS'; // For transit route preference
     notes?: string;
+    checklist?: ChecklistItem[]; // Food or shopping list items
 }
+
+export interface ChecklistItem {
+    id: string;
+    text: string;
+    completed: boolean;
+}
+

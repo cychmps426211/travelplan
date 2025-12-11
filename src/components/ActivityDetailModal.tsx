@@ -1,11 +1,13 @@
-import { X, MapPin, Clock, FileText, Utensils, Bed, Car, Camera, Tag, Navigation, ExternalLink } from 'lucide-react';
-import type { Activity } from '../types';
+import { useState } from 'react';
+import { X, MapPin, Clock, FileText, Utensils, Bed, Car, Camera, Tag, Navigation, ExternalLink, Plus, Trash2, Check, Edit2, ListChecks } from 'lucide-react';
+import type { Activity, ChecklistItem } from '../types';
 import { format } from 'date-fns';
 import GoogleMapRoute from './GoogleMapRoute';
 
 interface ActivityDetailModalProps {
     activity: Activity | null;
     onClose: () => void;
+    onUpdateChecklist?: (activityId: string, checklist: ChecklistItem[]) => Promise<void>;
 }
 
 const ACTIVITY_TYPE_INFO: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
@@ -31,7 +33,6 @@ function getUrlTravelMode(travelMode?: string): string {
     }
 }
 
-
 // Travel mode display info
 const TRAVEL_MODE_DISPLAY: Record<string, { label: string; icon: string }> = {
     'TRANSIT': { label: '大眾運輸', icon: '🚇' },
@@ -44,7 +45,6 @@ const TRAVEL_MODE_DISPLAY: Record<string, { label: string; icon: string }> = {
 function getExternalMapUrl(activity: Activity): string | null {
     if (activity.type === 'transport') {
         if (activity.departureLocation && activity.arrivalLocation) {
-            // Directions URL with travel mode
             const origin = encodeURIComponent(activity.departureLocation);
             const destination = encodeURIComponent(activity.arrivalLocation);
             const mode = getUrlTravelMode(activity.travelMode);
@@ -60,13 +60,119 @@ function getExternalMapUrl(activity: Activity): string | null {
     return null;
 }
 
-export default function ActivityDetailModal({ activity, onClose }: ActivityDetailModalProps) {
+// Get checklist label based on activity type
+function getChecklistLabel(type: string): string {
+    switch (type) {
+        case 'food': return '美食清單';
+        case 'shopping': return '購物清單';
+        default: return '待辦清單';
+    }
+}
+
+export default function ActivityDetailModal({ activity, onClose, onUpdateChecklist }: ActivityDetailModalProps) {
+    const [newItemText, setNewItemText] = useState('');
+    const [editingItemId, setEditingItemId] = useState<string | null>(null);
+    const [editingText, setEditingText] = useState('');
+    const [isUpdating, setIsUpdating] = useState(false);
+
     if (!activity) return null;
 
     const typeInfo = ACTIVITY_TYPE_INFO[activity.type] || ACTIVITY_TYPE_INFO.other;
     const externalMapUrl = getExternalMapUrl(activity);
     const hasRoute = activity.type === 'transport' && activity.departureLocation && activity.arrivalLocation;
     const hasMapContent = hasRoute || activity.location || activity.departureLocation || activity.arrivalLocation;
+    const checklist = activity.checklist || [];
+    const checklistLabel = getChecklistLabel(activity.type);
+
+    // Generate unique ID for checklist items
+    const generateId = () => `item_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    // Add new item
+    const handleAddItem = async () => {
+        if (!newItemText.trim() || !onUpdateChecklist) return;
+
+        setIsUpdating(true);
+        const newItem: ChecklistItem = {
+            id: generateId(),
+            text: newItemText.trim(),
+            completed: false
+        };
+
+        try {
+            await onUpdateChecklist(activity.id, [...checklist, newItem]);
+            setNewItemText('');
+        } catch (error) {
+            console.error('Failed to add item:', error);
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    // Toggle item completion
+    const handleToggleItem = async (itemId: string) => {
+        if (!onUpdateChecklist) return;
+
+        setIsUpdating(true);
+        const updatedChecklist = checklist.map(item =>
+            item.id === itemId ? { ...item, completed: !item.completed } : item
+        );
+
+        try {
+            await onUpdateChecklist(activity.id, updatedChecklist);
+        } catch (error) {
+            console.error('Failed to toggle item:', error);
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    // Delete item
+    const handleDeleteItem = async (itemId: string) => {
+        if (!onUpdateChecklist) return;
+
+        setIsUpdating(true);
+        const updatedChecklist = checklist.filter(item => item.id !== itemId);
+
+        try {
+            await onUpdateChecklist(activity.id, updatedChecklist);
+        } catch (error) {
+            console.error('Failed to delete item:', error);
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    // Start editing item
+    const handleStartEdit = (item: ChecklistItem) => {
+        setEditingItemId(item.id);
+        setEditingText(item.text);
+    };
+
+    // Save edited item
+    const handleSaveEdit = async () => {
+        if (!editingItemId || !editingText.trim() || !onUpdateChecklist) return;
+
+        setIsUpdating(true);
+        const updatedChecklist = checklist.map(item =>
+            item.id === editingItemId ? { ...item, text: editingText.trim() } : item
+        );
+
+        try {
+            await onUpdateChecklist(activity.id, updatedChecklist);
+            setEditingItemId(null);
+            setEditingText('');
+        } catch (error) {
+            console.error('Failed to update item:', error);
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    // Cancel editing
+    const handleCancelEdit = () => {
+        setEditingItemId(null);
+        setEditingText('');
+    };
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
@@ -126,14 +232,12 @@ export default function ActivityDetailModal({ activity, onClose }: ActivityDetai
                                         </div>
                                     )}
                                     <div className="pt-1 flex flex-wrap gap-2">
-                                        {/* Travel Mode Badge */}
                                         {activity.travelMode && TRAVEL_MODE_DISPLAY[activity.travelMode] && (
                                             <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-700 text-sm font-medium">
                                                 <span>{TRAVEL_MODE_DISPLAY[activity.travelMode].icon}</span>
                                                 {TRAVEL_MODE_DISPLAY[activity.travelMode].label}
                                             </span>
                                         )}
-                                        {/* Duration Badge */}
                                         {activity.estimatedDuration && (
                                             <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-sm font-medium">
                                                 <Clock className="w-3.5 h-3.5" />
@@ -163,6 +267,124 @@ export default function ActivityDetailModal({ activity, onClose }: ActivityDetai
                         </div>
                     )}
 
+                    {/* Checklist Section */}
+                    {onUpdateChecklist && (
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-2 text-gray-700">
+                                <ListChecks className="w-5 h-5 text-purple-500" />
+                                <span className="font-medium">{checklistLabel}</span>
+                                {checklist.length > 0 && (
+                                    <span className="text-sm text-gray-400">
+                                        ({checklist.filter(i => i.completed).length}/{checklist.length})
+                                    </span>
+                                )}
+                            </div>
+
+                            {/* Checklist Items */}
+                            <div className="space-y-2">
+                                {checklist.map(item => (
+                                    <div
+                                        key={item.id}
+                                        className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${item.completed
+                                                ? 'bg-green-50 border-green-200'
+                                                : 'bg-white border-gray-200 hover:border-gray-300'
+                                            }`}
+                                    >
+                                        {editingItemId === item.id ? (
+                                            // Edit mode
+                                            <>
+                                                <input
+                                                    type="text"
+                                                    value={editingText}
+                                                    onChange={(e) => setEditingText(e.target.value)}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') handleSaveEdit();
+                                                        if (e.key === 'Escape') handleCancelEdit();
+                                                    }}
+                                                    className="flex-1 px-2 py-1 border border-blue-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                    autoFocus
+                                                />
+                                                <button
+                                                    onClick={handleSaveEdit}
+                                                    disabled={isUpdating}
+                                                    className="p-1.5 text-green-600 hover:bg-green-100 rounded transition-colors"
+                                                >
+                                                    <Check className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={handleCancelEdit}
+                                                    className="p-1.5 text-gray-500 hover:bg-gray-100 rounded transition-colors"
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </button>
+                                            </>
+                                        ) : (
+                                            // View mode
+                                            <>
+                                                <button
+                                                    onClick={() => handleToggleItem(item.id)}
+                                                    disabled={isUpdating}
+                                                    className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${item.completed
+                                                            ? 'bg-green-500 border-green-500 text-white'
+                                                            : 'border-gray-300 hover:border-green-400'
+                                                        }`}
+                                                >
+                                                    {item.completed && <Check className="w-3 h-3" />}
+                                                </button>
+                                                <span className={`flex-1 ${item.completed ? 'line-through text-gray-400' : 'text-gray-700'}`}>
+                                                    {item.text}
+                                                </span>
+                                                <button
+                                                    onClick={() => handleStartEdit(item)}
+                                                    disabled={isUpdating}
+                                                    className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                                >
+                                                    <Edit2 className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteItem(item.id)}
+                                                    disabled={isUpdating}
+                                                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
+                                ))}
+
+                                {/* Empty state */}
+                                {checklist.length === 0 && (
+                                    <p className="text-sm text-gray-400 text-center py-4">
+                                        還沒有任何項目，在下方新增一個吧！
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Add new item */}
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={newItemText}
+                                    onChange={(e) => setNewItemText(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') handleAddItem();
+                                    }}
+                                    placeholder={activity.type === 'food' ? '新增美食項目...' : activity.type === 'shopping' ? '新增購物項目...' : '新增項目...'}
+                                    className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                                />
+                                <button
+                                    onClick={handleAddItem}
+                                    disabled={!newItemText.trim() || isUpdating}
+                                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+                                >
+                                    <Plus className="w-4 h-4" />
+                                    新增
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Open in Google Maps Link */}
                     {externalMapUrl && (
                         <a
@@ -176,7 +398,7 @@ export default function ActivityDetailModal({ activity, onClose }: ActivityDetai
                         </a>
                     )}
 
-                    {/* Map Section - Using JavaScript API for full transit preference support */}
+                    {/* Map Section */}
                     {hasMapContent && GOOGLE_MAPS_API_KEY && (
                         <div className="space-y-3">
                             <div className="flex items-center gap-2 text-gray-700">

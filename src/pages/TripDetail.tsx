@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
-import type { Trip, Activity, FlightInfo } from '../types';
+import type { Trip, Activity, FlightInfo, ChecklistItem } from '../types';
 import { activityService } from '../services/activityService';
 import { tripService } from '../services/tripService';
 import { format, eachDayOfInterval, isSameDay } from 'date-fns';
@@ -95,6 +95,20 @@ export default function TripDetail() {
         } catch (error) {
             console.error("Error deleting activity: ", error);
             alert("刪除活動失敗");
+        }
+    };
+
+    const handleUpdateChecklist = async (activityId: string, checklist: ChecklistItem[]) => {
+        if (!id) return;
+        try {
+            await activityService.updateActivity(id, activityId, { checklist });
+            // Update the local state for the detail modal
+            if (selectedActivityForDetail && selectedActivityForDetail.id === activityId) {
+                setSelectedActivityForDetail({ ...selectedActivityForDetail, checklist });
+            }
+        } catch (error) {
+            console.error("Error updating checklist: ", error);
+            throw error;
         }
     };
 
@@ -434,6 +448,7 @@ export default function TripDetail() {
             <ActivityDetailModal
                 activity={selectedActivityForDetail}
                 onClose={() => setSelectedActivityForDetail(null)}
+                onUpdateChecklist={handleUpdateChecklist}
             />
         </div>
     );
