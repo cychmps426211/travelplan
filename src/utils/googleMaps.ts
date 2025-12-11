@@ -57,13 +57,52 @@ export interface TravelDurationResult {
     distanceText: string;
 }
 
+// Travel mode types
+export type TravelModeType = 'TRANSIT' | 'DRIVING' | 'WALKING' | 'BICYCLING';
+
+// Transit mode preferences (only applicable when travelMode is TRANSIT)
+export type TransitModeType = 'SUBWAY' | 'BUS' | 'TRAIN' | 'TRAM' | 'RAIL';
+
+// Transit routing preferences
+export type TransitRoutingPreference = 'LESS_WALKING' | 'FEWER_TRANSFERS';
+
+export interface TransitOptions {
+    modes?: TransitModeType[];           // Preferred transit types (subway, bus, train, etc.)
+    routingPreference?: TransitRoutingPreference;  // Less walking or fewer transfers
+}
+
+// Travel mode options for UI
+export const TRAVEL_MODE_OPTIONS = [
+    { value: 'TRANSIT', label: '大眾運輸', icon: '🚇' },
+    { value: 'DRIVING', label: '開車', icon: '🚗' },
+    { value: 'WALKING', label: '步行', icon: '🚶' },
+    { value: 'BICYCLING', label: '騎自行車', icon: '🚲' },
+] as const;
+
+// Transit mode options for UI (when TRANSIT is selected)
+export const TRANSIT_MODE_OPTIONS = [
+    { value: 'SUBWAY', label: '捷運/地鐵', icon: '🚇' },
+    { value: 'BUS', label: '公車', icon: '🚌' },
+    { value: 'TRAIN', label: '火車', icon: '🚂' },
+    { value: 'TRAM', label: '輕軌/電車', icon: '🚃' },
+    { value: 'RAIL', label: '鐵路', icon: '🛤️' },
+] as const;
+
+// Transit routing preference options for UI
+export const TRANSIT_ROUTING_OPTIONS = [
+    { value: '', label: '無偏好' },
+    { value: 'LESS_WALKING', label: '減少步行' },
+    { value: 'FEWER_TRANSFERS', label: '減少轉乘' },
+] as const;
+
 /**
  * Get travel duration between two locations using Google Maps Directions API
  */
 export async function getTravelDuration(
     origin: string,
     destination: string,
-    travelMode: 'TRANSIT' | 'DRIVING' | 'WALKING' | 'BICYCLING' = 'TRANSIT'
+    travelMode: TravelModeType = 'TRANSIT',
+    transitOptions?: TransitOptions
 ): Promise<TravelDurationResult> {
     await loadGoogleMapsAPI();
 
@@ -73,12 +112,35 @@ export async function getTravelDuration(
     return new Promise((resolve, reject) => {
         const directionsService = new google.maps.DirectionsService();
 
+        // Build request options
+        const request: google.maps.DirectionsRequest = {
+            origin,
+            destination,
+            travelMode: travelModeEnum,
+        };
+
+        // Add transit options if travel mode is TRANSIT and options are provided
+        if (travelMode === 'TRANSIT' && transitOptions) {
+            const transitOptionsObj: google.maps.TransitOptions = {};
+
+            // Add preferred transit modes
+            if (transitOptions.modes && transitOptions.modes.length > 0) {
+                transitOptionsObj.modes = transitOptions.modes.map(
+                    (mode) => google.maps.TransitMode[mode]
+                );
+            }
+
+            // Add routing preference
+            if (transitOptions.routingPreference) {
+                transitOptionsObj.routingPreference =
+                    google.maps.TransitRoutePreference[transitOptions.routingPreference];
+            }
+
+            request.transitOptions = transitOptionsObj;
+        }
+
         directionsService.route(
-            {
-                origin,
-                destination,
-                travelMode: travelModeEnum,
-            },
+            request,
             (
                 result: google.maps.DirectionsResult | null,
                 status: google.maps.DirectionsStatus
@@ -99,3 +161,4 @@ export async function getTravelDuration(
         );
     });
 }
+

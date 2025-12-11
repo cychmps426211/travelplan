@@ -1,7 +1,17 @@
 import { useState, useEffect } from 'react';
 import { X, Loader2, Navigation2 } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
-import { getTravelDuration } from '../utils/googleMaps';
+import {
+    getTravelDuration,
+    TRAVEL_MODE_OPTIONS,
+    TRANSIT_MODE_OPTIONS,
+    TRANSIT_ROUTING_OPTIONS
+} from '../utils/googleMaps';
+import type {
+    TravelModeType,
+    TransitModeType,
+    TransitRoutingPreference
+} from '../utils/googleMaps';
 
 interface CreateActivityModalProps {
     isOpen: boolean;
@@ -32,6 +42,9 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
         departureLocation: '',
         arrivalLocation: '',
         estimatedDuration: '',
+        travelMode: 'TRANSIT' as TravelModeType,
+        transitModes: [] as TransitModeType[],
+        transitRoutingPreference: '' as TransitRoutingPreference | '',
         notes: ''
     });
 
@@ -40,7 +53,18 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
 
         setFetchingDuration(true);
         try {
-            const result = await getTravelDuration(formData.departureLocation, formData.arrivalLocation);
+            // Build transit options if using transit mode
+            const transitOptions = formData.travelMode === 'TRANSIT' ? {
+                modes: formData.transitModes.length > 0 ? formData.transitModes : undefined,
+                routingPreference: formData.transitRoutingPreference || undefined
+            } : undefined;
+
+            const result = await getTravelDuration(
+                formData.departureLocation,
+                formData.arrivalLocation,
+                formData.travelMode,
+                transitOptions
+            );
             setFormData(prev => ({
                 ...prev,
                 estimatedDuration: result.durationMinutes.toString()
@@ -51,6 +75,17 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
         } finally {
             setFetchingDuration(false);
         }
+    };
+
+    const handleTransitModeToggle = (mode: TransitModeType) => {
+        setFormData(prev => {
+            const currentModes = prev.transitModes;
+            if (currentModes.includes(mode)) {
+                return { ...prev, transitModes: currentModes.filter(m => m !== mode) };
+            } else {
+                return { ...prev, transitModes: [...currentModes, mode] };
+            }
+        });
     };
 
     useEffect(() => {
@@ -64,6 +99,9 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                 departureLocation: initialData.departureLocation || '',
                 arrivalLocation: initialData.arrivalLocation || '',
                 estimatedDuration: initialData.estimatedDuration?.toString() || '',
+                travelMode: 'TRANSIT' as TravelModeType,
+                transitModes: [] as TransitModeType[],
+                transitRoutingPreference: '' as TransitRoutingPreference | '',
                 notes: initialData.notes || ''
             });
         } else {
@@ -76,6 +114,9 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                 departureLocation: '',
                 arrivalLocation: '',
                 estimatedDuration: '',
+                travelMode: 'TRANSIT' as TravelModeType,
+                transitModes: [] as TransitModeType[],
+                transitRoutingPreference: '' as TransitRoutingPreference | '',
                 notes: ''
             });
         }
@@ -135,6 +176,9 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                 departureLocation: '',
                 arrivalLocation: '',
                 estimatedDuration: '',
+                travelMode: 'TRANSIT' as TravelModeType,
+                transitModes: [] as TransitModeType[],
+                transitRoutingPreference: '' as TransitRoutingPreference | '',
                 notes: ''
             });
         } catch (error) {
@@ -200,28 +244,90 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                     </div>
 
                     {formData.type === 'transport' && (
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">出發地點 (選填)</label>
-                                <input
-                                    type="text"
-                                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                                    placeholder="例如：東京車站"
-                                    value={formData.departureLocation}
-                                    onChange={e => setFormData({ ...formData, departureLocation: e.target.value })}
-                                />
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">出發地點 (選填)</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                        placeholder="例如：東京車站"
+                                        value={formData.departureLocation}
+                                        onChange={e => setFormData({ ...formData, departureLocation: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">到達地點 (選填)</label>
+                                    <input
+                                        type="text"
+                                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                        placeholder="例如：大阪站"
+                                        value={formData.arrivalLocation}
+                                        onChange={e => setFormData({ ...formData, arrivalLocation: e.target.value })}
+                                    />
+                                </div>
                             </div>
+
+                            {/* Travel Mode Selection */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">到達地點 (選填)</label>
-                                <input
-                                    type="text"
-                                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                                    placeholder="例如：大阪站"
-                                    value={formData.arrivalLocation}
-                                    onChange={e => setFormData({ ...formData, arrivalLocation: e.target.value })}
-                                />
+                                <label className="block text-sm font-medium text-gray-700 mb-2">交通方式</label>
+                                <div className="flex flex-wrap gap-2">
+                                    {TRAVEL_MODE_OPTIONS.map(mode => (
+                                        <button
+                                            key={mode.value}
+                                            type="button"
+                                            onClick={() => setFormData({ ...formData, travelMode: mode.value as TravelModeType })}
+                                            className={`px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-1 text-sm ${formData.travelMode === mode.value
+                                                    ? 'bg-blue-600 text-white'
+                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                                }`}
+                                        >
+                                            <span>{mode.icon}</span>
+                                            <span>{mode.label}</span>
+                                        </button>
+                                    ))}
+                                </div>
                             </div>
-                            <div className="col-span-2">
+
+                            {/* Transit Mode Preferences - Only show when TRANSIT is selected */}
+                            {formData.travelMode === 'TRANSIT' && (
+                                <div className="bg-blue-50 p-3 rounded-lg space-y-3">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">偏好大眾運輸類型 (可多選)</label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {TRANSIT_MODE_OPTIONS.map(mode => (
+                                                <button
+                                                    key={mode.value}
+                                                    type="button"
+                                                    onClick={() => handleTransitModeToggle(mode.value as TransitModeType)}
+                                                    className={`px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1 text-sm ${formData.transitModes.includes(mode.value as TransitModeType)
+                                                            ? 'bg-blue-600 text-white'
+                                                            : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                                                        }`}
+                                                >
+                                                    <span>{mode.icon}</span>
+                                                    <span>{mode.label}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <p className="text-xs text-gray-500 mt-1">不選擇則使用所有可用類型</p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">路線偏好</label>
+                                        <select
+                                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white"
+                                            value={formData.transitRoutingPreference}
+                                            onChange={e => setFormData({ ...formData, transitRoutingPreference: e.target.value as TransitRoutingPreference | '' })}
+                                        >
+                                            {TRANSIT_ROUTING_OPTIONS.map(option => (
+                                                <option key={option.value} value={option.value}>{option.label}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">預估交通時間 (分鐘，選填)</label>
                                 <div className="flex gap-2">
                                     <input
