@@ -54,8 +54,8 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
             const img = new Image();
             img.onload = () => {
                 const canvas = document.createElement('canvas');
-                const MAX_WIDTH = 800;
-                const MAX_HEIGHT = 800;
+                const MAX_WIDTH = 600;
+                const MAX_HEIGHT = 600;
                 let width = img.width;
                 let height = img.height;
 
@@ -76,7 +76,9 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
                 const ctx = canvas.getContext('2d');
                 ctx?.drawImage(img, 0, 0, width, height);
 
-                const dataUrl = canvas.toDataURL('image/webp', 0.8);
+                // Use JPEG instead of WEBP. WebP silently falls back to uncompressed PNG in some browsers
+                // which causes the string size to easily exceed the 1MB Firestore document limit.
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
                 setFormData(prev => ({ ...prev, coverImageUrl: dataUrl }));
             };
             img.src = event.target?.result as string;
@@ -95,8 +97,9 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
             });
             onClose();
             // Form reset is handled by useEffect
-        } catch (error) {
-            console.error(error);
+        } catch (error: any) {
+            console.error("Submit error:", error);
+            alert("儲存失敗: " + (error.message || "未知錯誤（請確定圖片不要過大）"));
         } finally {
             setLoading(false);
         }
