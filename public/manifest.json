@@ -1,0 +1,16 @@
+{
+    "name": "Travel Plan",
+    "short_name": "Travel Plan",
+    "description": "A progressive web app for travel planning",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#ffffff",
+    "icons": [
+        {
+            "src": "travel.png",
+            "sizes": "192x192 512x512",
+            "type": "image/png"
+        }
+    ]
+}
