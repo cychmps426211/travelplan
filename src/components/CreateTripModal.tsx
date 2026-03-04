@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, MapPin, Palette } from 'lucide-react';
+import { X, MapPin, Palette, Upload } from 'lucide-react';
 import { format } from 'date-fns';
 import { GRADIENT_COLORS, DEFAULT_GRADIENT, type GradientColorKey } from '../constants/gradients';
 
@@ -17,7 +17,8 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
         destination: '',
         startDate: '',
         endDate: '',
-        coverColor: DEFAULT_GRADIENT
+        coverColor: DEFAULT_GRADIENT,
+        coverImageUrl: ''
     });
 
     useEffect(() => {
@@ -27,7 +28,8 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
                 destination: initialData.destination,
                 startDate: format(initialData.startDate.toDate(), 'yyyy-MM-dd'),
                 endDate: format(initialData.endDate.toDate(), 'yyyy-MM-dd'),
-                coverColor: initialData.coverColor || DEFAULT_GRADIENT
+                coverColor: initialData.coverColor || DEFAULT_GRADIENT,
+                coverImageUrl: initialData.coverImageUrl || ''
             });
         } else {
             setFormData({
@@ -35,12 +37,52 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
                 destination: '',
                 startDate: '',
                 endDate: '',
-                coverColor: DEFAULT_GRADIENT
+                coverColor: DEFAULT_GRADIENT,
+                coverImageUrl: ''
             });
         }
     }, [initialData, isOpen]);
 
     if (!isOpen) return null;
+
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 800;
+                const MAX_HEIGHT = 800;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+                } else {
+                    if (height > MAX_HEIGHT) {
+                        width *= MAX_HEIGHT / height;
+                        height = MAX_HEIGHT;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx?.drawImage(img, 0, 0, width, height);
+
+                const dataUrl = canvas.toDataURL('image/webp', 0.8);
+                setFormData(prev => ({ ...prev, coverImageUrl: dataUrl }));
+            };
+            img.src = event.target?.result as string;
+        };
+        reader.readAsDataURL(file);
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -87,10 +129,40 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                            <Palette className="w-4 h-4" />
-                            選擇封面顏色
+                        <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <Palette className="w-4 h-4" />
+                                選擇封面顏色或上傳圖片
+                            </div>
+                            {formData.coverImageUrl && (
+                                <button
+                                    type="button"
+                                    onClick={() => setFormData(prev => ({ ...prev, coverImageUrl: '' }))}
+                                    className="text-xs text-red-500 hover:text-red-600"
+                                >
+                                    移除自訂圖片
+                                </button>
+                            )}
                         </label>
+
+                        {formData.coverImageUrl ? (
+                            <div className="relative h-32 rounded-lg bg-gray-100 overflow-hidden mb-3">
+                                <img src={formData.coverImageUrl} alt="Cover" className="w-full h-full object-cover" />
+                            </div>
+                        ) : (
+                            <div className="mb-3">
+                                <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors relative overflow-hidden">
+                                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                        <Upload className="w-6 h-6 mb-1 text-gray-500" />
+                                        <p className="text-xs text-gray-500">
+                                            <span className="font-semibold">點擊上傳圖片</span>
+                                        </p>
+                                    </div>
+                                    <input type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*" onChange={handleImageUpload} />
+                                </label>
+                            </div>
+                        )}
+
                         <div className="grid grid-cols-3 gap-3">
                             {Object.entries(GRADIENT_COLORS).map(([key, color]) => (
                                 <button

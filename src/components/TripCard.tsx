@@ -83,9 +83,10 @@ export default function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
                 {/* Gradient Background Container */}
                 <div className="relative h-48 overflow-hidden">
                     <div
-                        className={`absolute inset-0 bg-gradient-to-br ${GRADIENT_COLORS[trip.coverColor as keyof typeof GRADIENT_COLORS]?.gradient ||
-                            GRADIENT_COLORS[DEFAULT_GRADIENT].gradient
+                        className={`absolute inset-0 bg-gradient-to-br ${!trip.coverImageUrl ? (GRADIENT_COLORS[trip.coverColor as keyof typeof GRADIENT_COLORS]?.gradient ||
+                            GRADIENT_COLORS[DEFAULT_GRADIENT].gradient) : ''
                             }`}
+                        style={trip.coverImageUrl ? { backgroundImage: `url(${trip.coverImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"></div>
 

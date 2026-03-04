@@ -30,6 +30,7 @@ export interface Trip {
     outboundFlight?: FlightInfo;
     returnFlight?: FlightInfo;
     coverColor?: string;
+    coverImageUrl?: string;
 }
 
 export interface Activity {
