@@ -54,8 +54,8 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
             const img = new Image();
             img.onload = () => {
                 const canvas = document.createElement('canvas');
-                const MAX_WIDTH = 600;
-                const MAX_HEIGHT = 600;
+                const MAX_WIDTH = 400;
+                const MAX_HEIGHT = 400;
                 let width = img.width;
                 let height = img.height;
 
@@ -76,11 +76,24 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
                 const ctx = canvas.getContext('2d');
                 ctx?.drawImage(img, 0, 0, width, height);
 
-                // Use JPEG instead of WEBP. WebP silently falls back to uncompressed PNG in some browsers
-                // which causes the string size to easily exceed the 1MB Firestore document limit.
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+                // Use JPEG with 0.5 quality to assure very small size and prevent Firestore 1MB limits.
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
+
+                // Firestore limit is ~1MB (1,048,576 bytes).
+                // Base64 is roughly 1.37x the original file size.
+                // An arbitrary safe max length for just the image string is ~800,000 chars.
+                if (dataUrl.length > 800000) {
+                    alert("警告：圖片壓縮後仍然過大無法儲存，請嘗試使用其他更簡單的圖片。");
+                    return;
+                }
+
                 setFormData(prev => ({ ...prev, coverImageUrl: dataUrl }));
             };
+
+            img.onerror = () => {
+                alert("無法讀取圖片檔案。");
+            };
+
             img.src = event.target?.result as string;
         };
         reader.readAsDataURL(file);
@@ -90,16 +103,24 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
         e.preventDefault();
         setLoading(true);
         try {
-            await onSubmit({
+            const finalData = {
                 ...formData,
                 startDate: new Date(formData.startDate),
                 endDate: new Date(formData.endDate)
-            });
+            };
+
+            // Clean undefined/empty values to not write messy structure to Firebase
+            if (!finalData.coverImageUrl) {
+                delete (finalData as any).coverImageUrl;
+            }
+
+            await onSubmit(finalData);
             onClose();
             // Form reset is handled by useEffect
         } catch (error: any) {
             console.error("Submit error:", error);
-            alert("儲存失敗: " + (error.message || "未知錯誤（請確定圖片不要過大）"));
+            const msg = error?.message || "未知錯誤";
+            alert("儲存失敗: " + msg + " (可能是圖片依然過大，或尚未登入)");
         } finally {
             setLoading(false);
         }
