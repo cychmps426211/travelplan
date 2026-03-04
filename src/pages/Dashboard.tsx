@@ -16,7 +16,31 @@ export default function Dashboard() {
     useEffect(() => {
         if (user) {
             const unsubscribe = tripService.subscribeToAllTrips((data) => {
-                setTrips(data);
+                const now = new Date();
+                
+                const sortedTrips = [...data].sort((a, b) => {
+                    const aEndDate = a.endDate?.toDate() || new Date(0);
+                    const bEndDate = b.endDate?.toDate() || new Date(0);
+                    const aStartDate = a.startDate?.toDate() || new Date(0);
+                    const bStartDate = b.startDate?.toDate() || new Date(0);
+
+                    // end of the day roughly for comparison
+                    const isAEnded = aEndDate.getTime() < now.getTime();
+                    const isBEnded = bEndDate.getTime() < now.getTime();
+
+                    if (isAEnded && !isBEnded) return 1; // a is ended, b is not -> a goes last
+                    if (!isAEnded && isBEnded) return -1; // a is not ended, b is ended -> b goes last
+
+                    if (isAEnded && isBEnded) {
+                         // Both ended: sort by most recently ended first
+                         return bEndDate.getTime() - aEndDate.getTime();
+                    }
+
+                    // Both not ended (upcoming or ongoing): sort by start date ascending (closest first)
+                    return aStartDate.getTime() - bStartDate.getTime();
+                });
+
+                setTrips(sortedTrips);
                 setLoading(false);
             });
             return () => unsubscribe();
