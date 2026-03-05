@@ -14,6 +14,9 @@ import CreateHotelModal from '../components/CreateHotelModal';
 import HotelCard from '../components/HotelCard';
 import ConfirmDialog from '../components/ConfirmDialog';
 import ActivityDetailModal from '../components/ActivityDetailModal';
+import CreatePlanItemModal from '../components/CreatePlanItemModal';
+import PlanItemCard from '../components/PlanItemCard';
+import type { PlanItem } from '../types';
 
 type Tab = 'overview' | string; // string will be ISO date
 
@@ -42,6 +45,15 @@ export default function TripDetail() {
         hotelId: string;
         hotelName: string;
     }>({ isOpen: false, hotelId: '', hotelName: '' });
+    const [planItemModal, setPlanItemModal] = useState<{
+        isOpen: boolean;
+        data?: PlanItem;
+    }>({ isOpen: false });
+    const [deletePlanItemConfirm, setDeletePlanItemConfirm] = useState<{
+        isOpen: boolean;
+        itemId: string;
+        itemName: string;
+    }>({ isOpen: false, itemId: '', itemName: '' });
     const [deleteActivityConfirm, setDeleteActivityConfirm] = useState<{
         isOpen: boolean;
         activityId: string;
@@ -185,6 +197,29 @@ export default function TripDetail() {
         await tripService.updateTrip(trip.id, { hotels: newHotels });
     };
 
+    const handleSavePlanItem = async (planItemData: PlanItem) => {
+        if (!trip) return;
+        const currentItems = trip.planItems || [];
+        const existingIndex = currentItems.findIndex(i => i.id === planItemData.id);
+
+        let newItems;
+        if (existingIndex >= 0) {
+            newItems = [...currentItems];
+            newItems[existingIndex] = planItemData;
+        } else {
+            newItems = [...currentItems, planItemData];
+        }
+
+        await tripService.updateTrip(trip.id, { planItems: newItems });
+    };
+
+    const handleDeletePlanItem = async (itemId: string) => {
+        if (!trip) return;
+        const currentItems = trip.planItems || [];
+        const newItems = currentItems.filter(i => i.id !== itemId);
+        await tripService.updateTrip(trip.id, { planItems: newItems });
+    };
+
     if (loading || !trip) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -198,7 +233,7 @@ export default function TripDetail() {
     const days = eachDayOfInterval({ start: tripStartDate, end: tripEndDate });
 
     const currentDayActivities = activities.filter(a =>
-        activeTab !== 'overview' && activeTab !== 'hotels' && isSameDay(a.startTime.toDate(), new Date(activeTab))
+        activeTab !== 'overview' && activeTab !== 'hotels' && activeTab !== 'planItems' && isSameDay(a.startTime.toDate(), new Date(activeTab))
     );
 
     const getActivityIcon = (type: string) => {
@@ -244,7 +279,7 @@ export default function TripDetail() {
                     {/* Tabs Navigation */}
                     <div className="flex flex-col">
                         {/* First Row: Categories */}
-                        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isScrolled && activeTab !== 'overview' && activeTab !== 'hotels'
+                        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isScrolled && activeTab !== 'overview' && activeTab !== 'hotels' && activeTab !== 'planItems'
                             ? 'max-h-0 opacity-0 !mb-0'
                             : 'max-h-[60px] opacity-100 mb-3'
                             }`}>
@@ -267,11 +302,20 @@ export default function TripDetail() {
                                 >
                                     飯店
                                 </button>
+                                <button
+                                    onClick={() => setActiveTab('planItems')}
+                                    className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'planItems'
+                                        ? 'bg-blue-600 text-white shadow-md'
+                                        : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                                        }`}
+                                >
+                                    待規劃清單
+                                </button>
                             </div>
                         </div>
 
                         {/* Second Row: Days */}
-                        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isScrolled && (activeTab === 'overview' || activeTab === 'hotels')
+                        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isScrolled && (activeTab === 'overview' || activeTab === 'hotels' || activeTab === 'planItems')
                             ? 'max-h-0 opacity-0 !mb-0'
                             : 'max-h-[60px] opacity-100 pb-1'
                             }`}>
@@ -401,6 +445,37 @@ export default function TripDetail() {
                             </div>
                         )}
                     </div>
+                ) : activeTab === 'planItems' ? (
+                    <div className="space-y-6">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                                <span className="w-2 h-6 bg-purple-500 rounded-full" />
+                                待規劃清單
+                            </h2>
+                            <button
+                                onClick={() => setPlanItemModal({ isOpen: true })}
+                                className="text-sm text-blue-600 font-medium hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
+                            >
+                                <Plus className="w-4 h-4" /> 新增項目
+                            </button>
+                        </div>
+                        {trip.planItems && trip.planItems.length > 0 ? (
+                            <div className="grid grid-cols-1 gap-4">
+                                {trip.planItems.map(item => (
+                                    <PlanItemCard
+                                        key={item.id}
+                                        item={item}
+                                        onEdit={() => setPlanItemModal({ isOpen: true, data: item })}
+                                        onDelete={() => setDeletePlanItemConfirm({ isOpen: true, itemId: item.id, itemName: item.name })}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="p-8 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center text-gray-400 bg-gray-50/50">
+                                <p className="text-sm">此清單可以臨時放置一些可能會想去、想做的事情</p>
+                            </div>
+                        )}
+                    </div>
                 ) : (
                     // Itinerary View
                     <>
@@ -524,7 +599,7 @@ export default function TripDetail() {
                     setEditingActivity(null);
                 }}
                 onSubmit={handleActivitySubmit}
-                selectedDate={activeTab === 'overview' || activeTab === 'hotels' ? tripStartDate : new Date(activeTab)}
+                selectedDate={activeTab === 'overview' || activeTab === 'hotels' || activeTab === 'planItems' ? tripStartDate : new Date(activeTab)}
                 initialData={editingActivity}
             />
 
@@ -552,6 +627,24 @@ export default function TripDetail() {
                     setDeleteHotelConfirm({ isOpen: false, hotelId: '', hotelName: '' });
                 }}
                 onCancel={() => setDeleteHotelConfirm({ isOpen: false, hotelId: '', hotelName: '' })}
+            />
+
+            <CreatePlanItemModal
+                isOpen={planItemModal.isOpen}
+                onClose={() => setPlanItemModal({ isOpen: false })}
+                onSubmit={handleSavePlanItem}
+                initialData={planItemModal.data}
+            />
+
+            <ConfirmDialog
+                isOpen={deletePlanItemConfirm.isOpen}
+                title="刪除待規劃項目"
+                message={`確定要刪除「${deletePlanItemConfirm.itemName}」嗎？`}
+                onConfirm={() => {
+                    handleDeletePlanItem(deletePlanItemConfirm.itemId);
+                    setDeletePlanItemConfirm({ isOpen: false, itemId: '', itemName: '' });
+                }}
+                onCancel={() => setDeletePlanItemConfirm({ isOpen: false, itemId: '', itemName: '' })}
             />
 
             {/* Delete Activity Confirmation Dialog */}
