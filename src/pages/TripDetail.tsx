@@ -48,6 +48,15 @@ export default function TripDetail() {
         activityTitle: string;
     }>({ isOpen: false, activityId: '', activityTitle: '' });
     const [selectedActivityForDetail, setSelectedActivityForDetail] = useState<Activity | null>(null);
+    const [isScrolled, setIsScrolled] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 20);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     useEffect(() => {
         if (!id) return;
@@ -194,72 +203,85 @@ export default function TripDetail() {
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col">
             {/* Header */}
-            <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
-                <div className="max-w-4xl mx-auto px-4 py-4">
-                    <Link to="/" className="inline-flex items-center text-sm text-gray-500 hover:text-gray-800 transition-colors mb-4 group">
-                        <ArrowLeft className="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" />
-                        返回主控台
-                    </Link>
+            <div className={`bg-white border-b border-slate-200 sticky top-0 z-10 transition-shadow duration-300 ${isScrolled ? 'shadow-sm' : ''}`}>
+                <div className={`max-w-4xl mx-auto px-4 transition-all duration-300 ${isScrolled ? 'py-3' : 'py-4'}`}>
+                    {/* Top Section to Hide */}
+                    <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isScrolled ? 'max-h-0 opacity-0 mb-0' : 'max-h-[200px] opacity-100 mb-6'}`}>
+                        <Link to="/" className="inline-flex items-center text-sm text-gray-500 hover:text-gray-800 transition-colors mb-4 group">
+                            <ArrowLeft className="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" />
+                            返回主控台
+                        </Link>
 
-                    {/* Header */}
-                    <div className="flex justify-between items-start mb-8">
-                        <div>
-                            <h1 className="text-3xl font-bold text-gray-900 mb-2">{trip.title}</h1>
-                            <div className="flex items-center gap-4 text-gray-500 text-sm">
-                                <div className="flex items-center gap-1.5">
-                                    <MapPin className="w-4 h-4" />
-                                    {trip.destination}
-                                </div>
-                                <div className="flex items-center gap-1.5">
-                                    <Calendar className="w-4 h-4" />
-                                    {format(trip.startDate.toDate(), 'yyyy/MM/dd')} - {format(trip.endDate.toDate(), 'yyyy/MM/dd')}
+                        {/* Header */}
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <h1 className="text-3xl font-bold text-gray-900 mb-2">{trip.title}</h1>
+                                <div className="flex items-center gap-4 text-gray-500 text-sm">
+                                    <div className="flex items-center gap-1.5">
+                                        <MapPin className="w-4 h-4" />
+                                        {trip.destination}
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <Calendar className="w-4 h-4" />
+                                        {format(trip.startDate.toDate(), 'yyyy/MM/dd')} - {format(trip.endDate.toDate(), 'yyyy/MM/dd')}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Tabs Navigation */}
-                    <div className="flex flex-col gap-3 mb-6">
+                    <div className="flex flex-col">
                         {/* First Row: Categories */}
-                        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1">
-                            <button
-                                onClick={() => setActiveTab('overview')}
-                                className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'overview'
-                                    ? 'bg-blue-600 text-white shadow-md'
-                                    : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
-                                    }`}
-                            >
-                                機票
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('hotels')}
-                                className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'hotels'
-                                    ? 'bg-blue-600 text-white shadow-md'
-                                    : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
-                                    }`}
-                            >
-                                飯店
-                            </button>
+                        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isScrolled && activeTab !== 'overview' && activeTab !== 'hotels'
+                                ? 'max-h-0 opacity-0 !mb-0'
+                                : 'max-h-[60px] opacity-100 mb-3'
+                            }`}>
+                            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1">
+                                <button
+                                    onClick={() => setActiveTab('overview')}
+                                    className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'overview'
+                                        ? 'bg-blue-600 text-white shadow-md'
+                                        : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                                        }`}
+                                >
+                                    機票
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab('hotels')}
+                                    className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'hotels'
+                                        ? 'bg-blue-600 text-white shadow-md'
+                                        : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                                        }`}
+                                >
+                                    飯店
+                                </button>
+                            </div>
                         </div>
 
                         {/* Second Row: Days */}
-                        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-2">
-                            {days.map((day, index) => {
-                                const dateStr = format(day, 'yyyy-MM-dd');
-                                const isActive = activeTab === dateStr;
-                                return (
-                                    <button
-                                        key={dateStr}
-                                        onClick={() => setActiveTab(dateStr)}
-                                        className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${isActive
-                                            ? 'bg-blue-600 text-white shadow-md'
-                                            : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
-                                            }`}
-                                    >
-                                        第 {index + 1} 天 <span className="opacity-75 text-xs ml-1">({format(day, 'MM/dd')})</span>
-                                    </button>
-                                );
-                            })}
+                        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isScrolled && (activeTab === 'overview' || activeTab === 'hotels')
+                                ? 'max-h-0 opacity-0 !mb-0'
+                                : 'max-h-[60px] opacity-100 pb-1'
+                            }`}>
+                            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-2">
+                                {days.map((day, index) => {
+                                    const dateStr = format(day, 'yyyy-MM-dd');
+                                    const isActive = activeTab === dateStr;
+                                    return (
+                                        <button
+                                            key={dateStr}
+                                            onClick={() => setActiveTab(dateStr)}
+                                            className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${isActive
+                                                ? 'bg-blue-600 text-white shadow-md'
+                                                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                                                }`}
+                                        >
+                                            第 {index + 1} 天 <span className="opacity-75 text-xs ml-1">({format(day, 'MM/dd')})</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
                 </div>
