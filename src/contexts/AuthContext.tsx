@@ -41,9 +41,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 return;
             }
 
-            try {
-                if (currentUser) {
-                    // Sync user data to Firestore
+            // ✅ 先放行頁面，讓使用者立即看到內容
+            setUser(currentUser);
+            setLoading(false);
+
+            // 背景非同步更新 user data，不阻塞頁面渲染
+            if (currentUser) {
+                try {
                     const userRef = doc(db, 'users', currentUser.uid);
                     const userSnap = await getDoc(userRef);
 
@@ -56,18 +60,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                             lastLogin: new Date().toISOString()
                         }, { merge: true });
                     } else {
-                        // Update last login
                         await setDoc(userRef, {
                             lastLogin: new Date().toISOString()
                         }, { merge: true });
                     }
+                } catch (error) {
+                    console.error("Error updating user data:", error);
                 }
-            } catch (error) {
-                console.error("Error updating user data:", error);
             }
-
-            setUser(currentUser);
-            setLoading(false);
         });
 
         return unsubscribe;
