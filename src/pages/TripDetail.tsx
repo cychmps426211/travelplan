@@ -184,12 +184,6 @@ export default function TripDetail() {
                                 </div>
                             </div>
                         </div>
-                        <div className="flex -space-x-2">
-                            {/* Placeholder for members */}
-                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center border-2 border-white text-xs font-bold text-blue-600">
-                                {user?.displayName?.charAt(0)}
-                            </div>
-                        </div>
                     </div>
 
                     {/* Days/Tabs Navigation */}

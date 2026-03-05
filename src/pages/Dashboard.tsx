@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { tripService } from '../services/tripService';
 import type { Trip } from '../types';
@@ -12,12 +12,27 @@ export default function Dashboard() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const menuRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setIsMenuOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.addEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     useEffect(() => {
         if (user) {
             const unsubscribe = tripService.subscribeToAllTrips((data) => {
                 const now = new Date();
-                
+
                 const sortedTrips = [...data].sort((a, b) => {
                     const aEndDate = a.endDate?.toDate() || new Date(0);
                     const bEndDate = b.endDate?.toDate() || new Date(0);
@@ -32,8 +47,8 @@ export default function Dashboard() {
                     if (!isAEnded && isBEnded) return -1; // a is not ended, b is ended -> b goes last
 
                     if (isAEnded && isBEnded) {
-                         // Both ended: sort by most recently ended first
-                         return bEndDate.getTime() - aEndDate.getTime();
+                        // Both ended: sort by most recently ended first
+                        return bEndDate.getTime() - aEndDate.getTime();
                     }
 
                     // Both not ended (upcoming or ongoing): sort by start date ascending (closest first)
@@ -73,31 +88,52 @@ export default function Dashboard() {
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
                         <div className="flex items-center gap-2">
-                            <div className="bg-blue-600 p-1.5 rounded-lg">
-                                <Map className="w-5 h-5 text-white" />
-                            </div>
+                            <img src={`${import.meta.env.BASE_URL}travel.png`} alt="TravelPlan" className="w-8 h-8" />
                             <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-400">
                                 TravelPlan
                             </span>
                         </div>
                         <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-full border border-gray-100">
-                                <img
-                                    src={user?.photoURL || ''}
-                                    alt="Profile"
-                                    className="w-6 h-6 rounded-full border border-white shadow-sm"
-                                />
-                                <span className="text-sm font-medium text-gray-700 hidden sm:block">
-                                    {user?.displayName}
-                                </span>
-                            </div>
                             <button
-                                onClick={logout}
-                                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all"
-                                title="登出"
+                                onClick={() => {
+                                    setEditingTrip(null);
+                                    setIsModalOpen(true);
+                                }}
+                                className="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm transition-all"
+                                title="建立新旅程"
                             >
-                                <LogOut className="w-5 h-5" />
+                                <Plus className="w-5 h-5" />
                             </button>
+                            <div className="relative" ref={menuRef}>
+                                <button
+                                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                    className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded-full border border-gray-100 transition-colors"
+                                >
+                                    <img
+                                        src={user?.photoURL || ''}
+                                        alt="Profile"
+                                        className="w-6 h-6 rounded-full border border-white shadow-sm"
+                                    />
+                                    <span className="text-sm font-medium text-gray-700 hidden sm:block">
+                                        {user?.displayName}
+                                    </span>
+                                </button>
+
+                                {isMenuOpen && (
+                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50">
+                                        <button
+                                            onClick={() => {
+                                                setIsMenuOpen(false);
+                                                logout();
+                                            }}
+                                            className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50 transition-colors"
+                                        >
+                                            <LogOut className="w-4 h-4" />
+                                            登出
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -105,23 +141,6 @@ export default function Dashboard() {
 
             {/* Main Content */}
             <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900">我的旅程</h1>
-                        <p className="text-gray-500 mt-1">管理與規劃你的下一場冒險</p>
-                    </div>
-                    <button
-                        onClick={() => {
-                            setEditingTrip(null);
-                            setIsModalOpen(true);
-                        }}
-                        className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium shadow-lg shadow-blue-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                    >
-                        <Plus className="w-5 h-5" />
-                        建立新旅程
-                    </button>
-                </div>
-
                 {loading ? (
                     <div className="flex items-center justify-center h-64">
                         <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
