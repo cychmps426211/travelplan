@@ -156,8 +156,6 @@ export default function TripDetail() {
         }
     };
 
-    // Placeholder for user, assuming it would come from an auth context
-    const user = { displayName: 'User' };
 
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col">
