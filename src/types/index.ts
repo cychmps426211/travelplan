@@ -28,6 +28,14 @@ export interface HotelInfo {
     notes?: string;
 }
 
+export interface PlanItem {
+    id: string;
+    name: string;
+    location?: string;
+    urls?: string[];
+    notes?: string;
+}
+
 export interface Trip {
     id: string;
     title: string;
@@ -40,6 +48,7 @@ export interface Trip {
     outboundFlight?: FlightInfo;
     returnFlight?: FlightInfo;
     hotels?: HotelInfo[];
+    planItems?: PlanItem[];
     coverColor?: string;
     coverImageUrl?: string;
 }
