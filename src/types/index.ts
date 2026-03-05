@@ -18,6 +18,16 @@ export interface FlightInfo {
     arrivalAirport: string;
 }
 
+export interface HotelInfo {
+    id: string;
+    name: string;
+    address?: string;
+    checkIn: Timestamp;
+    checkOut: Timestamp;
+    bookingReference?: string;
+    notes?: string;
+}
+
 export interface Trip {
     id: string;
     title: string;
@@ -29,6 +39,7 @@ export interface Trip {
     createdAt: Timestamp;
     outboundFlight?: FlightInfo;
     returnFlight?: FlightInfo;
+    hotels?: HotelInfo[];
     coverColor?: string;
     coverImageUrl?: string;
 }
