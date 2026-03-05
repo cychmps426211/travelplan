@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
-import type { Trip, Activity, FlightInfo, ChecklistItem } from '../types';
+import type { Trip, Activity, FlightInfo, ChecklistItem, HotelInfo } from '../types';
 import { activityService } from '../services/activityService';
 import { tripService } from '../services/tripService';
 import { format, eachDayOfInterval, isSameDay } from 'date-fns';
@@ -10,6 +10,8 @@ import { MapPin, ArrowLeft, Plus, Utensils, Bed, Car, Camera, Calendar, Edit2, T
 import CreateActivityModal from '../components/CreateActivityModal';
 import CreateFlightModal from '../components/CreateFlightModal';
 import FlightCard from '../components/FlightCard';
+import CreateHotelModal from '../components/CreateHotelModal';
+import HotelCard from '../components/HotelCard';
 import ConfirmDialog from '../components/ConfirmDialog';
 import ActivityDetailModal from '../components/ActivityDetailModal';
 
@@ -31,6 +33,15 @@ export default function TripDetail() {
         type: 'outbound' | 'return';
         data?: FlightInfo;
     }>({ isOpen: false, type: 'outbound' });
+    const [hotelModal, setHotelModal] = useState<{
+        isOpen: boolean;
+        data?: HotelInfo;
+    }>({ isOpen: false });
+    const [deleteHotelConfirm, setDeleteHotelConfirm] = useState<{
+        isOpen: boolean;
+        hotelId: string;
+        hotelName: string;
+    }>({ isOpen: false, hotelId: '', hotelName: '' });
     const [deleteActivityConfirm, setDeleteActivityConfirm] = useState<{
         isOpen: boolean;
         activityId: string;
@@ -131,6 +142,29 @@ export default function TripDetail() {
         await tripService.updateTrip(trip.id, updates);
     };
 
+    const handleSaveHotel = async (hotelData: HotelInfo) => {
+        if (!trip) return;
+        const currentHotels = trip.hotels || [];
+        const existingIndex = currentHotels.findIndex(h => h.id === hotelData.id);
+
+        let newHotels;
+        if (existingIndex >= 0) {
+            newHotels = [...currentHotels];
+            newHotels[existingIndex] = hotelData;
+        } else {
+            newHotels = [...currentHotels, hotelData];
+        }
+
+        await tripService.updateTrip(trip.id, { hotels: newHotels });
+    };
+
+    const handleDeleteHotel = async (hotelId: string) => {
+        if (!trip) return;
+        const currentHotels = trip.hotels || [];
+        const newHotels = currentHotels.filter(h => h.id !== hotelId);
+        await tripService.updateTrip(trip.id, { hotels: newHotels });
+    };
+
     if (loading || !trip) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -144,7 +178,7 @@ export default function TripDetail() {
     const days = eachDayOfInterval({ start: tripStartDate, end: tripEndDate });
 
     const currentDayActivities = activities.filter(a =>
-        activeTab !== 'overview' && isSameDay(a.startTime.toDate(), new Date(activeTab))
+        activeTab !== 'overview' && activeTab !== 'hotels' && isSameDay(a.startTime.toDate(), new Date(activeTab))
     );
 
     const getActivityIcon = (type: string) => {
@@ -184,35 +218,49 @@ export default function TripDetail() {
                         </div>
                     </div>
 
-                    {/* Days/Tabs Navigation */}
-                    <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 scrollbar-hide">
-                        {/* Flight/Overview Tab */}
-                        <button
-                            onClick={() => setActiveTab('overview')}
-                            className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'overview'
-                                ? 'bg-blue-600 text-white shadow-md'
-                                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
-                                }`}
-                        >
-                            總覽 (機票)
-                        </button>
+                    {/* Tabs Navigation */}
+                    <div className="flex flex-col gap-3 mb-6">
+                        {/* First Row: Categories */}
+                        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1">
+                            <button
+                                onClick={() => setActiveTab('overview')}
+                                className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'overview'
+                                    ? 'bg-blue-600 text-white shadow-md'
+                                    : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                                    }`}
+                            >
+                                機票
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('hotels')}
+                                className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'hotels'
+                                    ? 'bg-blue-600 text-white shadow-md'
+                                    : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                                    }`}
+                            >
+                                飯店
+                            </button>
+                        </div>
 
-                        {days.map((day, index) => {
-                            const dateStr = format(day, 'yyyy-MM-dd');
-                            const isActive = activeTab === dateStr;
-                            return (
-                                <button
-                                    key={dateStr}
-                                    onClick={() => setActiveTab(dateStr)}
-                                    className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${isActive
-                                        ? 'bg-blue-600 text-white shadow-md'
-                                        : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
-                                        }`}
-                                >
-                                    第 {index + 1} 天 <span className="opacity-75 text-xs ml-1">({format(day, 'MM/dd')})</span>
-                                </button>
-                            );
-                        })}
+                        {/* Second Row: Days */}
+                        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-2">
+                            {days.map((day, index) => {
+                                const dateStr = format(day, 'yyyy-MM-dd');
+                                const isActive = activeTab === dateStr;
+                                return (
+                                    <button
+                                        key={dateStr}
+                                        onClick={() => setActiveTab(dateStr)}
+                                        className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${isActive
+                                            ? 'bg-blue-600 text-white shadow-md'
+                                            : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                                            }`}
+                                    >
+                                        第 {index + 1} 天 <span className="opacity-75 text-xs ml-1">({format(day, 'MM/dd')})</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -288,6 +336,37 @@ export default function TripDetail() {
                                 </div>
                             )}
                         </div>
+                    </div>
+                ) : activeTab === 'hotels' ? (
+                    <div className="space-y-6">
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                                <span className="w-2 h-6 bg-indigo-500 rounded-full" />
+                                飯店資訊
+                            </h2>
+                            <button
+                                onClick={() => setHotelModal({ isOpen: true })}
+                                className="text-sm text-blue-600 font-medium hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
+                            >
+                                <Plus className="w-4 h-4" /> 新增飯店
+                            </button>
+                        </div>
+                        {trip.hotels && trip.hotels.length > 0 ? (
+                            <div className="grid grid-cols-1 gap-4">
+                                {trip.hotels.map(hotel => (
+                                    <HotelCard
+                                        key={hotel.id}
+                                        hotel={hotel}
+                                        onEdit={() => setHotelModal({ isOpen: true, data: hotel })}
+                                        onDelete={() => setDeleteHotelConfirm({ isOpen: true, hotelId: hotel.id, hotelName: hotel.name })}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="p-8 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center text-gray-400 bg-gray-50/50">
+                                <p className="text-sm">尚未新增飯店資訊</p>
+                            </div>
+                        )}
                     </div>
                 ) : (
                     // Itinerary View
@@ -412,7 +491,7 @@ export default function TripDetail() {
                     setEditingActivity(null);
                 }}
                 onSubmit={handleActivitySubmit}
-                selectedDate={activeTab === 'overview' ? tripStartDate : new Date(activeTab)}
+                selectedDate={activeTab === 'overview' || activeTab === 'hotels' ? tripStartDate : new Date(activeTab)}
                 initialData={editingActivity}
             />
 
@@ -422,6 +501,24 @@ export default function TripDetail() {
                 onSubmit={handleSaveFlight}
                 initialData={flightModal.data}
                 type={flightModal.type}
+            />
+
+            <CreateHotelModal
+                isOpen={hotelModal.isOpen}
+                onClose={() => setHotelModal({ isOpen: false })}
+                onSubmit={handleSaveHotel}
+                initialData={hotelModal.data}
+            />
+
+            <ConfirmDialog
+                isOpen={deleteHotelConfirm.isOpen}
+                title="刪除飯店資訊"
+                message={`確定要刪除「${deleteHotelConfirm.hotelName}」嗎？`}
+                onConfirm={() => {
+                    handleDeleteHotel(deleteHotelConfirm.hotelId);
+                    setDeleteHotelConfirm({ isOpen: false, hotelId: '', hotelName: '' });
+                }}
+                onCancel={() => setDeleteHotelConfirm({ isOpen: false, hotelId: '', hotelName: '' })}
             />
 
             {/* Delete Activity Confirmation Dialog */}
