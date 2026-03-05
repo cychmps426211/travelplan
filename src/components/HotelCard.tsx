@@ -55,10 +55,15 @@ export default function HotelCard({ hotel, onEdit, onDelete }: HotelCardProps) {
                     <div>
                         <h3 className="text-lg font-bold text-gray-900">{hotel.name}</h3>
                         {hotel.address && (
-                            <div className="flex items-center gap-1.5 text-gray-600 text-sm mt-1">
+                            <a
+                                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hotel.address)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1.5 text-blue-600 hover:text-blue-800 text-sm mt-1 hover:underline w-fit"
+                            >
                                 <MapPin className="w-4 h-4 shrink-0" />
                                 <span className="line-clamp-1">{hotel.address}</span>
-                            </div>
+                            </a>
                         )}
                     </div>
                 </div>
@@ -105,6 +110,21 @@ export default function HotelCard({ hotel, onEdit, onDelete }: HotelCardProps) {
                                 <p className="leading-relaxed whitespace-pre-wrap">{hotel.notes}</p>
                             </div>
                         )}
+                    </div>
+                )}
+
+                {hotel.address && (
+                    <div className="mt-5 h-48 w-full rounded-xl overflow-hidden border border-gray-200">
+                        <iframe
+                            title={`${hotel.name} map`}
+                            width="100%"
+                            height="100%"
+                            style={{ border: 0 }}
+                            loading="lazy"
+                            allowFullScreen
+                            referrerPolicy="no-referrer-when-downgrade"
+                            src={`https://maps.google.com/maps?q=${encodeURIComponent(hotel.address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                        ></iframe>
                     </div>
                 )}
             </div>
