@@ -52,9 +52,17 @@ export default function TripDetail() {
 
     useEffect(() => {
         const handleScroll = () => {
-            setIsScrolled(window.scrollY > 20);
+            setIsScrolled(prev => {
+                if (prev) {
+                    return window.scrollY > 20;
+                } else {
+                    // 只有當頁面內容夠長時，才允許縮小 Header，避免短內容產生上下跳動的迴圈
+                    const hasEnoughContent = document.documentElement.scrollHeight > window.innerHeight + 150;
+                    return window.scrollY > 20 && hasEnoughContent;
+                }
+            });
         };
-        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
@@ -234,8 +242,8 @@ export default function TripDetail() {
                     <div className="flex flex-col">
                         {/* First Row: Categories */}
                         <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isScrolled && activeTab !== 'overview' && activeTab !== 'hotels'
-                                ? 'max-h-0 opacity-0 !mb-0'
-                                : 'max-h-[60px] opacity-100 mb-3'
+                            ? 'max-h-0 opacity-0 !mb-0'
+                            : 'max-h-[60px] opacity-100 mb-3'
                             }`}>
                             <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1">
                                 <button
@@ -261,8 +269,8 @@ export default function TripDetail() {
 
                         {/* Second Row: Days */}
                         <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isScrolled && (activeTab === 'overview' || activeTab === 'hotels')
-                                ? 'max-h-0 opacity-0 !mb-0'
-                                : 'max-h-[60px] opacity-100 pb-1'
+                            ? 'max-h-0 opacity-0 !mb-0'
+                            : 'max-h-[60px] opacity-100 pb-1'
                             }`}>
                             <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-2">
                                 {days.map((day, index) => {
@@ -288,7 +296,7 @@ export default function TripDetail() {
             </div>
 
             {/* Content Area */}
-            <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-8">
+            <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-8 pb-32">
                 {activeTab === 'overview' ? (
                     <div className="space-y-6">
                         {/* Outbound */}
