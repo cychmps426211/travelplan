@@ -53,12 +53,15 @@ export default function TripDetail() {
     useEffect(() => {
         const handleScroll = () => {
             setIsScrolled(prev => {
+                const SCROLL_THRESHOLD = 30;
                 if (prev) {
-                    return window.scrollY > 20;
+                    return window.scrollY > SCROLL_THRESHOLD;
                 } else {
-                    // 只有當頁面內容夠長時，才允許縮小 Header，避免短內容產生上下跳動的迴圈
-                    const hasEnoughContent = document.documentElement.scrollHeight > window.innerHeight + 150;
-                    return window.scrollY > 20 && hasEnoughContent;
+                    // Header 縮小大約會短縮 250px 左右的高度
+                    // 如果剩餘長度不夠（低於縮去的高度），就會觸發瀏覽器強迫捲動回彈，導致死循環
+                    // 所以將閾值提高到 450px，確保下方至少還有半個螢幕的內容時才開始縮縮 Header
+                    const hasEnoughContent = document.documentElement.scrollHeight > window.innerHeight + 450;
+                    return window.scrollY > SCROLL_THRESHOLD && hasEnoughContent;
                 }
             });
         };
