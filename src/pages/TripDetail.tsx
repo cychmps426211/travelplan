@@ -298,7 +298,7 @@ export default function TripDetail() {
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col">
             {/* Header */}
-            <div className={`bg-white border-b border-slate-200 sticky top-0 z-10 transition-shadow duration-300 ${isScrolled ? 'shadow-sm' : ''}`}>
+            <div className={`bg-white border-b border-slate-200 sticky top-0 z-40 transition-shadow duration-300 ${isScrolled ? 'shadow-sm' : ''}`}>
                 <div className={`max-w-4xl mx-auto px-4 transition-all duration-300 ${isScrolled ? 'py-3' : 'py-4'}`}>
                     {/* Top Section to Hide */}
                     <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isScrolled ? 'max-h-0 opacity-0 mb-0' : 'max-h-[200px] opacity-100 mb-6'}`}>
