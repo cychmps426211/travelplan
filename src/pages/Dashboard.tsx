@@ -4,7 +4,7 @@ import { tripService } from '../services/tripService';
 import type { Trip } from '../types';
 import TripCard from '../components/TripCard';
 import CreateTripModal from '../components/CreateTripModal';
-import { Plus, Map, LogOut, Loader2 } from 'lucide-react';
+import { Plus, Map, LogOut, Loader2, RefreshCw } from 'lucide-react';
 
 export default function Dashboard() {
     const { user, logout } = useAuth();
@@ -130,6 +130,30 @@ export default function Dashboard() {
                                         >
                                             <LogOut className="w-4 h-4" />
                                             登出
+                                        </button>
+                                        <button
+                                            onClick={async () => {
+                                                setIsMenuOpen(false);
+                                                if ('caches' in window) {
+                                                    try {
+                                                        const cacheNames = await caches.keys();
+                                                        await Promise.all(cacheNames.map(name => caches.delete(name)));
+                                                    } catch (err) { }
+                                                }
+                                                if ('serviceWorker' in navigator) {
+                                                    try {
+                                                        const registrations = await navigator.serviceWorker.getRegistrations();
+                                                        for (const registration of registrations) {
+                                                            await registration.unregister();
+                                                        }
+                                                    } catch (err) { }
+                                                }
+                                                window.location.reload();
+                                            }}
+                                            className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm text-gray-600 hover:bg-gray-50 transition-colors border-t border-gray-100"
+                                        >
+                                            <RefreshCw className="w-4 h-4" />
+                                            清除快取並重新載入
                                         </button>
                                     </div>
                                 )}
