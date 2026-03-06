@@ -220,6 +220,18 @@ export default function TripDetail() {
         await tripService.updateTrip(trip.id, { planItems: newItems });
     };
 
+    const handleTogglePlanItemSchedule = async (item: PlanItem, isScheduled: boolean) => {
+        if (!trip) return;
+        const currentItems = trip.planItems || [];
+        const existingIndex = currentItems.findIndex(i => i.id === item.id);
+        if (existingIndex < 0) return;
+
+        const newItems = [...currentItems];
+        newItems[existingIndex] = { ...item, isScheduled };
+
+        await tripService.updateTrip(trip.id, { planItems: newItems });
+    };
+
     if (loading || !trip) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -461,14 +473,20 @@ export default function TripDetail() {
                         </div>
                         {trip.planItems && trip.planItems.length > 0 ? (
                             <div className="grid grid-cols-1 gap-4">
-                                {trip.planItems.map(item => (
-                                    <PlanItemCard
-                                        key={item.id}
-                                        item={item}
-                                        onEdit={() => setPlanItemModal({ isOpen: true, data: item })}
-                                        onDelete={() => setDeletePlanItemConfirm({ isOpen: true, itemId: item.id, itemName: item.name })}
-                                    />
-                                ))}
+                                {[...trip.planItems]
+                                    .sort((a, b) => {
+                                        if (a.isScheduled === b.isScheduled) return 0;
+                                        return a.isScheduled ? 1 : -1;
+                                    })
+                                    .map(item => (
+                                        <PlanItemCard
+                                            key={item.id}
+                                            item={item}
+                                            onEdit={() => setPlanItemModal({ isOpen: true, data: item })}
+                                            onDelete={() => setDeletePlanItemConfirm({ isOpen: true, itemId: item.id, itemName: item.name })}
+                                            onToggleSchedule={(isScheduled) => handleTogglePlanItemSchedule(item, isScheduled)}
+                                        />
+                                    ))}
                             </div>
                         ) : (
                             <div className="p-8 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center text-gray-400 bg-gray-50/50">
