@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Loader2, Navigation2 } from 'lucide-react';
+import { X, Loader2, Navigation2, Plus, Trash2 } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
 import {
     getTravelDuration,
@@ -45,7 +45,8 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
         travelMode: 'TRANSIT' as TravelModeType,
         transitModes: [] as TransitModeType[],
         transitRoutingPreference: '' as TransitRoutingPreference | '',
-        notes: ''
+        notes: '',
+        urls: [''] as string[]
     });
 
     const handleFetchDuration = async () => {
@@ -77,6 +78,29 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
         }
     };
 
+    const addUrlField = () => {
+        setFormData(prev => ({ ...prev, urls: [...prev.urls, ''] }));
+    };
+
+    const removeUrlField = (index: number) => {
+        setFormData(prev => {
+            const newUrls = [...prev.urls];
+            newUrls.splice(index, 1);
+            if (newUrls.length === 0) {
+                newUrls.push('');
+            }
+            return { ...prev, urls: newUrls };
+        });
+    };
+
+    const updateUrlField = (index: number, value: string) => {
+        setFormData(prev => {
+            const newUrls = [...prev.urls];
+            newUrls[index] = value;
+            return { ...prev, urls: newUrls };
+        });
+    };
+
     const handleTransitModeToggle = (mode: TransitModeType) => {
         setFormData(prev => {
             const currentModes = prev.transitModes;
@@ -102,7 +126,8 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                 travelMode: 'TRANSIT' as TravelModeType,
                 transitModes: [] as TransitModeType[],
                 transitRoutingPreference: '' as TransitRoutingPreference | '',
-                notes: initialData.notes || ''
+                notes: initialData.notes || '',
+                urls: initialData.urls && initialData.urls.length > 0 ? initialData.urls : [''] as string[]
             });
         } else {
             setFormData({
@@ -117,7 +142,8 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                 travelMode: 'TRANSIT' as TravelModeType,
                 transitModes: [] as TransitModeType[],
                 transitRoutingPreference: '' as TransitRoutingPreference | '',
-                notes: ''
+                notes: '',
+                urls: [''] as string[]
             });
         }
     }, [initialData, isOpen]);
@@ -174,6 +200,12 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
             if (formData.notes && formData.notes.trim()) {
                 activityData.notes = formData.notes.trim();
             }
+            const filteredUrls = formData.urls.filter(url => url.trim() !== '');
+            if (filteredUrls.length > 0) {
+                activityData.urls = filteredUrls;
+            } else {
+                activityData.urls = [];
+            }
 
             await onSubmit(activityData);
             onClose();
@@ -189,7 +221,8 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                 travelMode: 'TRANSIT' as TravelModeType,
                 transitModes: [] as TransitModeType[],
                 transitRoutingPreference: '' as TransitRoutingPreference | '',
-                notes: ''
+                notes: '',
+                urls: [''] as string[]
             });
         } catch (error) {
             console.error(error);
@@ -388,6 +421,41 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                                 onChange={e => setFormData({ ...formData, endTime: e.target.value })}
                             />
                         </div>
+                    </div>
+
+                    {/* 參考網址 */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                            參考網址 (選填)
+                        </label>
+                        <div className="space-y-2">
+                            {formData.urls.map((url, index) => (
+                                <div key={index} className="flex gap-2">
+                                    <input
+                                        type="url"
+                                        value={url}
+                                        onChange={(e) => updateUrlField(index, e.target.value)}
+                                        className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                        placeholder="https://"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => removeUrlField(index)}
+                                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-transparent"
+                                    >
+                                        <Trash2 className="w-5 h-5" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                        <button
+                            type="button"
+                            onClick={addUrlField}
+                            className="mt-2 text-sm text-blue-600 font-medium hover:text-blue-700 flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors"
+                        >
+                            <Plus className="w-4 h-4" />
+                            新增網址
+                        </button>
                     </div>
 
                     <div>
