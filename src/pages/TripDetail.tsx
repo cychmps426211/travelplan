@@ -610,7 +610,7 @@ export default function TripDetail() {
                                         </div>
 
                                         {/* Edit/Move/Delete Actions */}
-                                        <div className="absolute right-2 top-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div className="absolute right-3 top-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 backdrop-blur-sm p-1 rounded-xl shadow-sm border border-slate-100">
                                             <button
                                                 type="button"
                                                 onClick={(e) => {
