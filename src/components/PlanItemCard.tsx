@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MapPin, Link as LinkIcon, Edit2, Trash2, ChevronDown, ChevronUp, AlignLeft } from 'lucide-react';
+import { MapPin, Link as LinkIcon, Edit2, Trash2, ChevronDown, ChevronUp, AlignLeft, CalendarPlus } from 'lucide-react';
 import type { PlanItem } from '../types';
 
 interface PlanItemCardProps {
@@ -7,9 +7,10 @@ interface PlanItemCardProps {
     onEdit: () => void;
     onDelete: () => void;
     onToggleSchedule: (isScheduled: boolean) => void;
+    onAddToItinerary?: () => void;
 }
 
-export default function PlanItemCard({ item, onEdit, onDelete, onToggleSchedule }: PlanItemCardProps) {
+export default function PlanItemCard({ item, onEdit, onDelete, onToggleSchedule, onAddToItinerary }: PlanItemCardProps) {
     const [isExpanded, setIsExpanded] = useState(false);
 
     return (
@@ -123,6 +124,22 @@ export default function PlanItemCard({ item, onEdit, onDelete, onToggleSchedule 
                     {!item.location && (!item.urls || item.urls.length === 0) && !item.notes && (
                         <div className="text-sm text-gray-400 italic py-2">
                             無其他詳細資訊
+                        </div>
+                    )}
+
+                    {/* Add to Itinerary Button */}
+                    {!item.isScheduled && onAddToItinerary && (
+                        <div className="pt-2 mt-2 border-t border-gray-200 border-dashed">
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onAddToItinerary();
+                                }}
+                                className="w-full py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm"
+                            >
+                                <CalendarPlus className="w-4 h-4" />
+                                加入行程
+                            </button>
                         </div>
                     )}
                 </div>

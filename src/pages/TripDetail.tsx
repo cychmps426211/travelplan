@@ -60,6 +60,10 @@ export default function TripDetail() {
         activityId: string;
         activityTitle: string;
     }>({ isOpen: false, activityId: '', activityTitle: '' });
+    const [addPlanItemToItinerary, setAddPlanItemToItinerary] = useState<{
+        isOpen: boolean;
+        planItem: PlanItem | null;
+    }>({ isOpen: false, planItem: null });
     const [moveActivityModal, setMoveActivityModal] = useState<{
         isOpen: boolean;
         activity: Activity | null;
@@ -127,6 +131,10 @@ export default function TripDetail() {
                 await activityService.updateActivity(id, editingActivity.id, activityData);
             } else {
                 await activityService.addActivity(id, activityData);
+            }
+            if (addPlanItemToItinerary.isOpen && addPlanItemToItinerary.planItem) {
+                await handleTogglePlanItemSchedule(addPlanItemToItinerary.planItem, true);
+                setAddPlanItemToItinerary({ isOpen: false, planItem: null });
             }
             setIsActivityModalOpen(false);
             setEditingActivity(null);
@@ -522,6 +530,7 @@ export default function TripDetail() {
                                             onEdit={() => setPlanItemModal({ isOpen: true, data: item })}
                                             onDelete={() => setDeletePlanItemConfirm({ isOpen: true, itemId: item.id, itemName: item.name })}
                                             onToggleSchedule={(isScheduled) => handleTogglePlanItemSchedule(item, isScheduled)}
+                                            onAddToItinerary={() => setAddPlanItemToItinerary({ isOpen: true, planItem: item })}
                                         />
                                     ))}
                             </div>
@@ -659,14 +668,22 @@ export default function TripDetail() {
             </main>
 
             <CreateActivityModal
-                isOpen={isActivityModalOpen}
+                isOpen={isActivityModalOpen || addPlanItemToItinerary.isOpen}
                 onClose={() => {
                     setIsActivityModalOpen(false);
                     setEditingActivity(null);
+                    setAddPlanItemToItinerary({ isOpen: false, planItem: null });
                 }}
                 onSubmit={handleActivitySubmit}
                 selectedDate={activeTab === 'overview' || activeTab === 'hotels' || activeTab === 'planItems' ? tripStartDate : new Date(activeTab)}
-                initialData={editingActivity}
+                initialData={addPlanItemToItinerary.isOpen && addPlanItemToItinerary.planItem ? {
+                    title: addPlanItemToItinerary.planItem.name,
+                    location: addPlanItemToItinerary.planItem.location,
+                    urls: addPlanItemToItinerary.planItem.urls,
+                    notes: addPlanItemToItinerary.planItem.notes,
+                    type: 'sightseeing'
+                } : editingActivity}
+                availableDays={addPlanItemToItinerary.isOpen ? days : undefined}
             />
 
             <CreateFlightModal
