@@ -34,6 +34,7 @@ export interface PlanItem {
     location?: string;
     urls?: string[];
     notes?: string;
+    isScheduled?: boolean;
 }
 
 export interface Trip {
