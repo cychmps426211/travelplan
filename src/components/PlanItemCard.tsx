@@ -50,7 +50,7 @@ export default function PlanItemCard({ item, onEdit, onDelete, onToggleSchedule 
             <div
                 className={`p-4 flex items-start gap-4 transition-colors hover:bg-gray-50/50 ${isExpanded ? 'border-b border-gray-100' : ''}`}
             >
-                <div className="pt-0.5 z-10">
+                <div className="pt-0.5">
                     <input
                         type="checkbox"
                         checked={item.isScheduled || false}
