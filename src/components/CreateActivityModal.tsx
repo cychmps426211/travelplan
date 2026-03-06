@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Loader2, Navigation2, Plus, Trash2 } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
+import { format } from 'date-fns';
 import {
     getTravelDuration,
     TRAVEL_MODE_OPTIONS,
@@ -19,6 +20,7 @@ interface CreateActivityModalProps {
     onSubmit: (data: any) => Promise<void>;
     selectedDate: Date | null;
     initialData?: any;
+    availableDays?: Date[];
 }
 
 const ACTIVITY_TYPES = [
@@ -30,9 +32,10 @@ const ACTIVITY_TYPES = [
     { value: 'other', label: '其他', icon: '📍' }
 ];
 
-export default function CreateActivityModal({ isOpen, onClose, onSubmit, selectedDate, initialData }: CreateActivityModalProps) {
+export default function CreateActivityModal({ isOpen, onClose, onSubmit, selectedDate, initialData, availableDays }: CreateActivityModalProps) {
     const [loading, setLoading] = useState(false);
     const [fetchingDuration, setFetchingDuration] = useState(false);
+    const [selectedDayString, setSelectedDayString] = useState<string>('');
     const [formData, setFormData] = useState({
         title: '',
         type: 'sightseeing',
@@ -113,6 +116,9 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
     };
 
     useEffect(() => {
+        if (selectedDate) {
+            setSelectedDayString(format(selectedDate, 'yyyy-MM-dd'));
+        }
         if (initialData) {
             setFormData({
                 title: initialData.title,
@@ -152,17 +158,22 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedDate) return;
+
+        const targetDate = availableDays && availableDays.length > 0 && selectedDayString
+            ? new Date(selectedDayString)
+            : selectedDate;
+
+        if (!targetDate) return;
 
         setLoading(true);
         try {
-            // Construct standard Javascript Date objects combining selectedDate (year/month/day) with time input (hours/minutes)
+            // Construct standard Javascript Date objects combining targetDate (year/month/day) with time input (hours/minutes)
             const [startHour, startMinute] = formData.startTime.split(':');
-            const startDate = new Date(selectedDate);
+            const startDate = new Date(targetDate);
             startDate.setHours(parseInt(startHour), parseInt(startMinute));
 
             const [endHour, endMinute] = formData.endTime.split(':');
-            const endDate = new Date(selectedDate);
+            const endDate = new Date(targetDate);
             endDate.setHours(parseInt(endHour), parseInt(endMinute));
 
             // Build activity data, only including optional fields if they have values
@@ -238,13 +249,32 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex justify-between items-center p-6 border-b border-gray-100 sticky top-0 bg-white z-10">
-                    <h2 className="text-xl font-bold text-gray-800">{initialData ? '編輯活動' : '新增活動'}</h2>
+                    <h2 className="text-xl font-bold text-gray-800">{initialData && !availableDays ? '編輯活動' : '新增活動'}</h2>
                     <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                         <X className="w-5 h-5 text-gray-500" />
                     </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                    {availableDays && availableDays.length > 0 && (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">選擇日期</label>
+                            <select
+                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                value={selectedDayString}
+                                onChange={e => setSelectedDayString(e.target.value)}
+                                required
+                            >
+                                <option value="" disabled>請選擇日期</option>
+                                {availableDays.map((day, index) => (
+                                    <option key={index} value={format(day, 'yyyy-MM-dd')}>
+                                        第 {index + 1} 天 ({format(day, 'MM/dd')})
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">標題</label>
                         <input
