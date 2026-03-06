@@ -91,7 +91,7 @@ export default function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"></div>
 
                     {/* Action Buttons - Always visible */}
-                    <div className="absolute top-3 right-3 flex gap-2 z-50">
+                    <div className="absolute top-3 right-3 flex gap-2 z-10">
                         <button
                             type="button"
                             onClick={handleEditClick}
