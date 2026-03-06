@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, MapPin, Clock, FileText, Utensils, Bed, Car, Camera, Tag, Navigation, ExternalLink, Plus, Trash2, Check, Edit2, ListChecks } from 'lucide-react';
+import { X, MapPin, Clock, FileText, Utensils, Bed, Car, Camera, Tag, Navigation, ExternalLink, Plus, Trash2, Check, Edit2, ListChecks, Link as LinkIcon } from 'lucide-react';
 import type { Activity, ChecklistItem } from '../types';
 import { format } from 'date-fns';
 import GoogleMapRoute from './GoogleMapRoute';
@@ -267,6 +267,26 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                         </div>
                     )}
 
+                    {/* URLs Section */}
+                    {activity.urls && activity.urls.length > 0 && (
+                        <div className="flex items-start gap-3 text-gray-700">
+                            <LinkIcon className="w-5 h-5 text-blue-500 mt-0.5 shrink-0" />
+                            <div className="flex flex-col gap-1.5 pt-0.5">
+                                {activity.urls.map((url, index) => (
+                                    <a
+                                        key={index}
+                                        href={url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-600 hover:text-blue-800 hover:underline w-fit"
+                                    >
+                                        參考網頁 {index + 1}
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     {/* Checklist Section */}
                     {onUpdateChecklist && (
                         <div className="space-y-3">
@@ -286,8 +306,8 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                                     <div
                                         key={item.id}
                                         className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${item.completed
-                                                ? 'bg-green-50 border-green-200'
-                                                : 'bg-white border-gray-200 hover:border-gray-300'
+                                            ? 'bg-green-50 border-green-200'
+                                            : 'bg-white border-gray-200 hover:border-gray-300'
                                             }`}
                                     >
                                         {editingItemId === item.id ? (
@@ -325,8 +345,8 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                                                     onClick={() => handleToggleItem(item.id)}
                                                     disabled={isUpdating}
                                                     className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${item.completed
-                                                            ? 'bg-green-500 border-green-500 text-white'
-                                                            : 'border-gray-300 hover:border-green-400'
+                                                        ? 'bg-green-500 border-green-500 text-white'
+                                                        : 'border-gray-300 hover:border-green-400'
                                                         }`}
                                                 >
                                                     {item.completed && <Check className="w-3 h-3" />}

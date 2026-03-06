@@ -51,7 +51,11 @@ export default function CreatePlanItemModal({ isOpen, onClose, onSubmit, initial
             };
 
             if (location.trim()) newItem.location = location.trim();
-            if (filteredUrls.length > 0) newItem.urls = filteredUrls;
+            if (filteredUrls.length > 0) {
+                newItem.urls = filteredUrls;
+            } else {
+                newItem.urls = [];
+            }
             if (notes.trim()) newItem.notes = notes.trim();
 
             await onSubmit(newItem);
