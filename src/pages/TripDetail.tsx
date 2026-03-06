@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, Timestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import type { Trip, Activity, FlightInfo, ChecklistItem, HotelInfo } from '../types';
 import { activityService } from '../services/activityService';
 import { tripService } from '../services/tripService';
 import { format, eachDayOfInterval, isSameDay } from 'date-fns';
-import { MapPin, ArrowLeft, Plus, Utensils, Bed, Car, Camera, Calendar, Edit2, Trash2 } from 'lucide-react';
+import { MapPin, ArrowLeft, Plus, Utensils, Bed, Car, Camera, Calendar, Edit2, Trash2, ArrowRight } from 'lucide-react';
 import CreateActivityModal from '../components/CreateActivityModal';
 import CreateFlightModal from '../components/CreateFlightModal';
 import FlightCard from '../components/FlightCard';
@@ -16,6 +16,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import ActivityDetailModal from '../components/ActivityDetailModal';
 import CreatePlanItemModal from '../components/CreatePlanItemModal';
 import PlanItemCard from '../components/PlanItemCard';
+import MoveActivityModal from '../components/MoveActivityModal';
 import type { PlanItem } from '../types';
 
 type Tab = 'overview' | string; // string will be ISO date
@@ -59,6 +60,10 @@ export default function TripDetail() {
         activityId: string;
         activityTitle: string;
     }>({ isOpen: false, activityId: '', activityTitle: '' });
+    const [moveActivityModal, setMoveActivityModal] = useState<{
+        isOpen: boolean;
+        activity: Activity | null;
+    }>({ isOpen: false, activity: null });
     const [selectedActivityForDetail, setSelectedActivityForDetail] = useState<Activity | null>(null);
     const [isScrolled, setIsScrolled] = useState(false);
 
@@ -138,6 +143,38 @@ export default function TripDetail() {
         } catch (error) {
             console.error("Error deleting activity: ", error);
             alert("刪除活動失敗");
+        }
+    };
+
+    const handleMoveActivity = async (activityId: string, targetDate: Date) => {
+        if (!id || !moveActivityModal.activity) return;
+        try {
+            const activity = moveActivityModal.activity;
+            const originalStart = activity.startTime.toDate();
+
+            const newStart = new Date(originalStart);
+            newStart.setFullYear(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+
+            let newEnd: Date | undefined;
+            if (activity.endTime) {
+                const originalEnd = activity.endTime.toDate();
+                newEnd = new Date(originalEnd);
+
+                // Keep the original duration or same day logic
+                // Typically if it's the same day, move both to the target date.
+                // If it spans multiple days, we might just preserve the length. 
+                // For simplicity, just set the start date, and shift the end date by same amount of ms.
+                const diffTime = originalEnd.getTime() - originalStart.getTime();
+                newEnd.setTime(newStart.getTime() + diffTime);
+            }
+
+            await activityService.updateActivity(id, activityId, {
+                startTime: Timestamp.fromDate(newStart),
+                ...(newEnd ? { endTime: Timestamp.fromDate(newEnd) } : {})
+            });
+        } catch (error) {
+            console.error("Error moving activity: ", error);
+            alert("移動活動失敗");
         }
     };
 
@@ -572,7 +609,7 @@ export default function TripDetail() {
                                             </div>
                                         </div>
 
-                                        {/* Edit/Delete Actions */}
+                                        {/* Edit/Move/Delete Actions */}
                                         <div className="absolute right-2 top-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <button
                                                 type="button"
@@ -585,6 +622,17 @@ export default function TripDetail() {
                                                 title="編輯"
                                             >
                                                 <Edit2 className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setMoveActivityModal({ isOpen: true, activity });
+                                                }}
+                                                className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                                title="移動"
+                                            >
+                                                <ArrowRight className="w-4 h-4" />
                                             </button>
                                             <button
                                                 type="button"
@@ -682,6 +730,15 @@ export default function TripDetail() {
                 activity={selectedActivityForDetail}
                 onClose={() => setSelectedActivityForDetail(null)}
                 onUpdateChecklist={handleUpdateChecklist}
+            />
+
+            {/* Move Activity Modal */}
+            <MoveActivityModal
+                isOpen={moveActivityModal.isOpen}
+                onClose={() => setMoveActivityModal({ isOpen: false, activity: null })}
+                onMove={handleMoveActivity}
+                activity={moveActivityModal.activity}
+                days={days}
             />
         </div>
     );
