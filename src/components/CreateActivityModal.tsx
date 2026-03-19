@@ -260,7 +260,7 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">選擇日期</label>
                             <select
-                                className="w-full px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                className="w-full px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                                 value={selectedDayString}
                                 onChange={e => setSelectedDayString(e.target.value)}
                                 required
@@ -280,7 +280,7 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                         <input
                             type="text"
                             required
-                            className="w-full px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                            className="w-full px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                             placeholder="例如：參觀淺草寺"
                             value={formData.title}
                             onChange={e => setFormData({ ...formData, title: e.target.value })}
@@ -291,7 +291,7 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">類型</label>
                             <select
-                                className="w-full px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                className="w-full px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                                 value={formData.type}
                                 onChange={e => setFormData({ ...formData, type: e.target.value })}
                             >
@@ -305,7 +305,7 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">位置 (選填)</label>
                                 <input
                                     type="text"
-                                    className="w-full px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                    className="w-full px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                                     placeholder="例如：淺草站"
                                     value={formData.location}
                                     onChange={e => setFormData({ ...formData, location: e.target.value })}
@@ -323,7 +323,7 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">出發地點 (選填)</label>
                                     <input
                                         type="text"
-                                        className="w-full px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                        className="w-full px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                                         placeholder="例如：東京車站"
                                         value={formData.departureLocation}
                                         onChange={e => setFormData({ ...formData, departureLocation: e.target.value })}
@@ -333,7 +333,7 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">到達地點 (選填)</label>
                                     <input
                                         type="text"
-                                        className="w-full px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                        className="w-full px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                                         placeholder="例如：大阪站"
                                         value={formData.arrivalLocation}
                                         onChange={e => setFormData({ ...formData, arrivalLocation: e.target.value })}
@@ -388,7 +388,7 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">路線偏好</label>
                                         <select
-                                            className="w-full px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                            className="w-full px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                                             value={formData.transitRoutingPreference}
                                             onChange={e => setFormData({ ...formData, transitRoutingPreference: e.target.value as TransitRoutingPreference | '' })}
                                         >
@@ -406,7 +406,7 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                                     <input
                                         type="number"
                                         min="0"
-                                        className="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                        className="flex-1 px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                                         placeholder="例如：120"
                                         value={formData.estimatedDuration}
                                         onChange={e => setFormData({ ...formData, estimatedDuration: e.target.value })}
@@ -415,7 +415,7 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                                         type="button"
                                         disabled={!formData.departureLocation || !formData.arrivalLocation || fetchingDuration}
                                         onClick={handleFetchDuration}
-                                        className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap"
+                                        className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 dark:disabled:text-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap"
                                     >
                                         {fetchingDuration ? (
                                             <><Loader2 className="w-4 h-4 animate-spin" /> 查詢中...</>
@@ -437,7 +437,7 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                             <input
                                 type="time"
                                 required
-                                className="w-full px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                className="w-full px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                                 value={formData.startTime}
                                 onChange={e => setFormData({ ...formData, startTime: e.target.value })}
                             />
@@ -446,7 +446,7 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">結束時間 (選填)</label>
                             <input
                                 type="time"
-                                className="w-full px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                className="w-full px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                                 value={formData.endTime}
                                 onChange={e => setFormData({ ...formData, endTime: e.target.value })}
                             />
@@ -465,7 +465,7 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                                         type="url"
                                         value={url}
                                         onChange={(e) => updateUrlField(index, e.target.value)}
-                                        className="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                        className="flex-1 px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                                         placeholder="https://"
                                     />
                                     <button
@@ -492,7 +492,7 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">備註 (選填)</label>
                         <textarea
                             rows={3}
-                            className="w-full px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                            className="w-full px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                             placeholder="任何細節或筆記..."
                             value={formData.notes}
                             onChange={e => setFormData({ ...formData, notes: e.target.value })}

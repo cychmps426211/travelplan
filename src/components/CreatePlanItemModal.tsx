@@ -90,7 +90,7 @@ export default function CreatePlanItemModal({ isOpen, onClose, onSubmit, initial
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-2xl w-full max-w-lg shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
-                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-800/50/50">
+                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-800/50">
                     <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">
                         {initialData ? '編輯待規劃項目' : '新增待規劃項目'}
                     </h2>
@@ -113,7 +113,7 @@ export default function CreatePlanItemModal({ isOpen, onClose, onSubmit, initial
                                 type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                className="w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-[1.5px] border-gray-300 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
                                 placeholder="例如：想去的咖啡廳"
                                 required
                             />
@@ -128,7 +128,7 @@ export default function CreatePlanItemModal({ isOpen, onClose, onSubmit, initial
                                 type="text"
                                 value={location}
                                 onChange={(e) => setLocation(e.target.value)}
-                                className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                className="w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-[1.5px] border-gray-300 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
                                 placeholder="地標名稱或地址"
                             />
                         </div>
@@ -145,7 +145,7 @@ export default function CreatePlanItemModal({ isOpen, onClose, onSubmit, initial
                                             type="url"
                                             value={url}
                                             onChange={(e) => updateUrlField(index, e.target.value)}
-                                            className="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                            className="flex-1 px-4 py-2.5 rounded-xl border bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-[1.5px] border-gray-300 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
                                             placeholder="https://"
                                         />
                                         <button
@@ -177,14 +177,14 @@ export default function CreatePlanItemModal({ isOpen, onClose, onSubmit, initial
                                 value={notes}
                                 onChange={(e) => setNotes(e.target.value)}
                                 rows={3}
-                                className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all resize-none"
+                                className="w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-[1.5px] border-gray-300 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all resize-none"
                                 placeholder="任何其他想記下的事..."
                             />
                         </div>
                     </form>
                 </div>
 
-                <div className="p-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50/50 flex justify-end gap-3">
+                <div className="p-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 flex justify-end gap-3">
                     <button
                         type="button"
                         onClick={onClose}
@@ -197,7 +197,7 @@ export default function CreatePlanItemModal({ isOpen, onClose, onSubmit, initial
                         type="submit"
                         form="planItemForm"
                         disabled={isSubmitting || !name.trim()}
-                        className="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 rounded-xl transition-colors shadow-sm"
+                        className="px-6 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 dark:disabled:bg-blue-900/50 dark:disabled:text-blue-200/50 rounded-xl transition-colors shadow-sm"
                     >
                         {isSubmitting ? '儲存中...' : '儲存'}
                     </button>
