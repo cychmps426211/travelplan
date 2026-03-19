@@ -35,7 +35,7 @@ export default function Login() {
                     <div className="bg-blue-100 p-4 rounded-full inline-block mb-4">
                         <Plane className="w-12 h-12 text-blue-600" />
                     </div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">登入 TravelPlan</h1>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">登入 TravelPlan</h1>
                     <p className="text-gray-500">協作旅遊規劃，讓旅程更輕鬆</p>
                 </div>
 
@@ -43,7 +43,7 @@ export default function Login() {
                     <button
                         onClick={handleLogin}
                         disabled={loading}
-                        className="w-full flex items-center justify-center bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-3 px-4 rounded-lg transition-colors shadow-sm"
+                        className="w-full flex items-center justify-center bg-white border border-gray-300 text-gray-700 dark:text-gray-300 hover:bg-gray-50 font-medium py-3 px-4 rounded-lg transition-colors shadow-sm"
                     >
                         <img src="https://www.google.com/favicon.ico" alt="Google" className="w-5 h-5 mr-3" />
                         {loading ? '登入中...' : '使用 Google 帳號登入'}

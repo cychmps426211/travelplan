@@ -74,7 +74,7 @@ export default function FlightCard({ flight, type, onEdit, onDelete }: FlightCar
                             <Plane className={`w-5 h-5 ${type === 'return' ? 'rotate-180' : ''}`} />
                         </div>
                         <div>
-                            <h3 className="font-bold text-gray-900">
+                            <h3 className="font-bold text-gray-900 dark:text-gray-100">
                                 {type === 'outbound' ? '去程航班' : '回程航班'}
                             </h3>
                             <p className="text-sm text-gray-500 dark:text-gray-400">{flight.airline} • {flight.flightNumber}</p>
@@ -105,7 +105,7 @@ export default function FlightCard({ flight, type, onEdit, onDelete }: FlightCar
 
                 <div className="flex items-center justify-between mb-6">
                     <div className="text-center min-w-[80px]">
-                        <div className="text-2xl font-bold text-gray-900">
+                        <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                             {formatLocalTime(flight.departureTime, flight.departureTimezone)}
                             <span className="text-xs text-gray-400 font-normal ml-1 align-top">
                                 (UTC{flight.departureTimezone})
@@ -117,8 +117,8 @@ export default function FlightCard({ flight, type, onEdit, onDelete }: FlightCar
 
                     <div className="flex-1 px-8 flex flex-col items-center">
                         <div className="text-xs text-gray-400 mb-1 font-medium">{hours}小時 {minutes}分</div>
-                        <div className="w-full h-px bg-gray-200 relative flex items-center justify-center">
-                            <div className={`absolute w-full h-0.5 ${type === 'outbound' ? 'bg-blue-100' : 'bg-emerald-100'}`}></div>
+                        <div className="w-full h-px bg-gray-200 dark:bg-gray-700 relative flex items-center justify-center">
+                            <div className={`absolute w-full h-0.5 ${type === 'outbound' ? 'bg-blue-100 dark:bg-blue-900' : 'bg-emerald-100 dark:bg-emerald-900'}`}></div>
                             <div className={`p-1 rounded-full ${type === 'outbound' ? 'bg-blue-50 dark:bg-blue-900/30' : 'bg-emerald-50 dark:bg-emerald-900/30'} z-10`}>
                                 <Plane className={`w-3 h-3 ${type === 'return' ? 'rotate-180 text-emerald-400' : 'text-blue-400'}`} />
                             </div>
@@ -126,7 +126,7 @@ export default function FlightCard({ flight, type, onEdit, onDelete }: FlightCar
                     </div>
 
                     <div className="text-center min-w-[80px]">
-                        <div className="text-2xl font-bold text-gray-900">
+                        <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                             {formatLocalTime(flight.arrivalTime, flight.arrivalTimezone)}
                             <span className="text-xs text-gray-400 font-normal ml-1 align-top">
                                 (UTC{flight.arrivalTimezone})

@@ -53,7 +53,7 @@ export default function HotelCard({ hotel, onEdit, onDelete }: HotelCardProps) {
                         <Building2 className="w-6 h-6" />
                     </div>
                     <div>
-                        <h3 className="text-lg font-bold text-gray-900">{hotel.name}</h3>
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">{hotel.name}</h3>
                         {hotel.address && (
                             <a
                                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hotel.address)}`}
@@ -74,7 +74,7 @@ export default function HotelCard({ hotel, onEdit, onDelete }: HotelCardProps) {
                         <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">Check-in</div>
                         <div className="flex items-center gap-2 mb-1">
                             <Calendar className="w-4 h-4 text-blue-500 shrink-0" />
-                            <span className="font-medium text-gray-900">{formatDate(checkIn)}</span>
+                            <span className="font-medium text-gray-900 dark:text-gray-100">{formatDate(checkIn)}</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                             <Clock className="w-4 h-4 text-gray-400 shrink-0" />
@@ -87,7 +87,7 @@ export default function HotelCard({ hotel, onEdit, onDelete }: HotelCardProps) {
                         <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wider">Check-out</div>
                         <div className="flex items-center gap-2 mb-1">
                             <Calendar className="w-4 h-4 text-emerald-500 shrink-0" />
-                            <span className="font-medium text-gray-900">{formatDate(checkOut)}</span>
+                            <span className="font-medium text-gray-900 dark:text-gray-100">{formatDate(checkOut)}</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                             <Clock className="w-4 h-4 text-gray-400 shrink-0" />
@@ -101,7 +101,7 @@ export default function HotelCard({ hotel, onEdit, onDelete }: HotelCardProps) {
                         {hotel.bookingReference && (
                             <div className="flex items-start gap-2 text-sm">
                                 <span className="text-gray-500 dark:text-gray-400 font-medium shrink-0">訂房代號:</span>
-                                <span className="text-gray-900 font-mono bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">{hotel.bookingReference}</span>
+                                <span className="text-gray-900 dark:text-gray-100 font-mono bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">{hotel.bookingReference}</span>
                             </div>
                         )}
                         {hotel.notes && (

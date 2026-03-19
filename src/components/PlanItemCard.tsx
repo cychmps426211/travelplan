@@ -63,7 +63,7 @@ export default function PlanItemCard({ item, onEdit, onDelete, onToggleSchedule,
                     className="flex-1 cursor-pointer pr-20"
                     onClick={() => setIsExpanded(!isExpanded)}
                 >
-                    <h3 className={`text-lg font-bold transition-all ${item.isScheduled ? 'text-gray-400 line-through' : 'text-gray-900'}`}>
+                    <h3 className={`text-lg font-bold transition-all ${item.isScheduled ? 'text-gray-400 line-through' : 'text-gray-900 dark:text-gray-100'}`}>
                         {item.name}
                     </h3>
                 </div>
@@ -77,7 +77,7 @@ export default function PlanItemCard({ item, onEdit, onDelete, onToggleSchedule,
                         <div className="flex items-start gap-2">
                             <MapPin className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
                             <div>
-                                <span className="text-gray-900 font-medium">{item.location}</span>
+                                <span className="text-gray-900 dark:text-gray-100 font-medium">{item.location}</span>
                                 <a
                                     href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.location)}`}
                                     target="_blank"

@@ -29,7 +29,7 @@ export default function ConfirmDialog({ isOpen, title, message, onConfirm, onCan
                             <AlertTriangle className="w-6 h-6 text-red-600" />
                         </div>
                         <div>
-                            <h3 className="text-lg font-bold text-gray-900">{title}</h3>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">{title}</h3>
                             <p className="text-gray-600 dark:text-gray-300 mt-1">{message}</p>
                         </div>
                     </div>
