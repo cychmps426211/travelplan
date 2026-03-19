@@ -307,11 +307,11 @@ export default function TripDetail() {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-gray-950 transition-colors flex flex-col">
             {/* Header */}
-            <div className={`bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-slate-200 dark:border-gray-800 sticky top-0 z-40 transition-all duration-300 ${isScrolled ? 'shadow-sm dark:shadow-black/20' : ''}`}>
-                <div className={`max-w-4xl mx-auto px-4 transition-all duration-300 ${isScrolled ? 'py-3' : 'py-4'}`}>
+            <div className={`bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-slate-200 dark:border-gray-800 sticky top-0 z-40 transition-shadow duration-300 ${isScrolled ? 'shadow-sm dark:shadow-black/20' : ''}`}>
+                <div className={`max-w-4xl mx-auto px-4 transition-[padding] duration-300 ${isScrolled ? 'py-3' : 'py-4'}`}>
                     {/* Top Section to Hide */}
-                    <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isScrolled ? 'max-h-0 opacity-0 mb-0' : 'max-h-[200px] opacity-100 mb-6'}`}>
-                        <Link to="/" className="inline-flex items-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors mb-4 group">
+                    <div className={`transition-[max-height,opacity,margin] duration-300 ease-in-out overflow-hidden ${isScrolled ? 'max-h-0 opacity-0 mb-0' : 'max-h-[200px] opacity-100 mb-6'}`}>
+                        <Link to="/" className="inline-flex items-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 focus:outline-none transition-colors mb-4 group">
                             <ArrowLeft className="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" />
                             返回主控台
                         </Link>
@@ -337,14 +337,14 @@ export default function TripDetail() {
                     {/* Tabs Navigation */}
                     <div className="flex flex-col">
                         {/* First Row: Categories */}
-                        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isScrolled && activeTab !== 'overview' && activeTab !== 'hotels' && activeTab !== 'planItems'
+                        <div className={`transition-[max-height,opacity,margin] duration-300 ease-in-out overflow-hidden ${isScrolled && activeTab !== 'overview' && activeTab !== 'hotels' && activeTab !== 'planItems'
                             ? 'max-h-0 opacity-0 !mb-0'
                             : 'max-h-[60px] opacity-100 mb-3'
                             }`}>
                             <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1">
                                 <button
                                     onClick={() => setActiveTab('overview')}
-                                    className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'overview'
+                                    className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium focus:outline-none transition-all ${activeTab === 'overview'
                                         ? 'bg-blue-600 dark:bg-blue-600 text-white shadow-md shadow-blue-500/30'
                                         : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-800'
                                         }`}
@@ -353,7 +353,7 @@ export default function TripDetail() {
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('hotels')}
-                                    className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'hotels'
+                                    className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium focus:outline-none transition-all ${activeTab === 'hotels'
                                         ? 'bg-blue-600 dark:bg-blue-600 text-white shadow-md shadow-blue-500/30'
                                         : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-800'
                                         }`}
@@ -362,7 +362,7 @@ export default function TripDetail() {
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('planItems')}
-                                    className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'planItems'
+                                    className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium focus:outline-none transition-all ${activeTab === 'planItems'
                                         ? 'bg-blue-600 dark:bg-blue-600 text-white shadow-md shadow-blue-500/30'
                                         : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-800'
                                         }`}
@@ -373,7 +373,7 @@ export default function TripDetail() {
                         </div>
 
                         {/* Second Row: Days */}
-                        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isScrolled && (activeTab === 'overview' || activeTab === 'hotels' || activeTab === 'planItems')
+                        <div className={`transition-[max-height,opacity,padding] duration-300 ease-in-out overflow-hidden ${isScrolled && (activeTab === 'overview' || activeTab === 'hotels' || activeTab === 'planItems')
                             ? 'max-h-0 opacity-0 !mb-0'
                             : 'max-h-[60px] opacity-100 pb-1'
                             }`}>
@@ -385,7 +385,7 @@ export default function TripDetail() {
                                         <button
                                             key={dateStr}
                                             onClick={() => setActiveTab(dateStr)}
-                                            className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all ${isActive
+                                            className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold focus:outline-none transition-all ${isActive
                                                 ? 'bg-blue-600 dark:bg-blue-600 text-white shadow-md shadow-blue-500/30 scale-105'
                                                 : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-800'
                                                 }`}
