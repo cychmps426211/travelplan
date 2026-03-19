@@ -6,10 +6,10 @@ export default function PrivateRoute() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-800/50">
                 <div className="text-center">
                     <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-                    <div className="text-gray-500 text-sm">載入中...</div>
+                    <div className="text-gray-500 dark:text-gray-400 text-sm">載入中...</div>
                 </div>
             </div>
         );

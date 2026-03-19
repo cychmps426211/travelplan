@@ -129,23 +129,23 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
             <div
-                className="bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100 rounded-2xl w-full max-w-md shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto"
+                className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-2xl w-full max-w-md shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="flex justify-between items-center p-6 border-b border-gray-100 sticky top-0 bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100 z-10">
-                    <h2 className="text-xl font-bold text-gray-800">{initialData ? '編輯旅程' : '建立新旅程'}</h2>
-                    <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                        <X className="w-5 h-5 text-gray-500" />
+                <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-gray-800 sticky top-0 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 z-10">
+                    <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">{initialData ? '編輯旅程' : '建立新旅程'}</h2>
+                    <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+                        <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                     </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">旅程名稱</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">旅程名稱</label>
                         <input
                             type="text"
                             required
-                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                            className="w-full px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                             placeholder="例如：2025 東京賞櫻之旅"
                             value={formData.title}
                             onChange={e => setFormData({ ...formData, title: e.target.value })}
@@ -153,7 +153,7 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center justify-between">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <Palette className="w-4 h-4" />
                                 選擇封面顏色或上傳圖片
@@ -170,19 +170,19 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
                         </label>
 
                         {formData.coverImageUrl ? (
-                            <div className="relative h-32 rounded-lg bg-gray-100 overflow-hidden mb-3">
+                            <div className="relative h-32 rounded-lg bg-gray-100 dark:bg-gray-800 overflow-hidden mb-3">
                                 <img src={formData.coverImageUrl} alt="Cover" className="w-full h-full object-cover" />
                             </div>
                         ) : (
                             <div className="mb-3">
-                                <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors relative overflow-hidden">
+                                <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors relative overflow-hidden">
                                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                        <Upload className="w-6 h-6 mb-1 text-gray-500" />
-                                        <p className="text-xs text-gray-500">
+                                        <Upload className="w-6 h-6 mb-1 text-gray-500 dark:text-gray-400" />
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
                                             <span className="font-semibold">點擊上傳圖片</span>
                                         </p>
                                     </div>
-                                    <input type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept="image/*" onChange={handleImageUpload} />
+                                    <input type="file" className="absolute inset-0 w-full h-full opacity-0 cursor-pointer bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100" accept="image/*" onChange={handleImageUpload} />
                                 </label>
                             </div>
                         )}
@@ -201,8 +201,8 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
                                 >
                                     {formData.coverColor === key && (
                                         <div className="absolute inset-0 flex items-center justify-center">
-                                            <div className="w-8 h-8 bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100 rounded-full flex items-center justify-center shadow-lg">
-                                                <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <div className="w-8 h-8 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-full flex items-center justify-center shadow-lg">
+                                                <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                                                 </svg>
                                             </div>
@@ -217,13 +217,13 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">目的地</label>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">目的地</label>
                         <div className="relative">
                             <MapPin className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
                             <input
                                 type="text"
                                 required
-                                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                                 placeholder="例如：東京, 日本"
                                 value={formData.destination}
                                 onChange={e => setFormData({ ...formData, destination: e.target.value })}
@@ -233,21 +233,21 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
 
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">開始日期</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">開始日期</label>
                             <input
                                 type="date"
                                 required
-                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                className="w-full px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                                 value={formData.startDate}
                                 onChange={e => setFormData({ ...formData, startDate: e.target.value })}
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">結束日期</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">結束日期</label>
                             <input
                                 type="date"
                                 required
-                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                className="w-full px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                                 value={formData.endDate}
                                 onChange={e => setFormData({ ...formData, endDate: e.target.value })}
                             />
@@ -258,7 +258,7 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                            className="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors font-medium"
                         >
                             取消
                         </button>
