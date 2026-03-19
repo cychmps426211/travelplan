@@ -5,9 +5,10 @@
     <link rel="icon" type="image/png" href="/travelplan/travel.png" />
     <link rel="apple-touch-icon" href="/travelplan/travel.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Travel Plan" />
-    <meta name="theme-color" content="#ffffff" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Travel Plan</title>
     <!-- 預載關鍵資源 -->
@@ -24,6 +25,12 @@
         justify-content: center;
         background: #f8fafc;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        transition: background-color 0.3s;
+      }
+      @media (prefers-color-scheme: dark) {
+        .app-shell {
+          background: #09090b;
+        }
       }
       .app-shell-icon {
         width: 64px;

@@ -28,19 +28,19 @@ export default function HotelCard({ hotel, onEdit, onDelete }: HotelCardProps) {
     };
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden relative group">
+        <div className="bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100 rounded-xl shadow-sm border border-slate-200 overflow-hidden relative group">
             {/* Actions */}
             <div className="absolute right-3 top-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                 <button
                     onClick={onEdit}
-                    className="p-1.5 bg-white/90 backdrop-blur-sm text-gray-500 hover:text-blue-600 rounded-lg shadow-sm border border-slate-200 transition-all hover:scale-105"
+                    className="p-1.5 bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100/90 backdrop-blur-sm text-gray-500 hover:text-blue-600 rounded-lg shadow-sm border border-slate-200 transition-all hover:scale-105"
                     title="編輯"
                 >
                     <Edit2 className="w-4 h-4" />
                 </button>
                 <button
                     onClick={onDelete}
-                    className="p-1.5 bg-white/90 backdrop-blur-sm text-gray-500 hover:text-red-600 rounded-lg shadow-sm border border-slate-200 transition-all hover:scale-105"
+                    className="p-1.5 bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100/90 backdrop-blur-sm text-gray-500 hover:text-red-600 rounded-lg shadow-sm border border-slate-200 transition-all hover:scale-105"
                     title="刪除"
                 >
                     <Trash2 className="w-4 h-4" />

@@ -89,7 +89,7 @@ export default function CreatePlanItemModal({ isOpen, onClose, onSubmit, initial
 
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100 rounded-2xl w-full max-w-lg shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
                 <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                     <h2 className="text-xl font-bold text-gray-800">
                         {initialData ? '編輯待規劃項目' : '新增待規劃項目'}

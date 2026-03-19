@@ -67,7 +67,7 @@ export default function FlightCard({ flight, type, onEdit, onDelete }: FlightCar
 
     return (
         <>
-            <div className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow relative group">
+            <div className="bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100 rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow relative group">
                 <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-3">
                         <div className={`p-2 rounded-lg ${type === 'outbound' ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600'}`}>
@@ -173,7 +173,7 @@ export default function FlightCard({ flight, type, onEdit, onDelete }: FlightCar
                                     className="absolute top-1/2 -translate-y-1/2 transition-all duration-1000 ease-out z-10"
                                     style={{ left: `${progress}%`, transform: `translate(-50%, -50%)` }}
                                 >
-                                    <div className="bg-white p-1 rounded-full shadow-md border border-blue-100">
+                                    <div className="bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100 p-1 rounded-full shadow-md border border-blue-100">
                                         <Plane className="w-3 h-3 text-blue-600 rotate-90" fill="currentColor" />
                                     </div>
                                 </div>

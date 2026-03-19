@@ -245,10 +245,10 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
             <div
-                className="bg-white rounded-2xl w-full max-w-lg shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto"
+                className="bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100 rounded-2xl w-full max-w-lg shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="flex justify-between items-center p-6 border-b border-gray-100 sticky top-0 bg-white z-10">
+                <div className="flex justify-between items-center p-6 border-b border-gray-100 sticky top-0 bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100 z-10">
                     <h2 className="text-xl font-bold text-gray-800">{initialData && !availableDays ? '編輯活動' : '新增活動'}</h2>
                     <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                         <X className="w-5 h-5 text-gray-500" />
@@ -388,7 +388,7 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">路線偏好</label>
                                         <select
-                                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white"
+                                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100"
                                             value={formData.transitRoutingPreference}
                                             onChange={e => setFormData({ ...formData, transitRoutingPreference: e.target.value as TransitRoutingPreference | '' })}
                                         >

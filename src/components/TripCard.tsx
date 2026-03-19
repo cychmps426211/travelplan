@@ -27,24 +27,24 @@ export default function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
     let statusBadge;
     if (daysUntilStart > 0) {
         statusBadge = (
-            <div className="flex items-center gap-1.5 text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg text-sm font-medium">
+            <div className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg text-sm font-medium">
                 <Clock className="w-4 h-4" />
                 <span>距離啟程還有 {daysUntilStart} 天</span>
             </div>
         );
     } else if (daysUntilEnd >= 0) {
         statusBadge = (
-            <div className="flex items-center gap-1.5 text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg text-sm font-medium">
+            <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1.5 rounded-lg text-sm font-medium">
                 <span className="relative flex h-2.5 w-2.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 dark:bg-emerald-500 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 dark:bg-emerald-400"></span>
                 </span>
                 <span>進行中</span>
             </div>
         );
     } else {
         statusBadge = (
-            <div className="flex items-center gap-1.5 text-gray-500 bg-gray-100 px-3 py-1.5 rounded-lg text-sm font-medium">
+            <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-lg text-sm font-medium">
                 <CheckCircle2 className="w-4 h-4" />
                 <span>已結束</span>
             </div>
@@ -77,7 +77,7 @@ export default function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
     return (
         <>
             <div
-                className="group block h-full bg-white rounded-2xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col cursor-pointer"
+                className="group block h-full bg-white dark:bg-gray-900 rounded-3xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-1.5 transition-all duration-300 flex flex-col cursor-pointer mt-1"
                 onClick={handleCardClick}
             >
                 {/* Gradient Background Container */}
@@ -88,14 +88,14 @@ export default function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
                             }`}
                         style={trip.coverImageUrl ? { backgroundImage: `url(${trip.coverImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 transition-opacity group-hover:opacity-90"></div>
 
                     {/* Action Buttons - Always visible */}
-                    <div className="absolute top-3 right-3 flex gap-2 z-10">
+                    <div className="absolute top-3 right-3 flex gap-2 z-10 transition-transform duration-300 transform translate-y-0 opacity-100 group-hover:-translate-y-1">
                         <button
                             type="button"
                             onClick={handleEditClick}
-                            className="p-2 bg-white/20 hover:bg-blue-500 text-white rounded-full backdrop-blur-sm transition-colors"
+                            className="p-2 bg-black/20 hover:bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100/20 text-white rounded-full backdrop-blur-md transition-colors border border-white/10 hover:border-white/30"
                             title="編輯旅程"
                         >
                             <Edit2 className="w-4 h-4" />
@@ -103,38 +103,42 @@ export default function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
                         <button
                             type="button"
                             onClick={handleDeleteClick}
-                            className="p-2 bg-white/20 hover:bg-red-500 text-white rounded-full backdrop-blur-sm transition-colors"
+                            className="p-2 bg-black/20 hover:bg-red-500/80 text-white rounded-full backdrop-blur-md transition-colors border border-white/10 hover:border-red-400/50"
                             title="刪除旅程"
                         >
                             <Trash2 className="w-4 h-4" />
                         </button>
                     </div>
 
-                    <div className="absolute bottom-4 left-4 text-white">
-                        <h3 className="text-xl font-bold mb-1 shadow-black/50 drop-shadow-md">{trip.title}</h3>
-                        <div className="flex items-center gap-2 text-sm font-medium/90">
-                            <MapPin className="w-3.5 h-3.5" />
+                    <div className="absolute bottom-4 left-4 text-white z-10">
+                        <h3 className="text-2xl font-bold mb-1 tracking-tight truncate drop-shadow-md">{trip.title}</h3>
+                        <div className="flex items-center gap-2 text-sm font-medium text-white/90 drop-shadow-sm">
+                            <MapPin className="w-4 h-4" />
                             {trip.destination}
                         </div>
                     </div>
                 </div>
 
                 {/* Content Body */}
-                <div className="p-5 flex-1 flex flex-col justify-between">
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-2 text-gray-500 text-sm">
-                            <Calendar className="w-4 h-4 text-blue-500" />
+                <div className="p-6 flex-1 flex flex-col justify-between">
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400 text-sm font-medium">
+                            <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                                <Calendar className="w-4 h-4 text-blue-500 dark:text-blue-400" />
+                            </div>
                             <span>
                                 {format(trip.startDate.toDate(), 'yyyy/MM/dd')} - {format(trip.endDate.toDate(), 'yyyy/MM/dd')}
                             </span>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-500 text-sm">
-                            <Clock className="w-4 h-4 text-emerald-500" />
+                        <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400 text-sm font-medium">
+                            <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+                                <Clock className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+                            </div>
                             <span>{days} 天旅程</span>
                         </div>
                     </div>
 
-                    <div className="flex justify-end mt-4 pt-4 border-t border-gray-50">
+                    <div className="flex justify-end mt-5 pt-4 border-t border-gray-100 dark:border-gray-800/60">
                         {statusBadge}
                     </div>
                 </div>
