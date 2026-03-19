@@ -71,7 +71,7 @@ export default function PlanItemCard({ item, onEdit, onDelete, onToggleSchedule,
 
             {/* Expanded Content */}
             {isExpanded && (
-                <div className="p-4 bg-gray-50 dark:bg-gray-800/50/30 space-y-4">
+                <div className="p-4 bg-gray-50 dark:bg-gray-800/50 space-y-4">
                     {/* Location */}
                     {item.location && (
                         <div className="flex items-start gap-2">

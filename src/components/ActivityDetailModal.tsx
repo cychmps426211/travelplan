@@ -391,12 +391,12 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                                         if (e.key === 'Enter') handleAddItem();
                                     }}
                                     placeholder={activity.type === 'food' ? '新增美食項目...' : activity.type === 'shopping' ? '新增購物項目...' : '新增項目...'}
-                                    className="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                                    className="flex-1 px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
                                 />
                                 <button
                                     onClick={handleAddItem}
                                     disabled={!newItemText.trim() || isUpdating}
-                                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+                                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 dark:disabled:text-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center gap-2"
                                 >
                                     <Plus className="w-4 h-4" />
                                     新增
@@ -443,7 +443,7 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                 <div className="p-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
                     <button
                         onClick={onClose}
-                        className="w-full py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors"
+                        className="w-full py-2.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors"
                     >
                         關閉
                     </button>

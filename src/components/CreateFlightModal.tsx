@@ -163,7 +163,7 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
                                 <input
                                     type="text"
                                     required
-                                    className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                    className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                                     placeholder="例如：長榮航空"
                                     value={formData.airline}
                                     onChange={e => setFormData({ ...formData, airline: e.target.value })}
@@ -175,7 +175,7 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
                             <input
                                 type="text"
                                 required
-                                className="w-full px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                className="w-full px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                                 placeholder="例如：BR198"
                                 value={formData.flightNumber}
                                 onChange={e => setFormData({ ...formData, flightNumber: e.target.value })}
@@ -195,7 +195,7 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
                                 <input
                                     type="text"
                                     required
-                                    className="w-full px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                    className="w-full px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                                     placeholder="例如：TPE (桃園國際機場)"
                                     value={formData.departureAirport}
                                     onChange={e => setFormData({ ...formData, departureAirport: e.target.value })}
@@ -208,7 +208,7 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
                                     <input
                                         type="date"
                                         required
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                        className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                                         value={formData.departureDate}
                                         onChange={e => setFormData({ ...formData, departureDate: e.target.value })}
                                     />
@@ -221,7 +221,7 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
                                     <input
                                         type="time"
                                         required
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                        className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                                         value={formData.departureTime}
                                         onChange={e => setFormData({ ...formData, departureTime: e.target.value })}
                                     />
@@ -232,7 +232,7 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
                                 <div className="relative">
                                     <Globe className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
                                     <select
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 appearance-none"
+                                        className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 appearance-none"
                                         value={formData.departureTimezone}
                                         onChange={e => setFormData({ ...formData, departureTimezone: e.target.value })}
                                     >
@@ -257,7 +257,7 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
                                 <input
                                     type="text"
                                     required
-                                    className="w-full px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                    className="w-full px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                                     placeholder="例如：NRT (成田國際機場)"
                                     value={formData.arrivalAirport}
                                     onChange={e => setFormData({ ...formData, arrivalAirport: e.target.value })}
@@ -270,7 +270,7 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
                                     <input
                                         type="date"
                                         required
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                        className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                                         value={formData.arrivalDate}
                                         onChange={e => setFormData({ ...formData, arrivalDate: e.target.value })}
                                     />
@@ -283,7 +283,7 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
                                     <input
                                         type="time"
                                         required
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                        className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                                         value={formData.arrivalTime}
                                         onChange={e => setFormData({ ...formData, arrivalTime: e.target.value })}
                                     />
@@ -294,7 +294,7 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
                                 <div className="relative">
                                     <Globe className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
                                     <select
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 appearance-none"
+                                        className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 appearance-none"
                                         value={formData.arrivalTimezone}
                                         onChange={e => setFormData({ ...formData, arrivalTimezone: e.target.value })}
                                     >

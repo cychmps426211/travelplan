@@ -107,7 +107,7 @@ export default function CreateHotelModal({ isOpen, onClose, onSubmit, initialDat
                                 <input
                                     type="text"
                                     required
-                                    className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                    className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                                     placeholder="例如：東京格拉斯麗新宿酒店"
                                     value={formData.name}
                                     onChange={e => setFormData({ ...formData, name: e.target.value })}
@@ -120,7 +120,7 @@ export default function CreateHotelModal({ isOpen, onClose, onSubmit, initialDat
                                 <MapPin className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
                                 <input
                                     type="text"
-                                    className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                    className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                                     placeholder="例如：東京都新宿區歌舞伎町1-19-1"
                                     value={formData.address}
                                     onChange={e => setFormData({ ...formData, address: e.target.value })}
@@ -143,7 +143,7 @@ export default function CreateHotelModal({ isOpen, onClose, onSubmit, initialDat
                                     <input
                                         type="date"
                                         required
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                        className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                                         value={formData.checkInDate}
                                         onChange={e => setFormData({ ...formData, checkInDate: e.target.value })}
                                     />
@@ -156,7 +156,7 @@ export default function CreateHotelModal({ isOpen, onClose, onSubmit, initialDat
                                     <input
                                         type="time"
                                         required
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                        className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                                         value={formData.checkInTime}
                                         onChange={e => setFormData({ ...formData, checkInTime: e.target.value })}
                                     />
@@ -179,7 +179,7 @@ export default function CreateHotelModal({ isOpen, onClose, onSubmit, initialDat
                                     <input
                                         type="date"
                                         required
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                        className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                                         value={formData.checkOutDate}
                                         onChange={e => setFormData({ ...formData, checkOutDate: e.target.value })}
                                     />
@@ -192,7 +192,7 @@ export default function CreateHotelModal({ isOpen, onClose, onSubmit, initialDat
                                     <input
                                         type="time"
                                         required
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                        className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                                         value={formData.checkOutTime}
                                         onChange={e => setFormData({ ...formData, checkOutTime: e.target.value })}
                                     />
@@ -207,7 +207,7 @@ export default function CreateHotelModal({ isOpen, onClose, onSubmit, initialDat
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">訂房代號 (選填)</label>
                             <input
                                 type="text"
-                                className="w-full px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                className="w-full px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                                 placeholder="例如：ABC12345"
                                 value={formData.bookingReference}
                                 onChange={e => setFormData({ ...formData, bookingReference: e.target.value })}
@@ -218,7 +218,7 @@ export default function CreateHotelModal({ isOpen, onClose, onSubmit, initialDat
                             <div className="relative">
                                 <AlignLeft className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
                                 <textarea
-                                    className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none h-24 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+                                    className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none h-24 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
                                     placeholder="輸入任何其他訂房相關資訊"
                                     value={formData.notes}
                                     onChange={e => setFormData({ ...formData, notes: e.target.value })}
