@@ -76,6 +76,7 @@ export interface Activity {
 export interface ChecklistItem {
     id: string;
     text: string;
+    address?: string; // Optional address for Google Maps
     completed: boolean;
 }
 
