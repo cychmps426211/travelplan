@@ -49,12 +49,12 @@ export default function MoveActivityModal({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-            <div className="bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100 rounded-2xl w-full max-w-md shadow-xl overflow-hidden">
-                <div className="flex justify-between items-center p-6 border-b border-gray-100">
-                    <h2 className="text-xl font-bold text-gray-800">移動行程</h2>
+            <div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-2xl w-full max-w-md shadow-xl overflow-hidden">
+                <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-gray-800">
+                    <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">移動行程</h2>
                     <button
                         onClick={onClose}
-                        className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-full transition-colors"
+                        className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded-full transition-colors"
                     >
                         <X className="w-5 h-5" />
                     </button>
@@ -62,13 +62,13 @@ export default function MoveActivityModal({
 
                 <form onSubmit={handleSubmit} className="p-6">
                     <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                             將「{activity.title}」移動至：
                         </label>
                         <select
                             value={selectedDateStr}
                             onChange={(e) => setSelectedDateStr(e.target.value)}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
                             required
                         >
                             {days.map((day, index) => {
@@ -86,7 +86,7 @@ export default function MoveActivityModal({
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-5 py-2.5 text-gray-600 hover:bg-gray-100 rounded-xl font-medium transition-colors"
+                            className="px-5 py-2.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl font-medium transition-colors"
                             disabled={isSubmitting}
                         >
                             取消

@@ -89,14 +89,14 @@ export default function CreatePlanItemModal({ isOpen, onClose, onSubmit, initial
 
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100 rounded-2xl w-full max-w-lg shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
-                <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                    <h2 className="text-xl font-bold text-gray-800">
+            <div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-2xl w-full max-w-lg shadow-xl overflow-hidden flex flex-col max-h-[90vh]">
+                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-800/50/50">
+                    <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">
                         {initialData ? '編輯待規劃項目' : '新增待規劃項目'}
                     </h2>
                     <button
                         onClick={onClose}
-                        className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                        className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
                     >
                         <X className="w-5 h-5" />
                     </button>
@@ -106,7 +106,7 @@ export default function CreatePlanItemModal({ isOpen, onClose, onSubmit, initial
                     <form id="planItemForm" onSubmit={handleSubmit} className="space-y-6">
                         {/* 名稱 */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                                 名稱 <span className="text-red-500">*</span>
                             </label>
                             <input
@@ -121,7 +121,7 @@ export default function CreatePlanItemModal({ isOpen, onClose, onSubmit, initial
 
                         {/* 地點 */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                                 地點
                             </label>
                             <input
@@ -135,7 +135,7 @@ export default function CreatePlanItemModal({ isOpen, onClose, onSubmit, initial
 
                         {/* 參考網址 */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                                 參考網址
                             </label>
                             <div className="space-y-2">
@@ -161,7 +161,7 @@ export default function CreatePlanItemModal({ isOpen, onClose, onSubmit, initial
                             <button
                                 type="button"
                                 onClick={addUrlField}
-                                className="mt-2 text-sm text-blue-600 font-medium hover:text-blue-700 flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors"
+                                className="mt-2 text-sm text-blue-600 dark:text-blue-400 font-medium hover:text-blue-700 flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors"
                             >
                                 <Plus className="w-4 h-4" />
                                 新增網址
@@ -170,7 +170,7 @@ export default function CreatePlanItemModal({ isOpen, onClose, onSubmit, initial
 
                         {/* 備註 */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
                                 備註
                             </label>
                             <textarea
@@ -184,11 +184,11 @@ export default function CreatePlanItemModal({ isOpen, onClose, onSubmit, initial
                     </form>
                 </div>
 
-                <div className="p-4 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-3">
+                <div className="p-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50/50 flex justify-end gap-3">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-6 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
+                        className="px-6 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors"
                         disabled={isSubmitting}
                     >
                         取消

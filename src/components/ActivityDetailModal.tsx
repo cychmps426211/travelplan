@@ -11,12 +11,12 @@ interface ActivityDetailModalProps {
 }
 
 const ACTIVITY_TYPE_INFO: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
-    sightseeing: { label: '觀光', icon: <Camera className="w-5 h-5" />, color: 'bg-blue-100 text-blue-600' },
+    sightseeing: { label: '觀光', icon: <Camera className="w-5 h-5" />, color: 'bg-blue-100 text-blue-600 dark:text-blue-400' },
     food: { label: '美食', icon: <Utensils className="w-5 h-5" />, color: 'bg-orange-100 text-orange-600' },
     transport: { label: '交通', icon: <Car className="w-5 h-5" />, color: 'bg-green-100 text-green-600' },
     lodging: { label: '住宿', icon: <Bed className="w-5 h-5" />, color: 'bg-purple-100 text-purple-600' },
     shopping: { label: '購物', icon: <Tag className="w-5 h-5" />, color: 'bg-pink-100 text-pink-600' },
-    other: { label: '其他', icon: <MapPin className="w-5 h-5" />, color: 'bg-gray-100 text-gray-600' }
+    other: { label: '其他', icon: <MapPin className="w-5 h-5" />, color: 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300' }
 };
 
 // Get Google Maps API key from environment
@@ -177,36 +177,36 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
             <div
-                className="bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100 rounded-2xl w-full max-w-2xl shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-hidden flex flex-col"
+                className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-2xl w-full max-w-2xl shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-hidden flex flex-col"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="flex justify-between items-center p-6 border-b border-gray-100">
+                <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-gray-800">
                     <div className="flex items-center gap-3">
                         <div className={`p-2 rounded-lg ${typeInfo.color}`}>
                             {typeInfo.icon}
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold text-gray-800">{activity.title}</h2>
-                            <span className="text-sm text-gray-500">{typeInfo.label}</span>
+                            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">{activity.title}</h2>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">{typeInfo.label}</span>
                         </div>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                        <X className="w-5 h-5 text-gray-500" />
+                    <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
+                        <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                     </button>
                 </div>
 
                 {/* Content */}
                 <div className="p-6 space-y-6 overflow-y-auto flex-1">
                     {/* Time Section */}
-                    <div className="flex items-center gap-3 text-gray-700">
+                    <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
                         <Clock className="w-5 h-5 text-blue-500" />
                         <div>
                             <span className="font-medium">
                                 {format(activity.startTime.toDate(), 'yyyy/MM/dd HH:mm')}
                             </span>
                             {activity.endTime && (
-                                <span className="text-gray-500">
+                                <span className="text-gray-500 dark:text-gray-400">
                                     {' ~ '}{format(activity.endTime.toDate(), 'HH:mm')}
                                 </span>
                             )}
@@ -216,18 +216,18 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                     {/* Location Section */}
                     {activity.type === 'transport' ? (
                         (activity.departureLocation || activity.arrivalLocation) && (
-                            <div className="flex items-start gap-3 text-gray-700">
+                            <div className="flex items-start gap-3 text-gray-700 dark:text-gray-300">
                                 <Navigation className="w-5 h-5 text-green-500 mt-0.5" />
                                 <div className="space-y-1">
                                     {activity.departureLocation && (
                                         <div>
-                                            <span className="text-sm text-gray-500">出發：</span>
+                                            <span className="text-sm text-gray-500 dark:text-gray-400">出發：</span>
                                             <span className="font-medium">{activity.departureLocation}</span>
                                         </div>
                                     )}
                                     {activity.arrivalLocation && (
                                         <div>
-                                            <span className="text-sm text-gray-500">到達：</span>
+                                            <span className="text-sm text-gray-500 dark:text-gray-400">到達：</span>
                                             <span className="font-medium">{activity.arrivalLocation}</span>
                                         </div>
                                     )}
@@ -252,7 +252,7 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                         )
                     ) : (
                         activity.location && (
-                            <div className="flex items-center gap-3 text-gray-700">
+                            <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
                                 <MapPin className="w-5 h-5 text-red-500" />
                                 <span className="font-medium">{activity.location}</span>
                             </div>
@@ -261,15 +261,15 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
 
                     {/* Notes Section */}
                     {activity.notes && (
-                        <div className="flex items-start gap-3 text-gray-700">
+                        <div className="flex items-start gap-3 text-gray-700 dark:text-gray-300">
                             <FileText className="w-5 h-5 text-gray-400 mt-0.5" />
-                            <p className="text-gray-600 bg-gray-50 p-3 rounded-lg flex-1">{activity.notes}</p>
+                            <p className="text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg flex-1">{activity.notes}</p>
                         </div>
                     )}
 
                     {/* URLs Section */}
                     {activity.urls && activity.urls.length > 0 && (
-                        <div className="flex items-start gap-3 text-gray-700">
+                        <div className="flex items-start gap-3 text-gray-700 dark:text-gray-300">
                             <LinkIcon className="w-5 h-5 text-blue-500 mt-0.5 shrink-0" />
                             <div className="flex flex-col gap-1.5 pt-0.5">
                                 {activity.urls.map((url, index) => (
@@ -278,7 +278,7 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                                         href={url}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-blue-600 hover:text-blue-800 hover:underline w-fit"
+                                        className="text-blue-600 dark:text-blue-400 hover:text-blue-800 hover:underline w-fit"
                                     >
                                         參考網頁 {index + 1}
                                     </a>
@@ -290,7 +290,7 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                     {/* Checklist Section */}
                     {onUpdateChecklist && (
                         <div className="space-y-3">
-                            <div className="flex items-center gap-2 text-gray-700">
+                            <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                                 <ListChecks className="w-5 h-5 text-purple-500" />
                                 <span className="font-medium">{checklistLabel}</span>
                                 {checklist.length > 0 && (
@@ -307,7 +307,7 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                                         key={item.id}
                                         className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${item.completed
                                             ? 'bg-green-50 border-green-200'
-                                            : 'bg-white border-gray-200 hover:border-gray-300'
+                                            : 'bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-800 hover:border-gray-300'
                                             }`}
                                     >
                                         {editingItemId === item.id ? (
@@ -333,7 +333,7 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                                                 </button>
                                                 <button
                                                     onClick={handleCancelEdit}
-                                                    className="p-1.5 text-gray-500 hover:bg-gray-100 rounded transition-colors"
+                                                    className="p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
                                                 >
                                                     <X className="w-4 h-4" />
                                                 </button>
@@ -351,7 +351,7 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                                                 >
                                                     {item.completed && <Check className="w-3 h-3" />}
                                                 </button>
-                                                <span className={`flex-1 ${item.completed ? 'line-through text-gray-400' : 'text-gray-700'}`}>
+                                                <span className={`flex-1 ${item.completed ? 'line-through text-gray-400' : 'text-gray-700 dark:text-gray-300'}`}>
                                                     {item.text}
                                                 </span>
                                                 <button
@@ -391,7 +391,7 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                                         if (e.key === 'Enter') handleAddItem();
                                     }}
                                     placeholder={activity.type === 'food' ? '新增美食項目...' : activity.type === 'shopping' ? '新增購物項目...' : '新增項目...'}
-                                    className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                                    className="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
                                 />
                                 <button
                                     onClick={handleAddItem}
@@ -411,7 +411,7 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                             href={externalMapUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors font-medium"
+                            className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 transition-colors font-medium"
                         >
                             <ExternalLink className="w-4 h-4" />
                             用 Google 地圖開啟
@@ -421,7 +421,7 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                     {/* Map Section */}
                     {hasMapContent && GOOGLE_MAPS_API_KEY && (
                         <div className="space-y-3">
-                            <div className="flex items-center gap-2 text-gray-700">
+                            <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                                 <MapPin className="w-5 h-5 text-blue-500" />
                                 <span className="font-medium">
                                     {hasRoute ? '交通路線' : '地圖位置'}
@@ -440,10 +440,10 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 border-t border-gray-100 bg-gray-50">
+                <div className="p-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
                     <button
                         onClick={onClose}
-                        className="w-full py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-medium transition-colors"
+                        className="w-full py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 dark:text-gray-300 rounded-lg font-medium transition-colors"
                     >
                         關閉
                     </button>

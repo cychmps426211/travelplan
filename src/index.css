@@ -19,3 +19,9 @@
     color: var(--foreground);
   }
 }
+
+
+/* Map dark mode explicit class just in case */
+.dark-map {
+  filter: invert(1) hue-rotate(180deg) opacity(0.9);
+}

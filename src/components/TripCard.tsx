@@ -95,7 +95,7 @@ export default function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
                         <button
                             type="button"
                             onClick={handleEditClick}
-                            className="p-2 bg-black/20 hover:bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100/20 text-white rounded-full backdrop-blur-md transition-colors border border-white/10 hover:border-white/30"
+                            className="p-2 bg-black/40 hover:bg-white text-white hover:text-blue-600 rounded-full backdrop-blur-md transition-colors border border-white/20 hover:border-white shadow-sm"
                             title="編輯旅程"
                         >
                             <Edit2 className="w-4 h-4" />
@@ -103,7 +103,7 @@ export default function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
                         <button
                             type="button"
                             onClick={handleDeleteClick}
-                            className="p-2 bg-black/20 hover:bg-red-500/80 text-white rounded-full backdrop-blur-md transition-colors border border-white/10 hover:border-red-400/50"
+                            className="p-2 bg-black/40 hover:bg-red-500 text-white rounded-full backdrop-blur-md transition-colors border border-white/20 hover:border-red-400 shadow-sm"
                             title="刪除旅程"
                         >
                             <Trash2 className="w-4 h-4" />

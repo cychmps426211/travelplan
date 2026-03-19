@@ -215,16 +215,16 @@ export default function GoogleMapRoute({ activity, height = 300 }: GoogleMapRout
     }
 
     return (
-        <div className="relative rounded-xl overflow-hidden border border-gray-200 shadow-sm">
+        <div className="relative rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-sm">
             {/* Map Container */}
-            <div ref={mapRef} style={{ height, width: '100%' }} />
+            <div ref={mapRef} style={{ height, width: '100%' }} className="dark:invert dark:hue-rotate-180 dark:opacity-90 transition-all duration-300" />
 
             {/* Loading Overlay */}
             {loading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
                     <div className="flex flex-col items-center gap-2">
-                        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
-                        <span className="text-sm text-gray-600">載入地圖中...</span>
+                        <Loader2 className="w-8 h-8 text-blue-600 dark:text-blue-400 animate-spin" />
+                        <span className="text-sm text-gray-600 dark:text-gray-300">載入地圖中...</span>
                     </div>
                 </div>
             )}
