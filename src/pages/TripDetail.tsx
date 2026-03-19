@@ -7,6 +7,7 @@ import { activityService } from '../services/activityService';
 import { tripService } from '../services/tripService';
 import { format, eachDayOfInterval, isSameDay } from 'date-fns';
 import { MapPin, ArrowLeft, Plus, Utensils, Bed, Car, Camera, Calendar, Edit2, Trash2, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import CreateActivityModal from '../components/CreateActivityModal';
 import CreateFlightModal from '../components/CreateFlightModal';
 import FlightCard from '../components/FlightCard';
@@ -304,33 +305,33 @@ export default function TripDetail() {
 
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col">
+        <div className="min-h-screen bg-slate-50 dark:bg-gray-950 transition-colors flex flex-col">
             {/* Header */}
-            <div className={`bg-white border-b border-slate-200 sticky top-0 z-40 transition-shadow duration-300 ${isScrolled ? 'shadow-sm' : ''}`}>
+            <div className={`bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-slate-200 dark:border-gray-800 sticky top-0 z-40 transition-all duration-300 ${isScrolled ? 'shadow-sm dark:shadow-black/20' : ''}`}>
                 <div className={`max-w-4xl mx-auto px-4 transition-all duration-300 ${isScrolled ? 'py-3' : 'py-4'}`}>
                     {/* Top Section to Hide */}
                     <div className={`transition-all duration-300 ease-in-out overflow-hidden ${isScrolled ? 'max-h-0 opacity-0 mb-0' : 'max-h-[200px] opacity-100 mb-6'}`}>
-                        <Link to="/" className="inline-flex items-center text-sm text-gray-500 hover:text-gray-800 transition-colors mb-4 group">
+                        <Link to="/" className="inline-flex items-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors mb-4 group">
                             <ArrowLeft className="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" />
                             返回主控台
                         </Link>
 
                         {/* Header */}
-                        <div className="flex justify-between items-start">
+                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex justify-between items-start">
                             <div>
-                                <h1 className="text-3xl font-bold text-gray-900 mb-2">{trip.title}</h1>
-                                <div className="flex items-center gap-4 text-gray-500 text-sm">
+                                <h1 className="text-3xl font-black text-gray-900 dark:text-white mb-3 tracking-tight">{trip.title}</h1>
+                                <div className="flex items-center gap-4 text-gray-500 dark:text-gray-400 text-sm font-medium">
                                     <div className="flex items-center gap-1.5">
-                                        <MapPin className="w-4 h-4" />
+                                        <MapPin className="w-4 h-4 text-blue-500 dark:text-blue-400" />
                                         {trip.destination}
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                        <Calendar className="w-4 h-4" />
+                                        <Calendar className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                                         {format(trip.startDate.toDate(), 'yyyy/MM/dd')} - {format(trip.endDate.toDate(), 'yyyy/MM/dd')}
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
                     </div>
 
                     {/* Tabs Navigation */}
@@ -344,8 +345,8 @@ export default function TripDetail() {
                                 <button
                                     onClick={() => setActiveTab('overview')}
                                     className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'overview'
-                                        ? 'bg-blue-600 text-white shadow-md'
-                                        : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                                        ? 'bg-blue-600 dark:bg-blue-600 text-white shadow-md shadow-blue-500/30'
+                                        : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-800'
                                         }`}
                                 >
                                     機票
@@ -353,8 +354,8 @@ export default function TripDetail() {
                                 <button
                                     onClick={() => setActiveTab('hotels')}
                                     className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'hotels'
-                                        ? 'bg-blue-600 text-white shadow-md'
-                                        : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                                        ? 'bg-blue-600 dark:bg-blue-600 text-white shadow-md shadow-blue-500/30'
+                                        : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-800'
                                         }`}
                                 >
                                     飯店
@@ -362,8 +363,8 @@ export default function TripDetail() {
                                 <button
                                     onClick={() => setActiveTab('planItems')}
                                     className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'planItems'
-                                        ? 'bg-blue-600 text-white shadow-md'
-                                        : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                                        ? 'bg-blue-600 dark:bg-blue-600 text-white shadow-md shadow-blue-500/30'
+                                        : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-800'
                                         }`}
                                 >
                                     待規劃清單
@@ -384,9 +385,9 @@ export default function TripDetail() {
                                         <button
                                             key={dateStr}
                                             onClick={() => setActiveTab(dateStr)}
-                                            className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${isActive
-                                                ? 'bg-blue-600 text-white shadow-md'
-                                                : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
+                                            className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-bold transition-all ${isActive
+                                                ? 'bg-blue-600 dark:bg-blue-600 text-white shadow-md shadow-blue-500/30 scale-105'
+                                                : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-800'
                                                 }`}
                                         >
                                             第 {index + 1} 天 <span className="opacity-75 text-xs ml-1">({format(day, 'MM/dd')})</span>
@@ -401,12 +402,20 @@ export default function TripDetail() {
 
             {/* Content Area */}
             <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-8 pb-32">
+                <AnimatePresence mode="wait">
+                <motion.div 
+                    key={activeTab}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                >
                 {activeTab === 'overview' ? (
                     <div className="space-y-6">
                         {/* Outbound */}
                         <div>
                             <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                                <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
                                     <span className="w-2 h-6 bg-blue-500 rounded-full" />
                                     去程航班
                                 </h2>
@@ -431,7 +440,7 @@ export default function TripDetail() {
                                     onDelete={() => handleDeleteFlight('outbound')}
                                 />
                             ) : (
-                                <div className="p-8 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center text-gray-400 bg-gray-50/50">
+                                <div className="p-8 border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-2xl flex flex-col items-center justify-center text-gray-400 bg-gray-50/50 dark:bg-gray-900/50 backdrop-blur-sm">
                                     <p className="text-sm">尚未新增去程航班資訊</p>
                                 </div>
                             )}
@@ -440,7 +449,7 @@ export default function TripDetail() {
                         {/* Return */}
                         <div>
                             <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                                <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
                                     <span className="w-2 h-6 bg-emerald-500 rounded-full" />
                                     回程航班
                                 </h2>
@@ -465,7 +474,7 @@ export default function TripDetail() {
                                     onDelete={() => handleDeleteFlight('return')}
                                 />
                             ) : (
-                                <div className="p-8 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center text-gray-400 bg-gray-50/50">
+                                <div className="p-8 border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-2xl flex flex-col items-center justify-center text-gray-400 bg-gray-50/50 dark:bg-gray-900/50 backdrop-blur-sm">
                                     <p className="text-sm">尚未新增回程航班資訊</p>
                                 </div>
                             )}
@@ -474,7 +483,7 @@ export default function TripDetail() {
                 ) : activeTab === 'hotels' ? (
                     <div className="space-y-6">
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
                                 <span className="w-2 h-6 bg-indigo-500 rounded-full" />
                                 飯店資訊
                             </h2>
@@ -497,7 +506,7 @@ export default function TripDetail() {
                                 ))}
                             </div>
                         ) : (
-                            <div className="p-8 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center text-gray-400 bg-gray-50/50">
+                            <div className="p-8 border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-2xl flex flex-col items-center justify-center text-gray-400 bg-gray-50/50 dark:bg-gray-900/50 backdrop-blur-sm">
                                 <p className="text-sm">尚未新增飯店資訊</p>
                             </div>
                         )}
@@ -505,7 +514,7 @@ export default function TripDetail() {
                 ) : activeTab === 'planItems' ? (
                     <div className="space-y-6">
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
                                 <span className="w-2 h-6 bg-purple-500 rounded-full" />
                                 待規劃清單
                             </h2>
@@ -535,7 +544,7 @@ export default function TripDetail() {
                                     ))}
                             </div>
                         ) : (
-                            <div className="p-8 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center text-gray-400 bg-gray-50/50">
+                            <div className="p-8 border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-2xl flex flex-col items-center justify-center text-gray-400 bg-gray-50/50 dark:bg-gray-900/50 backdrop-blur-sm">
                                 <p className="text-sm">此清單可以臨時放置一些可能會想去、想做的事情</p>
                             </div>
                         )}
@@ -544,11 +553,12 @@ export default function TripDetail() {
                     // Itinerary View
                     <>
                         <div className="mb-6 flex justify-between items-center">
-                            <h2 className="text-lg font-bold text-slate-800">
+                            <h2 className="text-xl font-bold text-slate-800 dark:text-gray-100 items-center flex gap-2">
+                                <span className="w-2 h-6 bg-orange-500 rounded-full" />
                                 當日行程
                             </h2>
                             <button
-                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-sm font-medium flex items-center gap-2 transition-transform hover:scale-105 active:scale-95 shadow-lg shadow-blue-500/20 rounded-full"
                                 onClick={() => setIsActivityModalOpen(true)}
                             >
                                 <Plus className="w-4 h-4" />
@@ -558,8 +568,8 @@ export default function TripDetail() {
 
                         <div className="space-y-4">
                             {currentDayActivities.length === 0 ? (
-                                <div className="text-center py-12 bg-white rounded-xl border border-dashed border-slate-300">
-                                    <div className="text-slate-400 mb-2">此日沒有活動安排</div>
+                                <div className="text-center py-12 bg-white/50 dark:bg-gray-900/50 backdrop-blur-xl rounded-2xl border border-dashed border-slate-300 dark:border-gray-700 shadow-sm">
+                                    <div className="text-slate-400 dark:text-gray-500 mb-2">此日沒有活動安排</div>
                                     <button
                                         onClick={() => setIsActivityModalOpen(true)}
                                         className="text-blue-600 text-sm font-medium hover:underline"
@@ -571,36 +581,36 @@ export default function TripDetail() {
                                 currentDayActivities.map(activity => (
                                     <div
                                         key={activity.id}
-                                        className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex gap-4 hover:shadow-md transition-shadow group relative pr-12 cursor-pointer"
+                                        className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800 p-4 flex gap-4 hover:shadow-xl hover:shadow-blue-500/5 dark:hover:shadow-blue-900/20 transition-all group relative pr-12 cursor-pointer hover:-translate-y-1"
                                         onClick={() => setSelectedActivityForDetail(activity)}
                                     >
-                                        <div className="flex flex-col items-center gap-1 w-16 pt-1 text-slate-500">
-                                            <span className="font-bold text-slate-900">{format(activity.startTime.toDate(), 'HH:mm')}</span>
+                                        <div className="flex flex-col items-center gap-1 w-16 pt-1 text-slate-500 dark:text-gray-400">
+                                            <span className="font-bold text-slate-900 dark:text-white text-lg">{format(activity.startTime.toDate(), 'HH:mm')}</span>
                                             {activity.endTime && (
-                                                <span className="text-xs opacity-70">{format(activity.endTime.toDate(), 'HH:mm')}</span>
+                                                <span className="text-xs opacity-70 font-medium">{format(activity.endTime.toDate(), 'HH:mm')}</span>
                                             )}
                                         </div>
 
-                                        <div className="w-1 bg-slate-100 rounded-full relative">
-                                            {/* Timeline dot could go here */}
+                                        <div className="w-1 bg-slate-100 dark:bg-gray-800 rounded-full relative">
+                                            <div className="absolute top-0 w-3 h-3 bg-blue-500 rounded-full -left-1 ring-4 ring-blue-100 dark:ring-blue-900 shadow-sm"></div>
                                         </div>
 
                                         <div className="flex-1 pb-2">
                                             <div className="flex items-start justify-between">
                                                 <div>
-                                                    <h3 className="font-bold text-slate-900">{activity.title}</h3>
+                                                    <h3 className="font-bold text-slate-900 dark:text-white text-lg">{activity.title}</h3>
                                                     {activity.location && activity.type !== 'transport' && (
-                                                        <div className="flex items-center gap-1 text-sm text-slate-500 mt-1">
-                                                            <MapPin className="w-3 h-3" />
+                                                        <div className="flex items-center gap-1.5 text-sm text-slate-500 dark:text-gray-400 mt-1.5">
+                                                            <MapPin className="w-3.5 h-3.5" />
                                                             {activity.location}
                                                         </div>
                                                     )}
                                                     {activity.type === 'transport' && (activity.departureLocation || activity.arrivalLocation) && (
-                                                        <div className="flex items-center gap-1 text-sm text-slate-500 mt-1">
-                                                            <MapPin className="w-3 h-3" />
+                                                        <div className="flex items-center gap-1.5 text-sm text-slate-500 dark:text-gray-400 mt-1.5">
+                                                            <MapPin className="w-3.5 h-3.5" />
                                                             {activity.departureLocation || '?'} → {activity.arrivalLocation || '?'}
                                                             {activity.estimatedDuration && (
-                                                                <span className="ml-2 text-blue-600 font-medium">
+                                                                <span className="ml-2 text-blue-600 dark:text-blue-400 font-medium">
                                                                     ({activity.estimatedDuration >= 60
                                                                         ? `${Math.floor(activity.estimatedDuration / 60)}小時${activity.estimatedDuration % 60 > 0 ? ` ${activity.estimatedDuration % 60}分鐘` : ''}`
                                                                         : `${activity.estimatedDuration}分鐘`})
@@ -609,17 +619,17 @@ export default function TripDetail() {
                                                         </div>
                                                     )}
                                                     {activity.notes && (
-                                                        <p className="text-sm text-slate-600 mt-2 bg-slate-50 p-2 rounded">{activity.notes}</p>
+                                                        <p className="text-sm text-slate-600 dark:text-gray-300 mt-3 bg-slate-50 dark:bg-gray-800/50 p-2.5 rounded-xl border border-gray-100 dark:border-gray-800">{activity.notes}</p>
                                                     )}
                                                 </div>
-                                                <div className="p-2 bg-slate-50 rounded-lg text-slate-500">
+                                                <div className="p-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-xl shadow-sm">
                                                     {getActivityIcon(activity.type)}
                                                 </div>
                                             </div>
                                         </div>
 
                                         {/* Edit/Move/Delete Actions */}
-                                        <div className="absolute right-3 top-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 backdrop-blur-sm p-1 rounded-xl shadow-sm border border-slate-100">
+                                        <div className="absolute right-3 top-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm p-1.5 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800">
                                             <button
                                                 type="button"
                                                 onClick={(e) => {
@@ -665,6 +675,8 @@ export default function TripDetail() {
                         </div>
                     </>
                 )}
+                </motion.div>
+                </AnimatePresence>
             </main>
 
             <CreateActivityModal

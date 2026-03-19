@@ -49,7 +49,7 @@ export default function MoveActivityModal({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-            <div className="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden">
+            <div className="bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100 rounded-2xl w-full max-w-md shadow-xl overflow-hidden">
                 <div className="flex justify-between items-center p-6 border-b border-gray-100">
                     <h2 className="text-xl font-bold text-gray-800">移動行程</h2>
                     <button

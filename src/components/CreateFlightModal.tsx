@@ -141,10 +141,10 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
             <div
-                className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto"
+                className="bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100 rounded-2xl w-full max-w-2xl shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="flex justify-between items-center p-6 border-b border-gray-100 sticky top-0 bg-white z-10">
+                <div className="flex justify-between items-center p-6 border-b border-gray-100 sticky top-0 bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100 z-10">
                     <h2 className="text-xl font-bold text-gray-800">
                         {initialData ? '編輯航班' : `新增 ${type === 'outbound' ? '去程' : '回程'} 航班`}
                     </h2>
@@ -195,7 +195,7 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
                                 <input
                                     type="text"
                                     required
-                                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white"
+                                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100"
                                     placeholder="例如：TPE (桃園國際機場)"
                                     value={formData.departureAirport}
                                     onChange={e => setFormData({ ...formData, departureAirport: e.target.value })}
@@ -208,7 +208,7 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
                                     <input
                                         type="date"
                                         required
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white"
+                                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100"
                                         value={formData.departureDate}
                                         onChange={e => setFormData({ ...formData, departureDate: e.target.value })}
                                     />
@@ -221,7 +221,7 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
                                     <input
                                         type="time"
                                         required
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white"
+                                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100"
                                         value={formData.departureTime}
                                         onChange={e => setFormData({ ...formData, departureTime: e.target.value })}
                                     />
@@ -232,7 +232,7 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
                                 <div className="relative">
                                     <Globe className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
                                     <select
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white appearance-none"
+                                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100 appearance-none"
                                         value={formData.departureTimezone}
                                         onChange={e => setFormData({ ...formData, departureTimezone: e.target.value })}
                                     >
@@ -257,7 +257,7 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
                                 <input
                                     type="text"
                                     required
-                                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white"
+                                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100"
                                     placeholder="例如：NRT (成田國際機場)"
                                     value={formData.arrivalAirport}
                                     onChange={e => setFormData({ ...formData, arrivalAirport: e.target.value })}
@@ -270,7 +270,7 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
                                     <input
                                         type="date"
                                         required
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white"
+                                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100"
                                         value={formData.arrivalDate}
                                         onChange={e => setFormData({ ...formData, arrivalDate: e.target.value })}
                                     />
@@ -283,7 +283,7 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
                                     <input
                                         type="time"
                                         required
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white"
+                                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100"
                                         value={formData.arrivalTime}
                                         onChange={e => setFormData({ ...formData, arrivalTime: e.target.value })}
                                     />
@@ -294,7 +294,7 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
                                 <div className="relative">
                                     <Globe className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
                                     <select
-                                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white appearance-none"
+                                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100 appearance-none"
                                         value={formData.arrivalTimezone}
                                         onChange={e => setFormData({ ...formData, arrivalTimezone: e.target.value })}
                                     >

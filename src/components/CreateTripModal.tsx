@@ -129,10 +129,10 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
             <div
-                className="bg-white rounded-2xl w-full max-w-md shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto"
+                className="bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100 rounded-2xl w-full max-w-md shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="flex justify-between items-center p-6 border-b border-gray-100 sticky top-0 bg-white z-10">
+                <div className="flex justify-between items-center p-6 border-b border-gray-100 sticky top-0 bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100 z-10">
                     <h2 className="text-xl font-bold text-gray-800">{initialData ? '編輯旅程' : '建立新旅程'}</h2>
                     <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                         <X className="w-5 h-5 text-gray-500" />
@@ -201,7 +201,7 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
                                 >
                                     {formData.coverColor === key && (
                                         <div className="absolute inset-0 flex items-center justify-center">
-                                            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg">
+                                            <div className="w-8 h-8 bg-white dark:bg-gray-900 dark:border-gray-800 dark:text-gray-100 rounded-full flex items-center justify-center shadow-lg">
                                                 <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                                                 </svg>
