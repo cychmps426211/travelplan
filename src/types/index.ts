@@ -77,6 +77,7 @@ export interface ChecklistItem {
     id: string;
     text: string;
     address?: string; // Optional address for Google Maps
+    remark?: string;  // Optional remark for the item
     completed: boolean;
 }
 

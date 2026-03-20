@@ -72,10 +72,13 @@ function getChecklistLabel(type: string): string {
 export default function ActivityDetailModal({ activity, onClose, onUpdateChecklist }: ActivityDetailModalProps) {
     const [newItemText, setNewItemText] = useState('');
     const [newItemAddress, setNewItemAddress] = useState('');
+    const [newItemRemark, setNewItemRemark] = useState('');
     const [showAddressInput, setShowAddressInput] = useState(false);
+    const [showRemarkInput, setShowRemarkInput] = useState(false);
     const [editingItemId, setEditingItemId] = useState<string | null>(null);
     const [editingText, setEditingText] = useState('');
     const [editingAddress, setEditingAddress] = useState('');
+    const [editingRemark, setEditingRemark] = useState('');
     const [isUpdating, setIsUpdating] = useState(false);
 
     if (!activity) return null;
@@ -99,14 +102,17 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
             id: generateId(),
             text: newItemText.trim(),
             completed: false,
-            ...(newItemAddress.trim() ? { address: newItemAddress.trim() } : {})
+            ...(newItemAddress.trim() ? { address: newItemAddress.trim() } : {}),
+            ...(newItemRemark.trim() ? { remark: newItemRemark.trim() } : {})
         };
 
         try {
             await onUpdateChecklist(activity.id, [...checklist, newItem]);
             setNewItemText('');
             setNewItemAddress('');
+            setNewItemRemark('');
             setShowAddressInput(false);
+            setShowRemarkInput(false);
         } catch (error) {
             console.error('Failed to add item:', error);
         } finally {
@@ -153,6 +159,7 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
         setEditingItemId(item.id);
         setEditingText(item.text);
         setEditingAddress(item.address || '');
+        setEditingRemark(item.remark || '');
     };
 
     // Save edited item
@@ -168,6 +175,11 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                 } else {
                     delete updated.address;
                 }
+                if (editingRemark.trim()) {
+                    updated.remark = editingRemark.trim();
+                } else {
+                    delete updated.remark;
+                }
                 return updated;
             }
             return item;
@@ -178,6 +190,7 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
             setEditingItemId(null);
             setEditingText('');
             setEditingAddress('');
+            setEditingRemark('');
         } catch (error) {
             console.error('Failed to update item:', error);
         } finally {
@@ -190,6 +203,7 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
         setEditingItemId(null);
         setEditingText('');
         setEditingAddress('');
+        setEditingRemark('');
     };
 
     return (
@@ -368,6 +382,17 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                                                         className="flex-1 px-2 py-1 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
                                                     />
                                                 </div>
+                                                {/* Remark edit field */}
+                                                <div className="flex items-center gap-2 pl-1">
+                                                    <FileText className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 shrink-0" />
+                                                    <input
+                                                        type="text"
+                                                        value={editingRemark}
+                                                        onChange={(e) => setEditingRemark(e.target.value)}
+                                                        placeholder="備註（選填）"
+                                                        className="flex-1 px-2 py-1 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
+                                                    />
+                                                </div>
                                             </div>
                                         ) : (
                                             // View mode
@@ -386,6 +411,11 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                                                     <span className={`block ${item.completed ? 'line-through text-gray-400' : 'text-gray-700 dark:text-gray-300'}`}>
                                                         {item.text}
                                                     </span>
+                                                    {item.remark && (
+                                                        <span className={`block mt-0.5 text-sm ${item.completed ? 'line-through text-gray-400' : 'text-gray-500 dark:text-gray-400'} break-words`}>
+                                                            {item.remark}
+                                                        </span>
+                                                    )}
                                                     {/* Google Maps button if address exists */}
                                                     {item.address && (
                                                         <a
@@ -454,6 +484,18 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                                         <MapPin className="w-4 h-4" />
                                     </button>
                                     <button
+                                        type="button"
+                                        onClick={() => setShowRemarkInput(!showRemarkInput)}
+                                        title="加入備註"
+                                        className={`px-3 py-2 rounded-lg border transition-colors ${
+                                            showRemarkInput
+                                                ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400'
+                                                : 'border-gray-200 dark:border-gray-700 text-gray-400 hover:text-blue-600 hover:border-blue-300'
+                                        }`}
+                                    >
+                                        <FileText className="w-4 h-4" />
+                                    </button>
+                                    <button
                                         onClick={handleAddItem}
                                         disabled={!newItemText.trim() || isUpdating}
                                         className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 dark:disabled:text-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center gap-2"
@@ -475,6 +517,22 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                                             }}
                                             placeholder="地址（選填）"
                                             className="flex-1 px-3 py-1.5 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-emerald-200 dark:border-emerald-800 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none transition-all"
+                                        />
+                                    </div>
+                                )}
+                                {/* Optional remark input */}
+                                {showRemarkInput && (
+                                    <div className="flex items-center gap-2 px-1 mt-2">
+                                        <FileText className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                                        <input
+                                            type="text"
+                                            value={newItemRemark}
+                                            onChange={(e) => setNewItemRemark(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') handleAddItem();
+                                            }}
+                                            placeholder="備註（選填）"
+                                            className="flex-1 px-3 py-1.5 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-blue-200 dark:border-blue-800 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition-all"
                                         />
                                     </div>
                                 )}
