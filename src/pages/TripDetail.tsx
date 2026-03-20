@@ -6,7 +6,7 @@ import type { Trip, Activity, FlightInfo, ChecklistItem, HotelInfo } from '../ty
 import { activityService } from '../services/activityService';
 import { tripService } from '../services/tripService';
 import { format, eachDayOfInterval, isSameDay } from 'date-fns';
-import { MapPin, ArrowLeft, Plus, Utensils, Bed, Car, Camera, Calendar, Edit2, Trash2, ArrowRight } from 'lucide-react';
+import { MapPin, ArrowLeft, Plus, Utensils, Bed, Car, Camera, Calendar, Edit2, Trash2, ArrowRight, Eye, ListChecks, Check, Navigation2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CreateActivityModal from '../components/CreateActivityModal';
 import CreateFlightModal from '../components/CreateFlightModal';
@@ -70,6 +70,8 @@ export default function TripDetail() {
         activity: Activity | null;
     }>({ isOpen: false, activity: null });
     const [selectedActivityForDetail, setSelectedActivityForDetail] = useState<Activity | null>(null);
+    const [expandedActivities, setExpandedActivities] = useState<Record<string, boolean>>({});
+    const [isUpdatingChecklist, setIsUpdatingChecklist] = useState<Record<string, boolean>>({});
     const [isScrolled, setIsScrolled] = useState(false);
 
     useEffect(() => {
@@ -198,6 +200,27 @@ export default function TripDetail() {
         } catch (error) {
             console.error("Error updating checklist: ", error);
             throw error;
+        }
+    };
+
+    const handleToggleChecklistItem = async (e: React.MouseEvent, activityId: string, itemId: string) => {
+        e.stopPropagation();
+        if (!id) return;
+        
+        setIsUpdatingChecklist(prev => ({ ...prev, [activityId]: true }));
+        try {
+            const activity = activities.find(a => a.id === activityId);
+            if (!activity || !activity.checklist) return;
+            
+            const updatedChecklist = activity.checklist.map(item =>
+                item.id === itemId ? { ...item, completed: !item.completed } : item
+            );
+            
+            await activityService.updateActivity(id, activityId, { checklist: updatedChecklist });
+        } catch (error) {
+            console.error('Failed to toggle item:', error);
+        } finally {
+            setIsUpdatingChecklist(prev => ({ ...prev, [activityId]: false }));
         }
     };
 
@@ -578,11 +601,21 @@ export default function TripDetail() {
                                     </button>
                                 </div>
                             ) : (
-                                currentDayActivities.map(activity => (
+                                currentDayActivities.map(activity => {
+                                    const hasChecklist = activity.checklist && activity.checklist.length > 0;
+                                    const isExpanded = expandedActivities[activity.id];
+                                    return (
                                     <div
                                         key={activity.id}
-                                        className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800 p-4 flex gap-4 hover:shadow-xl hover:shadow-blue-500/5 dark:hover:shadow-blue-900/20 transition-all group relative pr-12 cursor-pointer hover:-translate-y-1"
-                                        onClick={() => setSelectedActivityForDetail(activity)}
+                                        className={`bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800 p-4 flex gap-4 hover:shadow-xl hover:shadow-blue-500/5 dark:hover:shadow-blue-900/20 transition-all group relative pr-12 ${hasChecklist ? 'cursor-pointer' : ''} hover:-translate-y-1`}
+                                        onClick={() => {
+                                            if (hasChecklist) {
+                                                setExpandedActivities(prev => ({
+                                                    ...prev,
+                                                    [activity.id]: !prev[activity.id]
+                                                }));
+                                            }
+                                        }}
                                     >
                                         <div className="flex flex-col items-center gap-1 w-16 pt-1 text-slate-500 dark:text-gray-400">
                                             <span className="font-bold text-slate-900 dark:text-white text-lg">{format(activity.startTime.toDate(), 'HH:mm')}</span>
@@ -626,10 +659,74 @@ export default function TripDetail() {
                                                     {getActivityIcon(activity.type)}
                                                 </div>
                                             </div>
+                                            
+                                            {/* Preview Checklist */}
+                                            {hasChecklist && isExpanded && (
+                                                <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 animate-in fade-in slide-in-from-top-2 duration-300">
+                                                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-3">
+                                                        <ListChecks className="w-4 h-4 text-purple-500" />
+                                                        <span className="font-medium">
+                                                            待辦清單 ({activity.checklist!.filter(i => i.completed).length}/{activity.checklist!.length})
+                                                        </span>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        {activity.checklist!.map(item => (
+                                                            <div
+                                                                key={item.id}
+                                                                className={`flex items-start gap-3 p-3 rounded-xl border transition-all ${item.completed
+                                                                    ? 'bg-green-50/50 dark:bg-green-900/10 border-green-200/50 dark:border-green-800/30'
+                                                                    : 'bg-slate-50 dark:bg-gray-800/30 border-gray-200 dark:border-gray-700/50'
+                                                                    }`}
+                                                                onClick={(e) => e.stopPropagation()}
+                                                            >
+                                                                <button
+                                                                    onClick={(e) => handleToggleChecklistItem(e, activity.id, item.id)}
+                                                                    disabled={isUpdatingChecklist[activity.id]}
+                                                                    className={`mt-0.5 w-[22px] h-[22px] shrink-0 rounded flex items-center justify-center transition-colors border ${item.completed
+                                                                        ? 'bg-green-500 border-green-500 text-white'
+                                                                        : 'bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-600 hover:border-green-400'
+                                                                        }`}
+                                                                >
+                                                                    {item.completed && <Check className="w-3.5 h-3.5" />}
+                                                                </button>
+                                                                <div className="flex-1 min-w-0 flex flex-col items-start pt-0.5">
+                                                                    <span className={`block text-sm ${item.completed ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'}`}>
+                                                                        {item.text}
+                                                                    </span>
+                                                                    {item.address && (
+                                                                        <a
+                                                                            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.address)}`}
+                                                                            target="_blank"
+                                                                            rel="noopener noreferrer"
+                                                                            onClick={(e) => e.stopPropagation()}
+                                                                            className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 px-2 py-1 rounded-md transition-colors"
+                                                                        >
+                                                                            <Navigation2 className="w-3 h-3" />
+                                                                            用 Google 地圖開啟
+                                                                        </a>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Edit/Move/Delete Actions */}
-                                        <div className="absolute right-3 top-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm p-1.5 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800">
+                                        <div className="absolute right-3 top-3 flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm p-1.5 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800">
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setSelectedActivityForDetail(activity);
+                                                }}
+                                                className="p-1.5 text-blue-500 hover:text-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded-lg transition-all scale-110 ml-1 mr-1 shadow-sm"
+                                                title="詳細內容"
+                                            >
+                                                <Eye className="w-5 h-5 fill-blue-500/10" />
+                                            </button>
+                                            <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1"></div>
                                             <button
                                                 type="button"
                                                 onClick={(e) => {
@@ -670,7 +767,8 @@ export default function TripDetail() {
                                             </button>
                                         </div>
                                     </div>
-                                ))
+                                    );
+                                })
                             )}
                         </div>
                     </>
