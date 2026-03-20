@@ -693,6 +693,11 @@ export default function TripDetail() {
                                                                     <span className={`block text-sm ${item.completed ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-700 dark:text-gray-300'}`}>
                                                                         {item.text}
                                                                     </span>
+                                                                    {item.remark && (
+                                                                        <span className={`block mt-0.5 text-xs ${item.completed ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-500 dark:text-gray-400'} break-words`}>
+                                                                            {item.remark}
+                                                                        </span>
+                                                                    )}
                                                                     {item.address && (
                                                                         <a
                                                                             href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.address)}`}
