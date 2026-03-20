@@ -229,7 +229,7 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                 </div>
 
                 {/* Content */}
-                <div className="p-6 space-y-6 overflow-y-auto flex-1">
+                <div className="p-6 space-y-6 overflow-y-auto overflow-x-hidden flex-1">
                     {/* Time Section */}
                     <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
                         <Clock className="w-5 h-5 text-blue-500" />
@@ -354,19 +354,19 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                                                             if (e.key === 'Enter') handleSaveEdit();
                                                             if (e.key === 'Escape') handleCancelEdit();
                                                         }}
-                                                        className="flex-1 px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-blue-300 dark:border-blue-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                        className="flex-1 min-w-0 px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-blue-300 dark:border-blue-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                                                         autoFocus
                                                     />
                                                     <button
                                                         onClick={handleSaveEdit}
                                                         disabled={isUpdating}
-                                                        className="p-1.5 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/30 rounded transition-colors"
+                                                        className="p-1.5 shrink-0 text-green-600 hover:bg-green-100 dark:hover:bg-green-900/30 rounded transition-colors"
                                                     >
                                                         <Check className="w-4 h-4" />
                                                     </button>
                                                     <button
                                                         onClick={handleCancelEdit}
-                                                        className="p-1.5 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                                                        className="p-1.5 shrink-0 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
                                                     >
                                                         <X className="w-4 h-4" />
                                                     </button>
@@ -379,7 +379,7 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                                                         value={editingAddress}
                                                         onChange={(e) => setEditingAddress(e.target.value)}
                                                         placeholder="地址（選填，可開啟 Google 地圖）"
-                                                        className="flex-1 px-2 py-1 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
+                                                        className="flex-1 min-w-0 px-2 py-1 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
                                                     />
                                                 </div>
                                                 {/* Remark edit field */}
@@ -390,7 +390,7 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                                                         value={editingRemark}
                                                         onChange={(e) => setEditingRemark(e.target.value)}
                                                         placeholder="備註（選填）"
-                                                        className="flex-1 px-2 py-1 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
+                                                        className="flex-1 min-w-0 px-2 py-1 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:ring-1 focus:ring-blue-400"
                                                     />
                                                 </div>
                                             </div>
@@ -469,13 +469,13 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                                             if (e.key === 'Enter' && !showAddressInput) handleAddItem();
                                         }}
                                         placeholder={activity.type === 'food' ? '新增美食項目...' : activity.type === 'shopping' ? '新增購物項目...' : '新增項目...'}
-                                        className="flex-1 px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                                        className="flex-1 min-w-0 px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowAddressInput(!showAddressInput)}
                                         title="加入地址"
-                                        className={`px-3 py-2 rounded-lg border transition-colors ${
+                                        className={`px-3 py-2 shrink-0 rounded-lg border transition-colors ${
                                             showAddressInput
                                                 ? 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-300 dark:border-emerald-700 text-emerald-600 dark:text-emerald-400'
                                                 : 'border-gray-200 dark:border-gray-700 text-gray-400 hover:text-emerald-600 hover:border-emerald-300'
@@ -487,7 +487,7 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                                         type="button"
                                         onClick={() => setShowRemarkInput(!showRemarkInput)}
                                         title="加入備註"
-                                        className={`px-3 py-2 rounded-lg border transition-colors ${
+                                        className={`px-3 py-2 shrink-0 rounded-lg border transition-colors ${
                                             showRemarkInput
                                                 ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400'
                                                 : 'border-gray-200 dark:border-gray-700 text-gray-400 hover:text-blue-600 hover:border-blue-300'
@@ -498,10 +498,10 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                                     <button
                                         onClick={handleAddItem}
                                         disabled={!newItemText.trim() || isUpdating}
-                                        className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 dark:disabled:text-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+                                        className="px-3 sm:px-4 py-2 shrink-0 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 dark:disabled:text-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center gap-1 sm:gap-2"
                                     >
                                         <Plus className="w-4 h-4" />
-                                        新增
+                                        <span className="hidden sm:inline">新增</span>
                                     </button>
                                 </div>
                                 {/* Optional address input */}
@@ -516,7 +516,7 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                                                 if (e.key === 'Enter') handleAddItem();
                                             }}
                                             placeholder="地址（選填）"
-                                            className="flex-1 px-3 py-1.5 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-emerald-200 dark:border-emerald-800 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none transition-all"
+                                            className="flex-1 min-w-0 px-3 py-1.5 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-emerald-200 dark:border-emerald-800 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none transition-all"
                                         />
                                     </div>
                                 )}
@@ -532,7 +532,7 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                                                 if (e.key === 'Enter') handleAddItem();
                                             }}
                                             placeholder="備註（選填）"
-                                            className="flex-1 px-3 py-1.5 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-blue-200 dark:border-blue-800 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition-all"
+                                            className="flex-1 min-w-0 px-3 py-1.5 text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-blue-200 dark:border-blue-800 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition-all"
                                         />
                                     </div>
                                 )}
