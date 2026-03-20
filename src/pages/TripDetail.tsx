@@ -607,7 +607,7 @@ export default function TripDetail() {
                                     return (
                                     <div
                                         key={activity.id}
-                                        className={`bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800 p-4 flex gap-4 hover:shadow-xl hover:shadow-blue-500/5 dark:hover:shadow-blue-900/20 transition-all group relative pr-12 ${hasChecklist ? 'cursor-pointer' : ''} hover:-translate-y-1`}
+                                        className={`bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800 p-4 flex gap-4 hover:shadow-xl hover:shadow-blue-500/5 dark:hover:shadow-blue-900/20 transition-all group relative ${hasChecklist ? 'cursor-pointer' : ''} hover:-translate-y-1`}
                                         onClick={() => {
                                             if (hasChecklist) {
                                                 setExpandedActivities(prev => ({
@@ -711,60 +711,61 @@ export default function TripDetail() {
                                                     </div>
                                                 </div>
                                             )}
-                                        </div>
-
-                                        {/* Edit/Move/Delete Actions */}
-                                        <div className="absolute right-3 top-3 flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm p-1.5 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800">
-                                            <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setSelectedActivityForDetail(activity);
-                                                }}
-                                                className="p-1.5 text-blue-500 hover:text-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded-lg transition-all scale-110 ml-1 mr-1 shadow-sm"
-                                                title="詳細內容"
-                                            >
-                                                <Eye className="w-5 h-5 fill-blue-500/10" />
-                                            </button>
-                                            <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1"></div>
-                                            <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setEditingActivity(activity);
-                                                    setIsActivityModalOpen(true);
-                                                }}
-                                                className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                                title="編輯"
-                                            >
-                                                <Edit2 className="w-4 h-4" />
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setMoveActivityModal({ isOpen: true, activity });
-                                                }}
-                                                className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                                                title="移動"
-                                            >
-                                                <ArrowRight className="w-4 h-4" />
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setDeleteActivityConfirm({
-                                                        isOpen: true,
-                                                        activityId: activity.id,
-                                                        activityTitle: activity.title
-                                                    });
-                                                }}
-                                                className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                title="刪除"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
+                                            {/* Edit/Move/Delete Actions */}
+                                            <div className="mt-3 flex items-center justify-end">
+                                                <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity bg-white/90 dark:bg-gray-800/90 p-1.5 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-700">
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setSelectedActivityForDetail(activity);
+                                                        }}
+                                                        className="p-1.5 text-blue-500 hover:text-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded-lg transition-all scale-110 ml-1 mr-1 shadow-sm"
+                                                        title="詳細內容"
+                                                    >
+                                                        <Eye className="w-5 h-5 fill-blue-500/10" />
+                                                    </button>
+                                                    <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1"></div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setEditingActivity(activity);
+                                                            setIsActivityModalOpen(true);
+                                                        }}
+                                                        className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                        title="編輯"
+                                                    >
+                                                        <Edit2 className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setMoveActivityModal({ isOpen: true, activity });
+                                                        }}
+                                                        className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                                        title="移動"
+                                                    >
+                                                        <ArrowRight className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setDeleteActivityConfirm({
+                                                                isOpen: true,
+                                                                activityId: activity.id,
+                                                                activityTitle: activity.title
+                                                            });
+                                                        }}
+                                                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                        title="刪除"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     );
