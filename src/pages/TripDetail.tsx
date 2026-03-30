@@ -513,9 +513,10 @@ export default function TripDetail() {
                             </h2>
                             <button
                                 onClick={() => setHotelModal({ isOpen: true })}
-                                className="text-sm text-blue-600 font-medium hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
+                                className="bg-blue-600 hover:bg-blue-700 text-white w-10 h-10 flex flex-shrink-0 items-center justify-center transition-transform hover:scale-105 active:scale-95 shadow-lg shadow-blue-500/20 rounded-full"
+                                title="新增飯店"
                             >
-                                <Plus className="w-4 h-4" /> 新增飯店
+                                <Plus className="w-5 h-5" />
                             </button>
                         </div>
                         {trip.hotels && trip.hotels.length > 0 ? (
@@ -544,9 +545,10 @@ export default function TripDetail() {
                             </h2>
                             <button
                                 onClick={() => setPlanItemModal({ isOpen: true })}
-                                className="text-sm text-blue-600 font-medium hover:bg-blue-50 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
+                                className="bg-blue-600 hover:bg-blue-700 text-white w-10 h-10 flex flex-shrink-0 items-center justify-center transition-transform hover:scale-105 active:scale-95 shadow-lg shadow-blue-500/20 rounded-full"
+                                title="新增項目"
                             >
-                                <Plus className="w-4 h-4" /> 新增項目
+                                <Plus className="w-5 h-5" />
                             </button>
                         </div>
                         {trip.planItems && trip.planItems.length > 0 ? (
@@ -582,11 +584,11 @@ export default function TripDetail() {
                                 當日行程
                             </h2>
                             <button
-                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 text-sm font-medium flex items-center gap-2 transition-transform hover:scale-105 active:scale-95 shadow-lg shadow-blue-500/20 rounded-full"
+                                className="bg-blue-600 hover:bg-blue-700 text-white w-10 h-10 flex flex-shrink-0 items-center justify-center transition-transform hover:scale-105 active:scale-95 shadow-lg shadow-blue-500/20 rounded-full"
                                 onClick={() => setIsActivityModalOpen(true)}
+                                title="新增活動"
                             >
-                                <Plus className="w-4 h-4" />
-                                新增活動
+                                <Plus className="w-5 h-5" />
                             </button>
                         </div>
 
