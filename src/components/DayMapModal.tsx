@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Map as MapIcon, ExternalLink, Loader2 } from 'lucide-react';
+import { X, Map as MapIcon, Loader2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import type { Activity } from '../types';
 
@@ -96,8 +96,17 @@ export default function DayMapModal({ isOpen, onClose, activities, dayTitle }: D
                                     animation: googleMaps.Animation.DROP,
                                 });
 
+                                const searchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}`;
                                 const infoWindow = new googleMaps.InfoWindow({
-                                    content: `<div style="padding: 4px 8px; font-weight: bold; font-family: sans-serif; color: #333">${loc}</div>`
+                                    content: `
+                                        <div style="padding: 6px 10px; font-family: sans-serif; display: flex; flex-direction: column; gap: 6px;">
+                                            <div style="font-weight: bold; color: #333; font-size: 14px;">${loc}</div>
+                                            <a href="${searchUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; font-size: 13px; text-decoration: none; display: flex; align-items: center; gap: 4px;">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                                使用 Google 地圖開啟
+                                            </a>
+                                        </div>
+                                    `
                                 });
 
                                 marker.addListener('click', () => {
@@ -150,17 +159,6 @@ export default function DayMapModal({ isOpen, onClose, activities, dayTitle }: D
             clearTimeout(timeoutId);
         };
     }, [isOpen, uniqueLocations.join(','), apiKey]);
-
-    // Use directions intent only if > 1 place, but label is generic.
-    let intentUrl = '';
-    if (uniqueLocations.length === 1) {
-        intentUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(uniqueLocations[0])}`;
-    } else if (uniqueLocations.length > 1) {
-        const origin = encodeURIComponent(uniqueLocations[0]);
-        const destination = encodeURIComponent(uniqueLocations[uniqueLocations.length - 1]);
-        const waypoints = uniqueLocations.slice(1, -1).map(loc => encodeURIComponent(loc)).join('|');
-        intentUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}${waypoints ? `&waypoints=${waypoints}` : ''}`;
-    }
 
     if (!isOpen) return null;
 
@@ -243,20 +241,6 @@ export default function DayMapModal({ isOpen, onClose, activities, dayTitle }: D
                         )}
                     </div>
 
-                    {/* Footer */}
-                    {uniqueLocations.length > 0 && (
-                        <div className="flex-shrink-0 p-4 border-t border-slate-100 dark:border-gray-800/50 bg-white/50 dark:bg-gray-900/50 backdrop-blur-xl flex justify-end gap-3 z-20">
-                            <a
-                                href={intentUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium rounded-xl transition-all shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 hover:-translate-y-0.5"
-                            >
-                                <ExternalLink className="w-4 h-4" />
-                                使用 Google 地圖繼續
-                            </a>
-                        </div>
-                    )}
                 </motion.div>
             </div>
         </AnimatePresence>
