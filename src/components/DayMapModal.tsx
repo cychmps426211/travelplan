@@ -77,6 +77,7 @@ export default function DayMapModal({ isOpen, onClose, activities, dayTitle }: D
                     center: { lat: 25.0330, lng: 121.5654 }, // Default fallback
                     mapTypeControl: false,
                     streetViewControl: false,
+                    gestureHandling: 'greedy', // Allows single-finger panning without the prompt
                 });
 
                 const geocoder = new googleMaps.Geocoder();
