@@ -83,6 +83,9 @@ export default function DayMapModal({ isOpen, onClose, activities, dayTitle }: D
                 const bounds = new googleMaps.LatLngBounds();
                 let hasValidLocation = false;
 
+                // Create a single shared InfoWindow to prevent overlapping
+                const sharedInfoWindow = new googleMaps.InfoWindow();
+
                 // Geocode all unique locations to plot markers
                 const geocodePromises = uniqueLocations.map((loc) => {
                     return new Promise<void>((resolve) => {
@@ -97,20 +100,22 @@ export default function DayMapModal({ isOpen, onClose, activities, dayTitle }: D
                                 });
 
                                 const searchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc)}`;
-                                const infoWindow = new googleMaps.InfoWindow({
-                                    content: `
-                                        <div style="padding: 6px 10px; font-family: sans-serif; display: flex; flex-direction: column; gap: 6px;">
-                                            <div style="font-weight: bold; color: #333; font-size: 14px;">${loc}</div>
-                                            <a href="${searchUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; font-size: 13px; text-decoration: none; display: flex; align-items: center; gap: 4px;">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-                                                使用 Google 地圖開啟
-                                            </a>
-                                        </div>
-                                    `
-                                });
+                                const contentHtml = `
+                                    <div style="padding: 2px 4px 0px 4px; font-family: sans-serif; display: flex; flex-direction: column; gap: 8px; min-width: 160px; max-width: 250px;">
+                                        <div style="font-weight: 600; color: #1e293b; font-size: 15px; line-height: 1.4;">${loc}</div>
+                                        <a href="${searchUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; font-size: 14px; font-weight: 500; text-decoration: none; display: flex; align-items: center; gap: 4px; padding-bottom: 4px;">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                                            使用 Google 地圖開啟
+                                        </a>
+                                    </div>
+                                `;
 
                                 marker.addListener('click', () => {
-                                    infoWindow.open(map, marker);
+                                    sharedInfoWindow.setOptions({
+                                        headerDisabled: true, // Specifically disables the new bulky header/blank space in latest Maps API
+                                    });
+                                    sharedInfoWindow.setContent(contentHtml);
+                                    sharedInfoWindow.open(map, marker);
                                 });
 
                                 bounds.extend(position);
@@ -236,7 +241,23 @@ export default function DayMapModal({ isOpen, onClose, activities, dayTitle }: D
                                     </div>
                                 )}
 
-                                <div ref={mapRef} className="absolute inset-0 w-full h-full" />
+                                {/* Fix Tailwind CSS reset conflicts with Google Maps UI */}
+                                <style>{`
+                                    /* Restore close button visibility and positioning */
+                                    .gm-ui-hover-effect {
+                                        opacity: 1 !important;
+                                    }
+                                    .gm-ui-hover-effect span {
+                                        margin: 0 !important;
+                                        width: 100% !important;
+                                        height: 100% !important;
+                                    }
+                                    /* Fix SVG scaling inside close button */
+                                    .gm-ui-hover-effect svg {
+                                        display: inline !important;
+                                    }
+                                `}</style>
+                                <div ref={mapRef} className="absolute inset-0 w-full h-full rounded-b-[2rem] overflow-hidden" />
                             </>
                         )}
                     </div>
