@@ -6,7 +6,7 @@ import type { Trip, Activity, FlightInfo, ChecklistItem, HotelInfo } from '../ty
 import { activityService } from '../services/activityService';
 import { tripService } from '../services/tripService';
 import { format, eachDayOfInterval, isSameDay } from 'date-fns';
-import { MapPin, ArrowLeft, Plus, Utensils, Bed, Car, Camera, Calendar, Edit2, Trash2, ArrowRight, Eye, ListChecks, Check, Navigation2 } from 'lucide-react';
+import { MapPin, ArrowLeft, Plus, Utensils, Bed, Car, Camera, Calendar, Edit2, Trash2, ArrowRight, Eye, ListChecks, Check, Navigation2, Map as MapIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CreateActivityModal from '../components/CreateActivityModal';
 import CreateFlightModal from '../components/CreateFlightModal';
@@ -18,6 +18,7 @@ import ActivityDetailModal from '../components/ActivityDetailModal';
 import CreatePlanItemModal from '../components/CreatePlanItemModal';
 import PlanItemCard from '../components/PlanItemCard';
 import MoveActivityModal from '../components/MoveActivityModal';
+import DayMapModal from '../components/DayMapModal';
 import type { PlanItem } from '../types';
 
 type Tab = 'overview' | string; // string will be ISO date
@@ -72,6 +73,7 @@ export default function TripDetail() {
     const [selectedActivityForDetail, setSelectedActivityForDetail] = useState<Activity | null>(null);
     const [expandedActivities, setExpandedActivities] = useState<Record<string, boolean>>({});
     const [isUpdatingChecklist, setIsUpdatingChecklist] = useState<Record<string, boolean>>({});
+    const [isMapModalOpen, setIsMapModalOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
 
     useEffect(() => {
@@ -583,13 +585,22 @@ export default function TripDetail() {
                                 <span className="w-2 h-6 bg-orange-500 rounded-full" />
                                 當日行程
                             </h2>
-                            <button
-                                className="bg-blue-600 hover:bg-blue-700 text-white w-10 h-10 flex flex-shrink-0 items-center justify-center transition-transform hover:scale-105 active:scale-95 shadow-lg shadow-blue-500/20 rounded-full"
-                                onClick={() => setIsActivityModalOpen(true)}
-                                title="新增活動"
-                            >
-                                <Plus className="w-5 h-5" />
-                            </button>
+                            <div className="flex items-center gap-3">
+                                <button
+                                    className="bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 w-10 h-10 flex flex-shrink-0 items-center justify-center transition-transform hover:scale-105 active:scale-95 shadow-sm rounded-full"
+                                    onClick={() => setIsMapModalOpen(true)}
+                                    title="地圖檢視"
+                                >
+                                    <MapIcon className="w-5 h-5" />
+                                </button>
+                                <button
+                                    className="bg-blue-600 hover:bg-blue-700 text-white w-10 h-10 flex flex-shrink-0 items-center justify-center transition-transform hover:scale-105 active:scale-95 shadow-lg shadow-blue-500/20 rounded-full"
+                                    onClick={() => setIsActivityModalOpen(true)}
+                                    title="新增活動"
+                                >
+                                    <Plus className="w-5 h-5" />
+                                </button>
+                            </div>
                         </div>
 
                         <div className="space-y-4">
@@ -803,6 +814,13 @@ export default function TripDetail() {
                     type: 'sightseeing'
                 } : editingActivity}
                 availableDays={addPlanItemToItinerary.isOpen ? days : undefined}
+            />
+
+            <DayMapModal
+                isOpen={isMapModalOpen}
+                onClose={() => setIsMapModalOpen(false)}
+                activities={currentDayActivities}
+                dayTitle={`${format(new Date(activeTab === 'overview' || activeTab === 'hotels' || activeTab === 'planItems' ? tripStartDate : activeTab), 'yyyy/MM/dd')} 行程`}
             />
 
             <CreateFlightModal
