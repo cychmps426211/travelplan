@@ -104,19 +104,19 @@ export default function FlightCard({ flight, type, onEdit, onDelete }: FlightCar
                 </div>
 
                 <div className="flex items-center justify-between mb-6">
-                    <div className="text-center min-w-[80px]">
-                        <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    <div className="text-center min-w-[70px] sm:min-w-[80px]">
+                        <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
                             {formatLocalTime(flight.departureTime, flight.departureTimezone)}
-                            <span className="text-xs text-gray-400 font-normal ml-1 align-top">
+                            <span className="block sm:inline text-[10px] sm:text-xs text-gray-400 font-normal sm:ml-1 sm:align-top">
                                 (UTC{flight.departureTimezone})
                             </span>
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{getDayMonth(flight.departureTime, flight.departureTimezone)}</div>
-                        <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">{flight.departureAirport}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 whitespace-nowrap">{getDayMonth(flight.departureTime, flight.departureTimezone)}</div>
+                        <div className="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">{flight.departureAirport}</div>
                     </div>
 
-                    <div className="flex-1 px-8 flex flex-col items-center">
-                        <div className="text-xs text-gray-400 mb-1 font-medium">{hours}小時 {minutes}分</div>
+                    <div className="flex-1 px-2 sm:px-4 md:px-8 flex flex-col items-center">
+                        <div className="text-[10px] sm:text-xs text-gray-400 mb-1 font-medium whitespace-nowrap">{hours}小時 {minutes}分</div>
                         <div className="w-full h-px bg-gray-200 dark:bg-gray-700 relative flex items-center justify-center">
                             <div className={`absolute w-full h-0.5 ${type === 'outbound' ? 'bg-blue-100 dark:bg-blue-900' : 'bg-emerald-100 dark:bg-emerald-900'}`}></div>
                             <div className={`p-1 rounded-full ${type === 'outbound' ? 'bg-blue-50 dark:bg-blue-900/30' : 'bg-emerald-50 dark:bg-emerald-900/30'} z-10`}>
@@ -125,15 +125,15 @@ export default function FlightCard({ flight, type, onEdit, onDelete }: FlightCar
                         </div>
                     </div>
 
-                    <div className="text-center min-w-[80px]">
-                        <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    <div className="text-center min-w-[70px] sm:min-w-[80px]">
+                        <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
                             {formatLocalTime(flight.arrivalTime, flight.arrivalTimezone)}
-                            <span className="text-xs text-gray-400 font-normal ml-1 align-top">
+                            <span className="block sm:inline text-[10px] sm:text-xs text-gray-400 font-normal sm:ml-1 sm:align-top">
                                 (UTC{flight.arrivalTimezone})
                             </span>
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{getDayMonth(flight.arrivalTime, flight.arrivalTimezone)}</div>
-                        <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">{flight.arrivalAirport}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 whitespace-nowrap">{getDayMonth(flight.arrivalTime, flight.arrivalTimezone)}</div>
+                        <div className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">{flight.arrivalAirport}</div>
                     </div>
                 </div>
 
