@@ -6,7 +6,7 @@ import type { Trip, Activity, FlightInfo, ChecklistItem, HotelInfo } from '../ty
 import { activityService } from '../services/activityService';
 import { tripService } from '../services/tripService';
 import { format, eachDayOfInterval, isSameDay } from 'date-fns';
-import { MapPin, ArrowLeft, Plus, Utensils, Bed, Car, Camera, Calendar, Edit2, Trash2, ArrowRight, Eye, ListChecks, Check, Navigation2, Map as MapIcon } from 'lucide-react';
+import { MapPin, ArrowLeft, Plus, Utensils, Bed, Car, Camera, Calendar, Edit2, Trash2, ArrowRight, Eye, ListChecks, Check, Navigation2, Map as MapIcon, Calculator } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CreateActivityModal from '../components/CreateActivityModal';
 import CreateFlightModal from '../components/CreateFlightModal';
@@ -19,6 +19,7 @@ import CreatePlanItemModal from '../components/CreatePlanItemModal';
 import PlanItemCard from '../components/PlanItemCard';
 import MoveActivityModal from '../components/MoveActivityModal';
 import DayMapModal from '../components/DayMapModal';
+import CalculatorModal from '../components/CalculatorModal';
 import type { PlanItem } from '../types';
 
 type Tab = 'overview' | string; // string will be ISO date
@@ -74,6 +75,7 @@ export default function TripDetail() {
     const [expandedActivities, setExpandedActivities] = useState<Record<string, boolean>>({});
     const [isUpdatingChecklist, setIsUpdatingChecklist] = useState<Record<string, boolean>>({});
     const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+    const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
 
     useEffect(() => {
@@ -393,6 +395,14 @@ export default function TripDetail() {
                                         }`}
                                 >
                                     待規劃清單
+                                </button>
+                                <div className="w-px h-6 bg-gray-200 dark:bg-gray-800 mx-1 flex-shrink-0 self-center"></div>
+                                <button
+                                    onClick={() => setIsCalculatorOpen(true)}
+                                    className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium focus:outline-none transition-all bg-white dark:bg-gray-900 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 border border-gray-200 dark:border-gray-800 flex items-center gap-1.5"
+                                >
+                                    <Calculator className="w-4 h-4" />
+                                    <span>匯率計算機</span>
                                 </button>
                             </div>
                         </div>
@@ -893,6 +903,12 @@ export default function TripDetail() {
                 onMove={handleMoveActivity}
                 activity={moveActivityModal.activity}
                 days={days}
+            />
+
+            <CalculatorModal
+                isOpen={isCalculatorOpen}
+                onClose={() => setIsCalculatorOpen(false)}
+                baseCurrency={trip.currency || 'TWD'}
             />
         </div>
     );

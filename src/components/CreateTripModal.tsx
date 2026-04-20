@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, MapPin, Palette, Upload } from 'lucide-react';
+import { X, MapPin, Palette, Upload, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
 import { GRADIENT_COLORS, DEFAULT_GRADIENT, type GradientColorKey } from '../constants/gradients';
 
@@ -18,7 +18,8 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
         startDate: '',
         endDate: '',
         coverColor: DEFAULT_GRADIENT,
-        coverImageUrl: ''
+        coverImageUrl: '',
+        currency: 'TWD'
     });
 
     useEffect(() => {
@@ -29,7 +30,8 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
                 startDate: format(initialData.startDate.toDate(), 'yyyy-MM-dd'),
                 endDate: format(initialData.endDate.toDate(), 'yyyy-MM-dd'),
                 coverColor: initialData.coverColor || DEFAULT_GRADIENT,
-                coverImageUrl: initialData.coverImageUrl || ''
+                coverImageUrl: initialData.coverImageUrl || '',
+                currency: initialData.currency || 'TWD'
             });
         } else {
             setFormData({
@@ -38,7 +40,8 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
                 startDate: '',
                 endDate: '',
                 coverColor: DEFAULT_GRADIENT,
-                coverImageUrl: ''
+                coverImageUrl: '',
+                currency: 'TWD'
             });
         }
     }, [initialData, isOpen]);
@@ -251,6 +254,32 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
                                 value={formData.endDate}
                                 onChange={e => setFormData({ ...formData, endDate: e.target.value })}
                             />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">主要貨幣</label>
+                        <div className="relative">
+                            <DollarSign className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                            <select
+                                className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all appearance-none"
+                                value={formData.currency}
+                                onChange={e => setFormData({ ...formData, currency: e.target.value })}
+                            >
+                                <option value="TWD">台幣 (TWD)</option>
+                                <option value="JPY">日圓 (JPY)</option>
+                                <option value="KRW">韓元 (KRW)</option>
+                                <option value="THB">泰銖 (THB)</option>
+                                <option value="USD">美元 (USD)</option>
+                                <option value="EUR">歐元 (EUR)</option>
+                                <option value="HKD">港幣 (HKD)</option>
+                                <option value="CNY">人民幣 (CNY)</option>
+                            </select>
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
                         </div>
                     </div>
 
