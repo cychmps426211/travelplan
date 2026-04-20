@@ -52,6 +52,7 @@ export interface Trip {
     planItems?: PlanItem[];
     coverColor?: string;
     coverImageUrl?: string;
+    currency?: string;
 }
 
 export interface Activity {
