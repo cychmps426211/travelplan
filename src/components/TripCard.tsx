@@ -5,6 +5,7 @@ import { format, differenceInDays, differenceInCalendarDays } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import ConfirmDialog from './ConfirmDialog';
 import { GRADIENT_COLORS, DEFAULT_GRADIENT } from '../constants/gradients';
+import { runWithViewTransition } from '../utils/viewTransition';
 
 interface TripCardProps {
     trip: Trip;
@@ -52,7 +53,9 @@ export default function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
     }
 
     const handleCardClick = () => {
-        navigate(`/trip/${trip.id}`);
+        runWithViewTransition(() => {
+            navigate(`/trip/${trip.id}`);
+        });
     };
 
     const handleEditClick = (e: React.MouseEvent) => {
@@ -77,7 +80,7 @@ export default function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
     return (
         <>
             <div
-                className="group block h-full bg-white dark:bg-gray-900 rounded-3xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-1.5 transition-all duration-300 flex flex-col cursor-pointer mt-1"
+                className="cq-card group block h-full bg-white dark:bg-gray-900 rounded-3xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-1.5 transition-all duration-300 flex flex-col cursor-pointer mt-1"
                 onClick={handleCardClick}
             >
                 {/* Gradient Background Container */}
@@ -110,20 +113,28 @@ export default function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
                         </button>
                     </div>
 
-                    <div className="absolute bottom-4 left-4 text-white z-10">
-                        <h3 className="text-2xl font-bold mb-1 tracking-tight truncate drop-shadow-md">{trip.title}</h3>
-                        <div className="flex items-center gap-2 text-sm font-medium text-white/90 drop-shadow-sm">
-                            <MapPin className="w-4 h-4" />
-                            {trip.destination}
+                    <div className="absolute bottom-4 left-4 right-4 text-white z-10">
+                        <h3
+                            className="cq-trip-title text-2xl font-bold mb-1 tracking-tight truncate drop-shadow-md"
+                            style={{ viewTransitionName: `trip-title-${trip.id}` }}
+                        >
+                            {trip.title}
+                        </h3>
+                        <div
+                            className="flex items-center gap-2 text-sm font-medium text-white/90 drop-shadow-sm w-fit"
+                            style={{ viewTransitionName: `trip-dest-${trip.id}` }}
+                        >
+                            <MapPin className="w-4 h-4 shrink-0" />
+                            <span className="truncate">{trip.destination}</span>
                         </div>
                     </div>
                 </div>
 
                 {/* Content Body */}
-                <div className="p-6 flex-1 flex flex-col justify-between">
-                    <div className="space-y-4">
+                <div className="cq-card-body p-6 flex-1 flex flex-col justify-between">
+                    <div className="cq-trip-meta space-y-4">
                         <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400 text-sm font-medium">
-                            <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                            <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg shrink-0">
                                 <Calendar className="w-4 h-4 text-blue-500 dark:text-blue-400" />
                             </div>
                             <span>
@@ -131,7 +142,7 @@ export default function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
                             </span>
                         </div>
                         <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400 text-sm font-medium">
-                            <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+                            <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg shrink-0">
                                 <Clock className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                             </div>
                             <span>{days} 天旅程</span>

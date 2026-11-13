@@ -48,8 +48,11 @@ export default function MoveActivityModal({
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-            <div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-2xl w-full max-w-md shadow-xl overflow-hidden">
+        <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
+            <div
+                className="modal-panel bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-2xl w-full max-w-md shadow-xl overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
+            >
                 <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-gray-800">
                     <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">移動行程</h2>
                     <button

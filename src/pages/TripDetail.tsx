@@ -76,26 +76,6 @@ export default function TripDetail() {
     const [isUpdatingChecklist, setIsUpdatingChecklist] = useState<Record<string, boolean>>({});
     const [isMapModalOpen, setIsMapModalOpen] = useState(false);
     const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
-    const [isScrolled, setIsScrolled] = useState(false);
-
-    useEffect(() => {
-        const handleScroll = () => {
-            setIsScrolled(prev => {
-                const SCROLL_THRESHOLD = 30;
-                if (prev) {
-                    return window.scrollY > SCROLL_THRESHOLD;
-                } else {
-                    // Header 縮小大約會短縮 250px 左右的高度
-                    // 如果剩餘長度不夠（低於縮去的高度），就會觸發瀏覽器強迫捲動回彈，導致死循環
-                    // 所以將閾值提高到 450px，確保下方至少還有半個螢幕的內容時才開始縮縮 Header
-                    const hasEnoughContent = document.documentElement.scrollHeight > window.innerHeight + 450;
-                    return window.scrollY > SCROLL_THRESHOLD && hasEnoughContent;
-                }
-            });
-        };
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
 
     useEffect(() => {
         if (!id) return;
@@ -333,42 +313,51 @@ export default function TripDetail() {
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-gray-950 transition-colors flex flex-col">
-            {/* Header */}
-            <div className={`bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-slate-200 dark:border-gray-800 sticky top-0 z-40 transition-shadow duration-300 ${isScrolled ? 'shadow-sm dark:shadow-black/20' : ''}`}>
-                <div className={`max-w-4xl mx-auto px-4 transition-[padding] duration-300 ${isScrolled ? 'py-3' : 'py-4'}`}>
-                    {/* Top Section to Hide */}
-                    <div className={`transition-[max-height,opacity,margin] duration-300 ease-in-out overflow-hidden ${isScrolled ? 'max-h-0 opacity-0 mb-0' : 'max-h-[200px] opacity-100 mb-3'}`}>
-                        <Link to="/" className="inline-flex items-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 focus:outline-none transition-colors mb-4 group">
-                            <ArrowLeft className="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" />
-                            返回主控台
-                        </Link>
+            {/* Hero Title Section (scrolls naturally without JS scroll listeners or layout shifts) */}
+            <header className="bg-gradient-to-b from-white via-white/95 to-slate-50/40 dark:from-gray-950 dark:via-gray-950/95 dark:to-gray-950 pt-4 pb-2">
+                <div className="max-w-4xl mx-auto px-4">
+                    <Link
+                        to="/"
+                        viewTransition
+                        className="inline-flex items-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 focus:outline-none transition-colors mb-3 group"
+                    >
+                        <ArrowLeft className="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" />
+                        返回主控台
+                    </Link>
 
-                        {/* Header */}
-                        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex justify-between items-start">
-                            <div>
-                                <h1 className="text-3xl font-black text-gray-900 dark:text-white mb-3 tracking-tight">{trip.title}</h1>
-                                <div className="flex items-center gap-4 text-gray-500 dark:text-gray-400 text-sm font-medium">
-                                    <div className="flex items-center gap-1.5">
-                                        <MapPin className="w-4 h-4 text-blue-500 dark:text-blue-400" />
-                                        {trip.destination}
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <Calendar className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-                                        {format(trip.startDate.toDate(), 'yyyy/MM/dd')} - {format(trip.endDate.toDate(), 'yyyy/MM/dd')}
-                                    </div>
+                    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex justify-between items-start">
+                        <div>
+                            <h1
+                                className="text-3xl font-black text-gray-900 dark:text-white mb-2.5 tracking-tight"
+                                style={{ viewTransitionName: `trip-title-${trip.id}` }}
+                            >
+                                {trip.title}
+                            </h1>
+                            <div className="flex flex-wrap items-center gap-4 text-gray-500 dark:text-gray-400 text-sm font-medium">
+                                <div
+                                    className="flex items-center gap-1.5"
+                                    style={{ viewTransitionName: `trip-dest-${trip.id}` }}
+                                >
+                                    <MapPin className="w-4 h-4 text-blue-500 dark:text-blue-400 shrink-0" />
+                                    <span>{trip.destination}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                    <Calendar className="w-4 h-4 text-emerald-500 dark:text-emerald-400 shrink-0" />
+                                    <span>{format(trip.startDate.toDate(), 'yyyy/MM/dd')} - {format(trip.endDate.toDate(), 'yyyy/MM/dd')}</span>
                                 </div>
                             </div>
-                        </motion.div>
-                    </div>
+                        </div>
+                    </motion.div>
+                </div>
+            </header>
 
-                    {/* Tabs Navigation */}
-                    <div className="flex flex-col">
+            {/* Pure CSS Sticky Tabs Navigation */}
+            <div className="bg-white/85 dark:bg-gray-950/85 backdrop-blur-xl border-b border-slate-200/80 dark:border-gray-800/80 sticky top-0 z-40 shadow-sm shadow-slate-900/[0.03] dark:shadow-black/20">
+                <div className="max-w-4xl mx-auto px-4 py-2.5">
+                    <div className="flex flex-col gap-1">
                         {/* First Row: Categories */}
-                        <div className={`transition-[max-height,opacity,margin] duration-300 ease-in-out overflow-hidden -mx-2 ${isScrolled && activeTab !== 'overview' && activeTab !== 'hotels' && activeTab !== 'planItems'
-                            ? 'max-h-0 opacity-0 !mb-0'
-                            : 'max-h-[60px] opacity-100 mb-1'
-                            }`}>
-                            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pt-1 pb-2 px-2">
+                        <div className="-mx-2">
+                            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide py-1 px-2">
                                 <button
                                     onClick={() => setActiveTab('overview')}
                                     className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium focus:outline-none transition-all ${activeTab === 'overview'
@@ -408,11 +397,8 @@ export default function TripDetail() {
                         </div>
 
                         {/* Second Row: Days */}
-                        <div className={`transition-[max-height,opacity,padding] duration-300 ease-in-out overflow-hidden -mx-2 ${isScrolled && (activeTab === 'overview' || activeTab === 'hotels' || activeTab === 'planItems')
-                            ? 'max-h-0 opacity-0 !mb-0'
-                            : 'max-h-[60px] opacity-100 pb-1'
-                            }`}>
-                            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pt-1 pb-2 px-2">
+                        <div className="-mx-2">
+                            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide py-1 px-2">
                                 {days.map((day, index) => {
                                     const dateStr = format(day, 'yyyy-MM-dd');
                                     const isActive = activeTab === dateStr;
@@ -631,7 +617,7 @@ export default function TripDetail() {
                                     return (
                                     <div
                                         key={activity.id}
-                                        className={`bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800 p-4 flex gap-4 hover:shadow-xl hover:shadow-blue-500/5 dark:hover:shadow-blue-900/20 transition-all group relative ${hasChecklist ? 'cursor-pointer' : ''} hover:-translate-y-1`}
+                                        className={`cq-card cv-auto bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-slate-100 dark:border-gray-800 p-4 flex gap-4 hover:shadow-xl hover:shadow-blue-500/5 dark:hover:shadow-blue-900/20 transition-all group relative ${hasChecklist ? 'cursor-pointer' : ''} hover:-translate-y-1`}
                                         onClick={() => {
                                             if (hasChecklist) {
                                                 setExpandedActivities(prev => ({
@@ -686,7 +672,7 @@ export default function TripDetail() {
                                             
                                             {/* Preview Checklist */}
                                             {hasChecklist && isExpanded && (
-                                                <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 animate-in fade-in slide-in-from-top-2 duration-300">
+                                                <div className="expand-panel mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
                                                     <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-3">
                                                         <ListChecks className="w-4 h-4 text-purple-500" />
                                                         <span className="font-medium">

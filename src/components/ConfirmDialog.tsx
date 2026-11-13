@@ -16,12 +16,12 @@ export default function ConfirmDialog({ isOpen, title, message, onConfirm, onCan
         <div className="fixed inset-0 z-[100] flex items-center justify-center">
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                className="modal-backdrop absolute inset-0 bg-black/50 backdrop-blur-sm"
                 onClick={onCancel}
             />
 
             {/* Dialog */}
-            <div className="relative bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="modal-panel relative bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
                 {/* Header */}
                 <div className="p-6 pb-4">
                     <div className="flex items-center gap-4">

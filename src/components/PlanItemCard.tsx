@@ -14,9 +14,9 @@ export default function PlanItemCard({ item, onEdit, onDelete, onToggleSchedule,
     const [isExpanded, setIsExpanded] = useState(false);
 
     return (
-        <div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-xl shadow-sm border border-slate-200 dark:border-gray-800 overflow-hidden relative group">
-            {/* Actions for Edit/Delete (visible on hover) */}
-            <div className="absolute right-12 top-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+        <div className="cq-card cv-auto bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-xl shadow-sm border border-slate-200 dark:border-gray-800 overflow-hidden relative group">
+            {/* Actions for Edit/Delete (visible on hover or narrow container) */}
+            <div className="cq-plan-actions absolute right-12 top-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
@@ -71,7 +71,7 @@ export default function PlanItemCard({ item, onEdit, onDelete, onToggleSchedule,
 
             {/* Expanded Content */}
             {isExpanded && (
-                <div className="p-4 bg-gray-50 dark:bg-gray-800/50 space-y-4">
+                <div className="expand-panel p-4 bg-gray-50 dark:bg-gray-800/50 space-y-4">
                     {/* Location */}
                     {item.location && (
                         <div className="flex items-start gap-2">

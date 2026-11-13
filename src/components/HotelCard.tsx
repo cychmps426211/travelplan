@@ -28,7 +28,7 @@ export default function HotelCard({ hotel, onEdit, onDelete }: HotelCardProps) {
     };
 
     return (
-        <div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-xl shadow-sm border border-slate-200 dark:border-gray-800 overflow-hidden relative group">
+        <div className="cq-card cv-auto bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-xl shadow-sm border border-slate-200 dark:border-gray-800 overflow-hidden relative group">
             {/* Actions */}
             <div className="absolute right-3 top-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                 <button
