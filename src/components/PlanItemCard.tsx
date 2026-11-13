@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { MapPin, Link as LinkIcon, Edit2, Trash2, ChevronDown, ChevronUp, AlignLeft, CalendarPlus } from 'lucide-react';
+import { MapPin, Link as LinkIcon, Edit2, Trash2, ChevronDown, ChevronUp, AlignLeft, CalendarPlus, Check, ExternalLink } from 'lucide-react';
 import type { PlanItem } from '../types';
+import { getHostnameLabel } from '../utils/date';
 
 interface PlanItemCardProps {
     item: PlanItem;
@@ -14,131 +15,158 @@ export default function PlanItemCard({ item, onEdit, onDelete, onToggleSchedule,
     const [isExpanded, setIsExpanded] = useState(false);
 
     return (
-        <div className="cq-card cv-auto bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-xl shadow-sm border border-slate-200 dark:border-gray-800 overflow-hidden relative group">
-            {/* Actions for Edit/Delete (visible on hover or narrow container) */}
-            <div className="cq-plan-actions absolute right-12 top-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onEdit();
-                    }}
-                    className="p-1.5 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100/90 backdrop-blur-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 rounded-lg shadow-sm border border-slate-200 dark:border-gray-800 transition-all hover:scale-105"
-                    title="編輯"
-                >
-                    <Edit2 className="w-4 h-4" />
-                </button>
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onDelete();
-                    }}
-                    className="p-1.5 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100/90 backdrop-blur-sm text-gray-500 dark:text-gray-400 hover:text-red-600 rounded-lg shadow-sm border border-slate-200 dark:border-gray-800 transition-all hover:scale-105"
-                    title="刪除"
-                >
-                    <Trash2 className="w-4 h-4" />
-                </button>
-            </div>
-
-            {/* Expand/Collapse Button (always visible) */}
-            <button
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="absolute right-3 top-3 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors z-20"
-            >
-                {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-            </button>
-
-            {/* Header (Always Visible) */}
+        <div className="cq-card cv-auto bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors overflow-hidden group">
+            {/* Header (Flex layout avoids button collision on mobile) */}
             <div
-                className={`p-4 flex items-start gap-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50 ${isExpanded ? 'border-b border-gray-100 dark:border-gray-800' : ''}`}
+                className={`p-3.5 sm:p-4 flex items-center gap-3 transition-colors hover:bg-zinc-50/70 dark:hover:bg-zinc-800/40 ${
+                    isExpanded ? 'border-b border-zinc-100 dark:border-zinc-800/80' : ''
+                }`}
             >
-                <div className="pt-0.5">
-                    <input
-                        type="checkbox"
-                        checked={item.isScheduled || false}
-                        onChange={(e) => onToggleSchedule(e.target.checked)}
-                        className="w-5 h-5 rounded border-gray-300 text-blue-600 dark:text-blue-400 focus:ring-blue-500 cursor-pointer"
-                    />
-                </div>
-                <div
-                    className="flex-1 cursor-pointer pr-20"
+                <button
+                    type="button"
+                    role="checkbox"
+                    aria-checked={item.isScheduled || false}
+                    aria-label={item.isScheduled ? `取消標記 ${item.name}` : `標記 ${item.name} 為已規劃`}
+                    onClick={() => onToggleSchedule(!item.isScheduled)}
+                    className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition-colors ${
+                        item.isScheduled
+                            ? 'bg-blue-600 border-blue-600 text-white'
+                            : 'bg-white dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 hover:border-blue-500'
+                    }`}
+                >
+                    {item.isScheduled && <Check className="w-3.5 h-3.5" />}
+                </button>
+
+                <button
+                    type="button"
+                    className="flex-1 min-w-0 text-left py-0.5"
                     onClick={() => setIsExpanded(!isExpanded)}
                 >
-                    <h3 className={`text-lg font-bold transition-all ${item.isScheduled ? 'text-gray-400 line-through' : 'text-gray-900 dark:text-gray-100'}`}>
+                    <h3
+                        className={`text-base font-semibold truncate transition-colors ${
+                            item.isScheduled
+                                ? 'text-zinc-400 dark:text-zinc-500 line-through'
+                                : 'text-zinc-900 dark:text-zinc-100'
+                        }`}
+                    >
                         {item.name}
                     </h3>
+                    {item.location && !isExpanded && (
+                        <p className="text-xs text-zinc-400 dark:text-zinc-500 truncate mt-0.5">
+                            {item.location}
+                        </p>
+                    )}
+                </button>
+
+                {/* Actions: always accessible on mobile */}
+                <div className="flex items-center gap-0.5 shrink-0">
+                    <div className="flex items-center gap-0.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onEdit();
+                            }}
+                            aria-label={`編輯 ${item.name}`}
+                            className="w-9 h-9 flex items-center justify-center text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-colors"
+                            title="編輯"
+                        >
+                            <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onDelete();
+                            }}
+                            aria-label={`刪除 ${item.name}`}
+                            className="w-9 h-9 flex items-center justify-center text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors"
+                            title="刪除"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => setIsExpanded(!isExpanded)}
+                        aria-label={isExpanded ? '收合詳細資訊' : '展開詳細資訊'}
+                        className="w-9 h-9 flex items-center justify-center text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-colors"
+                    >
+                        {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </button>
                 </div>
             </div>
 
             {/* Expanded Content */}
             {isExpanded && (
-                <div className="expand-panel p-4 bg-gray-50 dark:bg-gray-800/50 space-y-4">
-                    {/* Location */}
+                <div className="expand-panel p-4 bg-zinc-50/70 dark:bg-zinc-950/50 space-y-3.5 text-sm">
                     {item.location && (
-                        <div className="flex items-start gap-2">
+                        <div className="flex items-start gap-2.5">
                             <MapPin className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" />
-                            <div>
-                                <span className="text-gray-900 dark:text-gray-100 font-medium">{item.location}</span>
+                            <div className="min-w-0">
+                                <span className="text-zinc-900 dark:text-zinc-100 font-medium break-words">
+                                    {item.location}
+                                </span>
                                 <a
                                     href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.location)}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="ml-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 hover:underline inline-block"
+                                    className="ml-2 text-xs text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1"
                                 >
-                                    在 Google Maps 中開啟
+                                    <span>地圖開啟</span>
+                                    <ExternalLink className="w-3 h-3" />
                                 </a>
                             </div>
                         </div>
                     )}
 
-                    {/* URLs */}
                     {item.urls && item.urls.length > 0 && (
-                        <div className="flex items-start gap-2">
+                        <div className="flex items-start gap-2.5">
                             <LinkIcon className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
-                            <div className="flex flex-col gap-1">
+                            <div className="flex flex-wrap gap-1.5">
                                 {item.urls.map((url, index) => (
                                     <a
                                         key={index}
                                         href={url}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 hover:underline w-fit"
+                                        className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 border border-blue-200/60 dark:border-blue-500/20 px-2.5 py-1 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors"
                                     >
-                                        參考網頁 {index + 1}
+                                        <span className="truncate max-w-[180px]">{getHostnameLabel(url, index)}</span>
+                                        <ExternalLink className="w-3 h-3 shrink-0" />
                                     </a>
                                 ))}
                             </div>
                         </div>
                     )}
 
-                    {/* Notes */}
                     {item.notes && (
-                        <div className="flex items-start gap-2">
-                            <AlignLeft className="w-4 h-4 text-gray-500 dark:text-gray-400 mt-0.5 shrink-0" />
-                            <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
+                        <div className="flex items-start gap-2.5">
+                            <AlignLeft className="w-4 h-4 text-zinc-400 dark:text-zinc-500 mt-0.5 shrink-0" />
+                            <p className="text-sm text-zinc-600 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed">
                                 {item.notes}
                             </p>
                         </div>
                     )}
 
-                    {/* Empty placeholder if expanding but no extra content */}
                     {!item.location && (!item.urls || item.urls.length === 0) && !item.notes && (
-                        <div className="text-sm text-gray-400 italic py-2">
+                        <div className="text-xs text-zinc-400 dark:text-zinc-500 py-1">
                             無其他詳細資訊
                         </div>
                     )}
 
-                    {/* Add to Itinerary Button */}
                     {!item.isScheduled && onAddToItinerary && (
-                        <div className="pt-2 mt-2 border-t border-gray-200 dark:border-gray-800 border-dashed">
+                        <div className="pt-2 border-t border-zinc-200/80 dark:border-zinc-800">
                             <button
+                                type="button"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onAddToItinerary();
                                 }}
-                                className="w-full py-2 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 text-blue-600 dark:text-blue-400 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm"
+                                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2 text-sm"
                             >
                                 <CalendarPlus className="w-4 h-4" />
-                                加入行程
+                                <span>排入行程</span>
                             </button>
                         </div>
                     )}

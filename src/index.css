@@ -4,12 +4,12 @@
 
 @layer base {
   :root {
-    --background: #ffffff;
+    --background: #fafafa;
     --foreground: #09090b;
     color-scheme: light;
     accent-color: rgb(37 99 235);
     scrollbar-width: thin;
-    scrollbar-color: rgb(203 213 225) transparent;
+    scrollbar-color: rgb(212 212 216) transparent;
   }
 
   .dark {
@@ -18,17 +18,21 @@
     color-scheme: dark;
     accent-color: rgb(59 130 246);
     scrollbar-width: thin;
-    scrollbar-color: rgb(55 65 81) transparent;
+    scrollbar-color: rgb(63 63 70) transparent;
   }
 
   html {
     color-scheme: light dark;
     scroll-behavior: smooth;
+    font-family: 'Inter', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {
     background-color: var(--background);
     color: var(--foreground);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   /* Modern typography wrapping */
@@ -52,14 +56,14 @@
   select:user-invalid,
   textarea:user-invalid {
     border-color: rgb(239 68 68) !important;
-    box-shadow: 0 0 0 3px rgb(239 68 68 / 0.15);
+    box-shadow: 0 0 0 3px rgb(239 68 68 / 0.12);
   }
 
   .dark input:user-invalid,
   .dark select:user-invalid,
   .dark textarea:user-invalid {
     border-color: rgb(248 113 113) !important;
-    box-shadow: 0 0 0 3px rgb(248 113 113 / 0.2);
+    box-shadow: 0 0 0 3px rgb(248 113 113 / 0.18);
   }
 }
 
@@ -74,6 +78,14 @@
   }
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
   }
 
   /* Container Query wrapper for cards */
@@ -98,14 +110,11 @@
   .cq-card-body {
     padding: 1rem;
   }
-  .cq-plan-actions {
-    opacity: 1;
-  }
 }
 
 @container card (min-width: 380px) {
   .cq-trip-title {
-    font-size: 1.625rem;
+    font-size: 1.5rem;
     line-height: 2rem;
   }
   .cq-trip-meta {
@@ -123,7 +132,7 @@
 /* Entry animations using modern @starting-style */
 .modal-backdrop {
   opacity: 1;
-  transition: opacity 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @starting-style {
@@ -136,14 +145,14 @@
   opacity: 1;
   transform: translateY(0) scale(1);
   transition:
-    opacity 240ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 220ms cubic-bezier(0.16, 1, 0.3, 1),
     transform 240ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @starting-style {
   .modal-panel {
     opacity: 0;
-    transform: translateY(12px) scale(0.96);
+    transform: translateY(20px) scale(0.98);
   }
 }
 
@@ -151,21 +160,21 @@
   opacity: 1;
   transform: translateY(0);
   transition:
-    opacity 180ms cubic-bezier(0.16, 1, 0.3, 1),
-    transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+    opacity 160ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @starting-style {
   .expand-panel {
     opacity: 0;
-    transform: translateY(-6px);
+    transform: translateY(-4px);
   }
 }
 
 /* View Transitions smoothing */
 ::view-transition-old(root),
 ::view-transition-new(root) {
-  animation-duration: 220ms;
+  animation-duration: 200ms;
   animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -178,9 +187,4 @@
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
   }
-}
-
-/* Map dark mode explicit class just in case */
-.dark-map {
-  filter: invert(1) hue-rotate(180deg) opacity(0.9);
 }

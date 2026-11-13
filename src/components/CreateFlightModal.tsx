@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X, Plane, Calendar, Clock, Globe } from 'lucide-react';
+import { Plane, Calendar, Clock, Globe } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
 import type { FlightInfo } from '../types';
+import Modal from './Modal';
 
 interface CreateFlightModalProps {
     isOpen: boolean;
@@ -10,6 +11,38 @@ interface CreateFlightModalProps {
     initialData?: FlightInfo;
     type: 'outbound' | 'return';
 }
+
+const TIMEZONES = [
+    { label: 'UTC-12:00', value: '-12:00' },
+    { label: 'UTC-11:00', value: '-11:00' },
+    { label: 'UTC-10:00 (Hawaii)', value: '-10:00' },
+    { label: 'UTC-09:00 (Alaska)', value: '-09:00' },
+    { label: 'UTC-08:00 (US/Canada Pacific)', value: '-08:00' },
+    { label: 'UTC-07:00 (US/Canada Mountain)', value: '-07:00' },
+    { label: 'UTC-06:00 (US/Canada Central)', value: '-06:00' },
+    { label: 'UTC-05:00 (US/Canada Eastern)', value: '-05:00' },
+    { label: 'UTC-04:00 (Atlantic)', value: '-04:00' },
+    { label: 'UTC-03:00 (Brasilia)', value: '-03:00' },
+    { label: 'UTC-02:00', value: '-02:00' },
+    { label: 'UTC-01:00', value: '-01:00' },
+    { label: 'UTC+00:00 (London)', value: '+00:00' },
+    { label: 'UTC+01:00 (Paris, Berlin)', value: '+01:00' },
+    { label: 'UTC+02:00 (Athens, Cairo)', value: '+02:00' },
+    { label: 'UTC+03:00 (Moscow, Dubai)', value: '+03:00' },
+    { label: 'UTC+04:00', value: '+04:00' },
+    { label: 'UTC+05:00', value: '+05:00' },
+    { label: 'UTC+05:30 (India)', value: '+05:30' },
+    { label: 'UTC+06:00', value: '+06:00' },
+    { label: 'UTC+07:00 (Bangkok)', value: '+07:00' },
+    { label: 'UTC+08:00 (Taipei, Beijing, SG)', value: '+08:00' },
+    { label: 'UTC+09:00 (Tokyo, Seoul)', value: '+09:00' },
+    { label: 'UTC+10:00 (Sydney)', value: '+10:00' },
+    { label: 'UTC+11:00', value: '+11:00' },
+    { label: 'UTC+12:00 (NZ)', value: '+12:00' },
+];
+
+const inputBaseClass =
+    'w-full px-3.5 py-2.5 text-sm bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all';
 
 export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialData, type }: CreateFlightModalProps) {
     const [loading, setLoading] = useState(false);
@@ -27,6 +60,7 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
     });
 
     useEffect(() => {
+        if (!isOpen) return;
         if (initialData) {
             const dep = initialData.departureTime.toDate();
             const arr = initialData.arrivalTime.toDate();
@@ -35,10 +69,7 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
                 const sign = offsetStr.startsWith('-') ? -1 : 1;
                 const [h, m] = offsetStr.slice(1).split(':').map(Number);
                 const offsetMinutes = sign * ((h * 60) + m);
-
-                const utcMillis = date.getTime();
-                const targetMillis = utcMillis + (offsetMinutes * 60 * 1000);
-                const targetDate = new Date(targetMillis);
+                const targetDate = new Date(date.getTime() + (offsetMinutes * 60 * 1000));
 
                 return {
                     date: targetDate.toISOString().split('T')[0],
@@ -77,37 +108,6 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
         }
     }, [initialData, isOpen]);
 
-    if (!isOpen) return null;
-
-    const TIMEZONES = [
-        { label: 'UTC-12:00', value: '-12:00' },
-        { label: 'UTC-11:00', value: '-11:00' },
-        { label: 'UTC-10:00 (Hawaii)', value: '-10:00' },
-        { label: 'UTC-09:00 (Alaska)', value: '-09:00' },
-        { label: 'UTC-08:00 (US/Canada Pacific)', value: '-08:00' },
-        { label: 'UTC-07:00 (US/Canada Mountain)', value: '-07:00' },
-        { label: 'UTC-06:00 (US/Canada Central)', value: '-06:00' },
-        { label: 'UTC-05:00 (US/Canada Eastern)', value: '-05:00' },
-        { label: 'UTC-04:00 (Atlantic)', value: '-04:00' },
-        { label: 'UTC-03:00 (Brasilia)', value: '-03:00' },
-        { label: 'UTC-02:00', value: '-02:00' },
-        { label: 'UTC-01:00', value: '-01:00' },
-        { label: 'UTC+00:00 (London)', value: '+00:00' },
-        { label: 'UTC+01:00 (Paris, Berlin)', value: '+01:00' },
-        { label: 'UTC+02:00 (Athens, Cairo)', value: '+02:00' },
-        { label: 'UTC+03:00 (Moscow, Dubai)', value: '+03:00' },
-        { label: 'UTC+04:00', value: '+04:00' },
-        { label: 'UTC+05:00', value: '+05:00' },
-        { label: 'UTC+05:30 (India)', value: '+05:30' },
-        { label: 'UTC+06:00', value: '+06:00' },
-        { label: 'UTC+07:00 (Bangkok)', value: '+07:00' },
-        { label: 'UTC+08:00 (Taipei, Beijing, SG)', value: '+08:00' },
-        { label: 'UTC+09:00 (Tokyo, Seoul)', value: '+09:00' },
-        { label: 'UTC+10:00 (Sydney)', value: '+10:00' },
-        { label: 'UTC+11:00', value: '+11:00' },
-        { label: 'UTC+12:00 (NZ)', value: '+12:00' },
-    ];
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -115,18 +115,15 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
             const depIso = `${formData.departureDate}T${formData.departureTime}:00${formData.departureTimezone}`;
             const arrIso = `${formData.arrivalDate}T${formData.arrivalTime}:00${formData.arrivalTimezone}`;
 
-            const depDate = new Date(depIso);
-            const arrDate = new Date(arrIso);
-
             const flightData: FlightInfo = {
-                airline: formData.airline,
-                flightNumber: formData.flightNumber,
-                departureTime: Timestamp.fromDate(depDate),
-                arrivalTime: Timestamp.fromDate(arrDate),
+                airline: formData.airline.trim(),
+                flightNumber: formData.flightNumber.trim(),
+                departureTime: Timestamp.fromDate(new Date(depIso)),
+                arrivalTime: Timestamp.fromDate(new Date(arrIso)),
                 departureTimezone: formData.departureTimezone,
                 arrivalTimezone: formData.arrivalTimezone,
-                departureAirport: formData.departureAirport,
-                arrivalAirport: formData.arrivalAirport
+                departureAirport: formData.departureAirport.trim(),
+                arrivalAirport: formData.arrivalAirport.trim()
             };
 
             await onSubmit(flightData);
@@ -139,192 +136,183 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
     };
 
     return (
-        <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
-            <div
-                className="modal-panel bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-2xl w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto"
-                onClick={(e) => e.stopPropagation()}
-            >
-                <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-gray-800 sticky top-0 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 z-10">
-                    <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">
-                        {initialData ? '編輯航班' : `新增 ${type === 'outbound' ? '去程' : '回程'} 航班`}
-                    </h2>
-                    <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
-                        <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title={initialData ? '編輯航班' : `新增${type === 'outbound' ? '去程' : '回程'}航班`}
+            maxWidthClass="max-w-2xl"
+            footer={
+                <div className="flex gap-3">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="flex-1 px-4 py-2.5 text-sm border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-700/80 transition-colors font-medium"
+                    >
+                        取消
+                    </button>
+                    <button
+                        type="submit"
+                        form="flightForm"
+                        disabled={loading}
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm font-medium py-2.5 rounded-xl transition-colors flex items-center justify-center"
+                    >
+                        {loading ? '儲存中...' : '儲存航班'}
                     </button>
                 </div>
-
-                <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                    {/* Airline & Flight Number */}
-                    <div className="grid grid-cols-2 gap-6">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">航空公司</label>
-                            <div className="relative">
-                                <Plane className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                                <input
-                                    type="text"
-                                    required
-                                    className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                                    placeholder="例如：長榮航空"
-                                    value={formData.airline}
-                                    onChange={e => setFormData({ ...formData, airline: e.target.value })}
-                                />
-                            </div>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">航班號碼</label>
+            }
+        >
+            <form id="flightForm" onSubmit={handleSubmit} className="space-y-5">
+                {/* Airline & Flight Number */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div>
+                        <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">航空公司</label>
+                        <div className="relative">
+                            <Plane className="absolute left-3.5 top-3 w-4 h-4 text-zinc-400" />
                             <input
                                 type="text"
                                 required
-                                className="w-full px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                                placeholder="例如：BR198"
-                                value={formData.flightNumber}
-                                onChange={e => setFormData({ ...formData, flightNumber: e.target.value })}
+                                className={`${inputBaseClass} pl-10`}
+                                placeholder="例如：長榮航空"
+                                value={formData.airline}
+                                onChange={e => setFormData({ ...formData, airline: e.target.value })}
                             />
                         </div>
                     </div>
+                    <div>
+                        <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">航班號碼</label>
+                        <input
+                            type="text"
+                            required
+                            className={`${inputBaseClass} font-mono`}
+                            placeholder="例如：BR198"
+                            value={formData.flightNumber}
+                            onChange={e => setFormData({ ...formData, flightNumber: e.target.value })}
+                        />
+                    </div>
+                </div>
 
-                    {/* Departure */}
-                    <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800 space-y-4">
-                        <h3 className="font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                            <span className="w-2 h-6 bg-blue-500 rounded-full" />
-                            出發資訊
-                        </h3>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">出發機場</label>
+                {/* Departure */}
+                <div className="bg-zinc-50 dark:bg-zinc-950/60 p-4 rounded-2xl border border-zinc-200/70 dark:border-zinc-800 space-y-3.5">
+                    <h3 className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                        出發資訊
+                    </h3>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="col-span-2">
+                            <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">出發機場</label>
+                            <input
+                                type="text"
+                                required
+                                className={inputBaseClass}
+                                placeholder="例如：TPE (桃園國際機場)"
+                                value={formData.departureAirport}
+                                onChange={e => setFormData({ ...formData, departureAirport: e.target.value })}
+                            />
+                        </div>
+                        <div className="min-w-0">
+                            <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">日期</label>
+                            <div className="relative">
+                                <Calendar className="absolute left-3 top-3 w-4 h-4 text-zinc-400 pointer-events-none" />
                                 <input
-                                    type="text"
+                                    type="date"
                                     required
-                                    className="w-full px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                                    placeholder="例如：TPE (桃園國際機場)"
-                                    value={formData.departureAirport}
-                                    onChange={e => setFormData({ ...formData, departureAirport: e.target.value })}
+                                    className={`${inputBaseClass} pl-9 tabular-nums`}
+                                    value={formData.departureDate}
+                                    onChange={e => setFormData({ ...formData, departureDate: e.target.value })}
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">日期</label>
-                                <div className="relative">
-                                    <Calendar className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                                    <input
-                                        type="date"
-                                        required
-                                        className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                                        value={formData.departureDate}
-                                        onChange={e => setFormData({ ...formData, departureDate: e.target.value })}
-                                    />
-                                </div>
+                        </div>
+                        <div className="min-w-0">
+                            <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">時間</label>
+                            <div className="relative">
+                                <Clock className="absolute left-3 top-3 w-4 h-4 text-zinc-400 pointer-events-none" />
+                                <input
+                                    type="time"
+                                    required
+                                    className={`${inputBaseClass} pl-9 tabular-nums`}
+                                    value={formData.departureTime}
+                                    onChange={e => setFormData({ ...formData, departureTime: e.target.value })}
+                                />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">時間</label>
-                                <div className="relative">
-                                    <Clock className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                                    <input
-                                        type="time"
-                                        required
-                                        className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                                        value={formData.departureTime}
-                                        onChange={e => setFormData({ ...formData, departureTime: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-                            <div className="col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">出發時區</label>
-                                <div className="relative">
-                                    <Globe className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                                    <select
-                                        className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 appearance-none"
-                                        value={formData.departureTimezone}
-                                        onChange={e => setFormData({ ...formData, departureTimezone: e.target.value })}
-                                    >
-                                        {TIMEZONES.map(tz => (
-                                            <option key={tz.value} value={tz.value}>{tz.label}</option>
-                                        ))}
-                                    </select>
-                                </div>
+                        </div>
+                        <div className="col-span-2">
+                            <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">出發時區</label>
+                            <div className="relative">
+                                <Globe className="absolute left-3.5 top-3 w-4 h-4 text-zinc-400 pointer-events-none" />
+                                <select
+                                    className={`${inputBaseClass} pl-10 appearance-none`}
+                                    value={formData.departureTimezone}
+                                    onChange={e => setFormData({ ...formData, departureTimezone: e.target.value })}
+                                >
+                                    {TIMEZONES.map(tz => (
+                                        <option key={tz.value} value={tz.value}>{tz.label}</option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    {/* Arrival */}
-                    <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800 space-y-4">
-                        <h3 className="font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                            <span className="w-2 h-6 bg-emerald-500 rounded-full" />
-                            抵達資訊
-                        </h3>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">抵達機場</label>
+                {/* Arrival */}
+                <div className="bg-zinc-50 dark:bg-zinc-950/60 p-4 rounded-2xl border border-zinc-200/70 dark:border-zinc-800 space-y-3.5">
+                    <h3 className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                        抵達資訊
+                    </h3>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="col-span-2">
+                            <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">抵達機場</label>
+                            <input
+                                type="text"
+                                required
+                                className={inputBaseClass}
+                                placeholder="例如：NRT (成田國際機場)"
+                                value={formData.arrivalAirport}
+                                onChange={e => setFormData({ ...formData, arrivalAirport: e.target.value })}
+                            />
+                        </div>
+                        <div className="min-w-0">
+                            <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">日期</label>
+                            <div className="relative">
+                                <Calendar className="absolute left-3 top-3 w-4 h-4 text-zinc-400 pointer-events-none" />
                                 <input
-                                    type="text"
+                                    type="date"
                                     required
-                                    className="w-full px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                                    placeholder="例如：NRT (成田國際機場)"
-                                    value={formData.arrivalAirport}
-                                    onChange={e => setFormData({ ...formData, arrivalAirport: e.target.value })}
+                                    className={`${inputBaseClass} pl-9 tabular-nums`}
+                                    value={formData.arrivalDate}
+                                    onChange={e => setFormData({ ...formData, arrivalDate: e.target.value })}
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">日期</label>
-                                <div className="relative">
-                                    <Calendar className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                                    <input
-                                        type="date"
-                                        required
-                                        className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                                        value={formData.arrivalDate}
-                                        onChange={e => setFormData({ ...formData, arrivalDate: e.target.value })}
-                                    />
-                                </div>
+                        </div>
+                        <div className="min-w-0">
+                            <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">時間</label>
+                            <div className="relative">
+                                <Clock className="absolute left-3 top-3 w-4 h-4 text-zinc-400 pointer-events-none" />
+                                <input
+                                    type="time"
+                                    required
+                                    className={`${inputBaseClass} pl-9 tabular-nums`}
+                                    value={formData.arrivalTime}
+                                    onChange={e => setFormData({ ...formData, arrivalTime: e.target.value })}
+                                />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">時間</label>
-                                <div className="relative">
-                                    <Clock className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                                    <input
-                                        type="time"
-                                        required
-                                        className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                                        value={formData.arrivalTime}
-                                        onChange={e => setFormData({ ...formData, arrivalTime: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-                            <div className="col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">抵達時區</label>
-                                <div className="relative">
-                                    <Globe className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                                    <select
-                                        className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 appearance-none"
-                                        value={formData.arrivalTimezone}
-                                        onChange={e => setFormData({ ...formData, arrivalTimezone: e.target.value })}
-                                    >
-                                        {TIMEZONES.map(tz => (
-                                            <option key={tz.value} value={tz.value}>{tz.label}</option>
-                                        ))}
-                                    </select>
-                                </div>
+                        </div>
+                        <div className="col-span-2">
+                            <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">抵達時區</label>
+                            <div className="relative">
+                                <Globe className="absolute left-3.5 top-3 w-4 h-4 text-zinc-400 pointer-events-none" />
+                                <select
+                                    className={`${inputBaseClass} pl-10 appearance-none`}
+                                    value={formData.arrivalTimezone}
+                                    onChange={e => setFormData({ ...formData, arrivalTimezone: e.target.value })}
+                                >
+                                    {TIMEZONES.map(tz => (
+                                        <option key={tz.value} value={tz.value}>{tz.label}</option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
                     </div>
-
-                    <div className="pt-4 flex gap-3">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors font-medium"
-                        >
-                            取消
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition-colors flex items-center justify-center"
-                        >
-                            {loading ? '儲存中...' : '儲存航班'}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                </div>
+            </form>
+        </Modal>
     );
 }

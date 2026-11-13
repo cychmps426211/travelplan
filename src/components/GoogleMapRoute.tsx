@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTheme } from 'next-themes';
 import { loadGoogleMapsAPI } from '../utils/googleMaps';
+import { getThemedMapOptions, attachRasterDarkStyleFallback } from '../constants/mapStyles';
 import type { Activity } from '../types';
 import { Loader2, Info } from 'lucide-react';
 
@@ -10,7 +12,7 @@ interface GoogleMapRouteProps {
 
 /**
  * Google Map component that displays routes using JavaScript API
- * This supports full transit preferences including transit modes and routing preferences
+ * Supports native dark mode and full transit preferences.
  */
 export default function GoogleMapRoute({ activity, height = 300 }: GoogleMapRouteProps) {
     const mapRef = useRef<HTMLDivElement>(null);
@@ -19,6 +21,8 @@ export default function GoogleMapRoute({ activity, height = 300 }: GoogleMapRout
     const [fallbackNotice, setFallbackNotice] = useState<string | null>(null);
     const mapInstanceRef = useRef<google.maps.Map | null>(null);
     const directionsRendererRef = useRef<google.maps.DirectionsRenderer | null>(null);
+    const { resolvedTheme } = useTheme();
+    const isDark = resolvedTheme === 'dark';
 
     useEffect(() => {
         let isMounted = true;
@@ -31,30 +35,27 @@ export default function GoogleMapRoute({ activity, height = 300 }: GoogleMapRout
                 setError(null);
                 setFallbackNotice(null);
 
-                // Load Google Maps API
                 await loadGoogleMapsAPI();
 
                 if (!isMounted) return;
 
-                // Determine what to display
-                const isTransportRoute = activity.type === 'transport' &&
+                const isTransportRoute =
+                    activity.type === 'transport' &&
                     activity.departureLocation &&
                     activity.arrivalLocation;
 
-                const singleLocation = activity.type === 'transport'
-                    ? (activity.departureLocation || activity.arrivalLocation)
-                    : activity.location;
+                const singleLocation =
+                    activity.type === 'transport'
+                        ? activity.departureLocation || activity.arrivalLocation
+                        : activity.location;
 
                 if (isTransportRoute) {
-                    // Display route with directions
                     await displayRoute();
                 } else if (singleLocation) {
-                    // Display single location
                     await displayPlace(singleLocation);
                 } else {
                     setError('沒有可顯示的地點資訊');
                 }
-
             } catch (err) {
                 console.error('Map initialization error:', err);
                 if (isMounted) {
@@ -122,8 +123,8 @@ export default function GoogleMapRoute({ activity, height = 300 }: GoogleMapRout
                         {
                             icon: {
                                 path: 'M 0,-1 0,1',
-                                strokeOpacity: 0.85,
-                                strokeColor: '#4285F4',
+                                strokeOpacity: 0.9,
+                                strokeColor: isDark ? '#60a5fa' : '#2563eb',
                                 scale: 3,
                             },
                             offset: '0',
@@ -148,43 +149,39 @@ export default function GoogleMapRoute({ activity, height = 300 }: GoogleMapRout
             const origin = activity.departureLocation;
             const destination = activity.arrivalLocation;
 
-            // Create map
             const map = new google.maps.Map(mapRef.current, {
                 zoom: 12,
-                center: { lat: 35.6762, lng: 139.6503 }, // Default to Tokyo
+                center: { lat: 35.6762, lng: 139.6503 },
                 mapTypeControl: false,
                 streetViewControl: false,
                 fullscreenControl: true,
+                ...getThemedMapOptions(isDark),
             });
+            attachRasterDarkStyleFallback(map, isDark);
             mapInstanceRef.current = map;
 
-            // Create directions renderer
             const directionsRenderer = new google.maps.DirectionsRenderer({
                 map,
                 suppressMarkers: false,
                 polylineOptions: {
-                    strokeColor: '#4285F4',
+                    strokeColor: isDark ? '#60a5fa' : '#2563eb',
                     strokeWeight: 5,
-                    strokeOpacity: 0.8,
+                    strokeOpacity: 0.85,
                 },
             });
             directionsRendererRef.current = directionsRenderer;
 
-            // Create directions service
             const directionsService = new google.maps.DirectionsService();
 
-            // Build request
             const request: google.maps.DirectionsRequest = {
                 origin,
                 destination,
                 travelMode: getTravelMode(activity.travelMode),
             };
 
-            // Add transit options if using transit mode
             if (activity.travelMode === 'TRANSIT' || !activity.travelMode) {
                 const transitOptions: google.maps.TransitOptions = {};
 
-                // Add transit mode preferences
                 if (activity.transitModes && activity.transitModes.length > 0) {
                     transitOptions.modes = activity.transitModes.map(mode => {
                         switch (mode) {
@@ -198,7 +195,6 @@ export default function GoogleMapRoute({ activity, height = 300 }: GoogleMapRout
                     });
                 }
 
-                // Add routing preference
                 if (activity.transitRoutingPreference) {
                     switch (activity.transitRoutingPreference) {
                         case 'LESS_WALKING':
@@ -215,7 +211,6 @@ export default function GoogleMapRoute({ activity, height = 300 }: GoogleMapRout
                 }
             }
 
-            // Request directions
             await new Promise<void>((resolve) => {
                 directionsService.route(request, async (result, status) => {
                     if (!isMounted) {
@@ -229,8 +224,6 @@ export default function GoogleMapRoute({ activity, height = 300 }: GoogleMapRout
                         return;
                     }
 
-                    // If TRANSIT returns ZERO_RESULTS (e.g., Japan regional API restriction or out-of-range timetable),
-                    // fall back to showing origin & destination markers on the map.
                     if (status === google.maps.DirectionsStatus.ZERO_RESULTS) {
                         const fallbackSuccess = await displayFallbackEndpoints(map, origin, destination);
                         if (fallbackSuccess && isMounted) {
@@ -252,7 +245,6 @@ export default function GoogleMapRoute({ activity, height = 300 }: GoogleMapRout
         async function displayPlace(location: string) {
             if (!mapRef.current) return;
 
-            // Use Geocoder to get location coordinates
             const geocoder = new google.maps.Geocoder();
 
             await new Promise<void>((resolve) => {
@@ -264,17 +256,17 @@ export default function GoogleMapRoute({ activity, height = 300 }: GoogleMapRout
                     if (status === google.maps.GeocoderStatus.OK && results && results[0]) {
                         const position = results[0].geometry.location;
 
-                        // Create map centered on location
                         const map = new google.maps.Map(mapRef.current!, {
                             zoom: 15,
                             center: position,
                             mapTypeControl: false,
                             streetViewControl: false,
                             fullscreenControl: true,
+                            ...getThemedMapOptions(isDark),
                         });
+                        attachRasterDarkStyleFallback(map, isDark);
                         mapInstanceRef.current = map;
 
-                        // Add marker
                         new google.maps.Marker({
                             position,
                             map,
@@ -304,19 +296,18 @@ export default function GoogleMapRoute({ activity, height = 300 }: GoogleMapRout
 
         return () => {
             isMounted = false;
-            // Cleanup
             if (directionsRendererRef.current) {
                 directionsRendererRef.current.setMap(null);
             }
             mapInstanceRef.current = null;
             directionsRendererRef.current = null;
         };
-    }, [activity]);
+    }, [activity, isDark]);
 
     if (error) {
         return (
             <div
-                className="flex items-center justify-center bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-xl text-red-600 dark:text-red-400 px-4 text-center"
+                className="flex items-center justify-center bg-red-50 dark:bg-red-500/10 border border-red-200/80 dark:border-red-500/20 rounded-xl text-red-600 dark:text-red-400 px-4 text-center"
                 style={{ height }}
             >
                 <p className="text-sm">{error}</p>
@@ -327,21 +318,19 @@ export default function GoogleMapRoute({ activity, height = 300 }: GoogleMapRout
     return (
         <div className="space-y-2">
             {fallbackNotice && (
-                <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-xs leading-relaxed">
+                <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200/80 dark:border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs leading-relaxed">
                     <Info className="w-4 h-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
                     <span>{fallbackNotice}</span>
                 </div>
             )}
-            <div className="relative rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-sm">
-                {/* Map Container */}
-                <div ref={mapRef} style={{ height, width: '100%' }} className="dark:invert dark:hue-rotate-180 dark:opacity-90 transition-all duration-300" />
+            <div className="relative rounded-xl overflow-hidden border border-zinc-200/80 dark:border-zinc-800">
+                <div ref={mapRef} style={{ height, width: '100%' }} />
 
-                {/* Loading Overlay */}
                 {loading && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+                    <div className="absolute inset-0 flex items-center justify-center bg-zinc-100 dark:bg-zinc-900">
                         <div className="flex flex-col items-center gap-2">
-                            <Loader2 className="w-8 h-8 text-blue-600 dark:text-blue-400 animate-spin" />
-                            <span className="text-sm text-gray-600 dark:text-gray-300">載入地圖中...</span>
+                            <Loader2 className="w-7 h-7 text-blue-600 dark:text-blue-400 animate-spin" />
+                            <span className="text-xs text-zinc-600 dark:text-zinc-400">載入地圖中...</span>
                         </div>
                     </div>
                 )}

@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react';
-import { X, Loader2, Navigation2, Plus, Trash2 } from 'lucide-react';
+import { Loader2, Navigation2, Plus, Trash2 } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
 import { format } from 'date-fns';
+import Modal from './Modal';
+import { ACTIVITY_TYPES, TRAVEL_MODE_ICONS } from '../constants/activityTypes';
+import { parseLocalDate, addMinutesToTimeStr, timeStrToMinutes } from '../utils/date';
+import { useToast } from '../hooks/useToast';
+import type { Activity } from '../types';
 import {
     getTravelDuration,
     TRAVEL_MODE_OPTIONS,
@@ -14,31 +19,37 @@ import type {
     TransitRoutingPreference
 } from '../utils/googleMaps';
 
+export type ActivityFormSubmitData = Omit<Activity, 'id' | 'tripId'>;
+
 interface CreateActivityModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (data: any) => Promise<void>;
+    onSubmit: (data: ActivityFormSubmitData) => Promise<void>;
     selectedDate: Date | null;
-    initialData?: any;
+    initialData?: Partial<Activity> | null;
     availableDays?: Date[];
+    defaultStartTime?: string;
 }
 
-const ACTIVITY_TYPES = [
-    { value: 'sightseeing', label: '觀光', icon: '📷' },
-    { value: 'food', label: '美食', icon: '🍽️' },
-    { value: 'shopping', label: '購物', icon: '🛍️' },
-    { value: 'transport', label: '交通', icon: '🚆' },
-    { value: 'lodging', label: '住宿', icon: '🏨' },
-    { value: 'other', label: '其他', icon: '📍' }
-];
+const inputBaseClass =
+    'w-full px-3.5 py-2.5 text-sm bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all';
 
-export default function CreateActivityModal({ isOpen, onClose, onSubmit, selectedDate, initialData, availableDays }: CreateActivityModalProps) {
+export default function CreateActivityModal({
+    isOpen,
+    onClose,
+    onSubmit,
+    selectedDate,
+    initialData,
+    availableDays,
+    defaultStartTime = '09:00',
+}: CreateActivityModalProps) {
+    const { showToast } = useToast();
     const [loading, setLoading] = useState(false);
     const [fetchingDuration, setFetchingDuration] = useState(false);
     const [selectedDayString, setSelectedDayString] = useState<string>('');
     const [formData, setFormData] = useState({
         title: '',
-        type: 'sightseeing',
+        type: 'sightseeing' as Activity['type'],
         startTime: '09:00',
         endTime: '10:00',
         location: '',
@@ -57,7 +68,6 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
 
         setFetchingDuration(true);
         try {
-            // Build transit options if using transit mode
             const transitOptions = formData.travelMode === 'TRANSIT' ? {
                 modes: formData.transitModes.length > 0 ? formData.transitModes : undefined,
                 routingPreference: formData.transitRoutingPreference || undefined
@@ -73,13 +83,14 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                 ...prev,
                 estimatedDuration: result.durationMinutes.toString()
             }));
+            showToast(`已取得預估交通時間：${result.durationMinutes} 分鐘`, 'success');
         } catch (error) {
             console.error('Failed to fetch travel duration:', error);
             const isZeroResults = error instanceof Error && error.message.includes('ZERO_RESULTS');
             if (isZeroResults && formData.travelMode === 'TRANSIT') {
-                alert('無法自動取得大眾運輸時間（Google API 不支援日本等部分地區的大眾運輸查詢，或系統時間超出班表範圍）。建議手動輸入預估時間，或改用其他交通方式估算。');
+                showToast('此地區暫不支援大眾運輸時間查詢，建議手動輸入或改用其他交通方式。', 'info');
             } else {
-                alert('無法取得預估時間，請確認地點名稱是否正確');
+                showToast('無法取得預估時間，請確認地點名稱是否正確。', 'error');
             }
         } finally {
             setFetchingDuration(false);
@@ -114,22 +125,45 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
             const currentModes = prev.transitModes;
             if (currentModes.includes(mode)) {
                 return { ...prev, transitModes: currentModes.filter(m => m !== mode) };
-            } else {
-                return { ...prev, transitModes: [...currentModes, mode] };
             }
+            return { ...prev, transitModes: [...currentModes, mode] };
+        });
+    };
+
+    const handleStartTimeChange = (nextStart: string) => {
+        setFormData(prev => {
+            const prevStartMin = timeStrToMinutes(prev.startTime);
+            const prevEndMin = prev.endTime ? timeStrToMinutes(prev.endTime) : prevStartMin + 60;
+            const duration = prevEndMin > prevStartMin ? prevEndMin - prevStartMin : 60;
+            const nextEnd = prev.endTime ? addMinutesToTimeStr(nextStart, duration) : prev.endTime;
+            return {
+                ...prev,
+                startTime: nextStart,
+                endTime: nextEnd,
+            };
         });
     };
 
     useEffect(() => {
+        if (!isOpen) return;
+
         if (selectedDate) {
             setSelectedDayString(format(selectedDate, 'yyyy-MM-dd'));
         }
+
         if (initialData) {
+            const startStr = initialData.startTime
+                ? new Date(initialData.startTime.seconds * 1000).toTimeString().slice(0, 5)
+                : defaultStartTime;
+            const endStr = initialData.endTime
+                ? new Date(initialData.endTime.seconds * 1000).toTimeString().slice(0, 5)
+                : (initialData.startTime ? '' : addMinutesToTimeStr(startStr, 60));
+
             setFormData({
-                title: initialData.title,
-                type: initialData.type,
-                startTime: initialData.startTime ? new Date(initialData.startTime.seconds * 1000).toTimeString().slice(0, 5) : '09:00',
-                endTime: initialData.endTime ? new Date(initialData.endTime.seconds * 1000).toTimeString().slice(0, 5) : '10:00',
+                title: initialData.title || '',
+                type: initialData.type || 'sightseeing',
+                startTime: startStr,
+                endTime: endStr,
                 location: initialData.location || '',
                 departureLocation: initialData.departureLocation || '',
                 arrivalLocation: initialData.arrivalLocation || '',
@@ -138,72 +172,73 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                 transitModes: (initialData.transitModes || []) as TransitModeType[],
                 transitRoutingPreference: (initialData.transitRoutingPreference || '') as TransitRoutingPreference | '',
                 notes: initialData.notes || '',
-                urls: initialData.urls && initialData.urls.length > 0 ? initialData.urls : [''] as string[]
+                urls: initialData.urls && initialData.urls.length > 0 ? initialData.urls : ['']
             });
         } else {
+            const initialStart = defaultStartTime || '09:00';
             setFormData({
                 title: '',
                 type: 'sightseeing',
-                startTime: '09:00',
-                endTime: '10:00',
+                startTime: initialStart,
+                endTime: addMinutesToTimeStr(initialStart, 60),
                 location: '',
                 departureLocation: '',
                 arrivalLocation: '',
                 estimatedDuration: '',
-                travelMode: 'TRANSIT' as TravelModeType,
-                transitModes: [] as TransitModeType[],
-                transitRoutingPreference: '' as TransitRoutingPreference | '',
+                travelMode: 'TRANSIT',
+                transitModes: [],
+                transitRoutingPreference: '',
                 notes: '',
-                urls: [''] as string[]
+                urls: ['']
             });
         }
-    }, [initialData, isOpen]);
-
-    if (!isOpen) return null;
+    }, [initialData, isOpen, selectedDate, defaultStartTime]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         const targetDate = availableDays && availableDays.length > 0 && selectedDayString
-            ? new Date(selectedDayString)
+            ? parseLocalDate(selectedDayString)
             : selectedDate;
 
         if (!targetDate) return;
 
+        if (formData.endTime && timeStrToMinutes(formData.endTime) < timeStrToMinutes(formData.startTime)) {
+            showToast('結束時間不能早於開始時間', 'error');
+            return;
+        }
+
         setLoading(true);
         try {
-            // Construct standard Javascript Date objects combining targetDate (year/month/day) with time input (hours/minutes)
             const [startHour, startMinute] = formData.startTime.split(':');
             const startDate = new Date(targetDate);
-            startDate.setHours(parseInt(startHour), parseInt(startMinute));
+            startDate.setHours(parseInt(startHour, 10), parseInt(startMinute, 10), 0, 0);
 
-            const [endHour, endMinute] = formData.endTime.split(':');
-            const endDate = new Date(targetDate);
-            endDate.setHours(parseInt(endHour), parseInt(endMinute));
-
-            // Build activity data, only including optional fields if they have values
-            // Firestore does NOT accept undefined values
-            const activityData: Record<string, any> = {
-                title: formData.title,
+            const activityData: ActivityFormSubmitData = {
+                title: formData.title.trim(),
                 type: formData.type,
                 startTime: Timestamp.fromDate(startDate),
-                endTime: Timestamp.fromDate(endDate),
             };
 
-            // Only add optional fields if they have values
-            if (formData.location && formData.location.trim()) {
+            if (formData.endTime) {
+                const [endHour, endMinute] = formData.endTime.split(':');
+                const endDate = new Date(targetDate);
+                endDate.setHours(parseInt(endHour, 10), parseInt(endMinute, 10), 0, 0);
+                activityData.endTime = Timestamp.fromDate(endDate);
+            }
+
+            if (formData.location.trim()) {
                 activityData.location = formData.location.trim();
             }
-            if (formData.departureLocation && formData.departureLocation.trim()) {
+            if (formData.departureLocation.trim()) {
                 activityData.departureLocation = formData.departureLocation.trim();
             }
-            if (formData.arrivalLocation && formData.arrivalLocation.trim()) {
+            if (formData.arrivalLocation.trim()) {
                 activityData.arrivalLocation = formData.arrivalLocation.trim();
             }
-            if (formData.estimatedDuration && formData.estimatedDuration.trim()) {
-                activityData.estimatedDuration = parseInt(formData.estimatedDuration);
+            if (formData.estimatedDuration.trim()) {
+                activityData.estimatedDuration = parseInt(formData.estimatedDuration, 10);
             }
-            // Save travel mode settings for transport activities
             if (formData.type === 'transport') {
                 activityData.travelMode = formData.travelMode;
                 if (formData.transitModes.length > 0) {
@@ -213,33 +248,14 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                     activityData.transitRoutingPreference = formData.transitRoutingPreference;
                 }
             }
-            if (formData.notes && formData.notes.trim()) {
+            if (formData.notes.trim()) {
                 activityData.notes = formData.notes.trim();
             }
             const filteredUrls = formData.urls.filter(url => url.trim() !== '');
-            if (filteredUrls.length > 0) {
-                activityData.urls = filteredUrls;
-            } else {
-                activityData.urls = [];
-            }
+            activityData.urls = filteredUrls;
 
             await onSubmit(activityData);
             onClose();
-            setFormData({
-                title: '',
-                type: 'sightseeing',
-                startTime: '09:00',
-                endTime: '10:00',
-                location: '',
-                departureLocation: '',
-                arrivalLocation: '',
-                estimatedDuration: '',
-                travelMode: 'TRANSIT' as TravelModeType,
-                transitModes: [] as TransitModeType[],
-                transitRoutingPreference: '' as TransitRoutingPreference | '',
-                notes: '',
-                urls: [''] as string[]
-            });
         } catch (error) {
             console.error(error);
         } finally {
@@ -247,281 +263,290 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
         }
     };
 
+    const isEditing = Boolean(initialData && initialData.id && !availableDays);
+
     return (
-        <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
-            <div
-                className="modal-panel bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto"
-                onClick={(e) => e.stopPropagation()}
-            >
-                <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-gray-800 sticky top-0 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 z-10">
-                    <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">{initialData && !availableDays ? '編輯活動' : '新增活動'}</h2>
-                    <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
-                        <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title={isEditing ? '編輯活動' : '新增活動'}
+            maxWidthClass="max-w-lg"
+            footer={
+                <div className="flex gap-3">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="flex-1 px-4 py-2.5 text-sm border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-700/80 transition-colors font-medium"
+                    >
+                        取消
+                    </button>
+                    <button
+                        type="submit"
+                        form="activityForm"
+                        disabled={loading}
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm font-medium py-2.5 rounded-xl transition-colors flex items-center justify-center"
+                    >
+                        {loading ? '儲存中...' : '儲存活動'}
                     </button>
                 </div>
-
-                <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                    {availableDays && availableDays.length > 0 && (
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">選擇日期</label>
-                            <select
-                                className="w-full px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                                value={selectedDayString}
-                                onChange={e => setSelectedDayString(e.target.value)}
-                                required
-                            >
-                                <option value="" disabled>請選擇日期</option>
-                                {availableDays.map((day, index) => (
-                                    <option key={index} value={format(day, 'yyyy-MM-dd')}>
-                                        第 {index + 1} 天 ({format(day, 'MM/dd')})
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    )}
-
+            }
+        >
+            <form id="activityForm" onSubmit={handleSubmit} className="space-y-4">
+                {availableDays && availableDays.length > 0 && (
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">標題</label>
+                        <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">選擇日期</label>
+                        <select
+                            className={inputBaseClass}
+                            value={selectedDayString}
+                            onChange={e => setSelectedDayString(e.target.value)}
+                            required
+                        >
+                            <option value="" disabled>請選擇日期</option>
+                            {availableDays.map((day, index) => (
+                                <option key={index} value={format(day, 'yyyy-MM-dd')}>
+                                    第 {index + 1} 天 ({format(day, 'MM/dd')})
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
+
+                <div>
+                    <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">標題</label>
+                    <input
+                        type="text"
+                        required
+                        className={inputBaseClass}
+                        placeholder="例如：參觀淺草寺"
+                        value={formData.title}
+                        onChange={e => setFormData({ ...formData, title: e.target.value })}
+                    />
+                </div>
+
+                {/* Tactile 3x2 Category Selector */}
+                <div>
+                    <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">類型</label>
+                    <div className="grid grid-cols-3 gap-2">
+                        {ACTIVITY_TYPES.map(typeItem => {
+                            const Icon = typeItem.icon;
+                            const isSelected = formData.type === typeItem.value;
+                            return (
+                                <button
+                                    key={typeItem.value}
+                                    type="button"
+                                    onClick={() => setFormData({ ...formData, type: typeItem.value })}
+                                    className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border text-xs sm:text-sm font-medium transition-colors ${
+                                        isSelected
+                                            ? typeItem.activePillClass
+                                            : 'bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/80'
+                                    }`}
+                                >
+                                    <Icon className="w-4 h-4 shrink-0" />
+                                    <span>{typeItem.label}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {formData.type !== 'transport' ? (
+                    <div>
+                        <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">位置（選填）</label>
                         <input
                             type="text"
-                            required
-                            className="w-full px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                            placeholder="例如：參觀淺草寺"
-                            value={formData.title}
-                            onChange={e => setFormData({ ...formData, title: e.target.value })}
+                            className={inputBaseClass}
+                            placeholder="例如：淺草站"
+                            value={formData.location}
+                            onChange={e => setFormData({ ...formData, location: e.target.value })}
                         />
                     </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">類型</label>
-                            <select
-                                className="w-full px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                                value={formData.type}
-                                onChange={e => setFormData({ ...formData, type: e.target.value })}
-                            >
-                                {ACTIVITY_TYPES.map(type => (
-                                    <option key={type.value} value={type.value}>{type.icon} {type.label}</option>
-                                ))}
-                            </select>
-                        </div>
-                        {formData.type !== 'transport' ? (
+                ) : (
+                    <div className="space-y-4 p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-950/60 border border-zinc-200/70 dark:border-zinc-800">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">位置 (選填)</label>
+                                <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">出發地點（選填）</label>
                                 <input
                                     type="text"
-                                    className="w-full px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                                    placeholder="例如：淺草站"
-                                    value={formData.location}
-                                    onChange={e => setFormData({ ...formData, location: e.target.value })}
+                                    className={inputBaseClass}
+                                    placeholder="例如：東京車站"
+                                    value={formData.departureLocation}
+                                    onChange={e => setFormData({ ...formData, departureLocation: e.target.value })}
                                 />
                             </div>
-                        ) : (
-                            <div className="col-span-1" />
-                        )}
-                    </div>
-
-                    {formData.type === 'transport' && (
-                        <div className="space-y-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">出發地點 (選填)</label>
-                                    <input
-                                        type="text"
-                                        className="w-full px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                                        placeholder="例如：東京車站"
-                                        value={formData.departureLocation}
-                                        onChange={e => setFormData({ ...formData, departureLocation: e.target.value })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">到達地點 (選填)</label>
-                                    <input
-                                        type="text"
-                                        className="w-full px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                                        placeholder="例如：大阪站"
-                                        value={formData.arrivalLocation}
-                                        onChange={e => setFormData({ ...formData, arrivalLocation: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Travel Mode Selection */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">交通方式</label>
-                                <div className="flex flex-wrap gap-2">
-                                    {TRAVEL_MODE_OPTIONS.map(mode => (
+                                <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">到達地點（選填）</label>
+                                <input
+                                    type="text"
+                                    className={inputBaseClass}
+                                    placeholder="例如：大阪站"
+                                    value={formData.arrivalLocation}
+                                    onChange={e => setFormData({ ...formData, arrivalLocation: e.target.value })}
+                                />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">交通方式</label>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                {TRAVEL_MODE_OPTIONS.map(mode => {
+                                    const ModeIcon = TRAVEL_MODE_ICONS[mode.value]?.icon;
+                                    const active = formData.travelMode === mode.value;
+                                    return (
                                         <button
                                             key={mode.value}
                                             type="button"
                                             onClick={() => setFormData({ ...formData, travelMode: mode.value as TravelModeType })}
-                                            className={`px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-1 text-sm ${formData.travelMode === mode.value
-                                                ? 'bg-blue-600 text-white'
-                                                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                                                }`}
+                                            className={`px-2.5 py-2 rounded-xl border text-xs font-medium transition-colors flex items-center justify-center gap-1.5 ${
+                                                active
+                                                    ? 'bg-blue-600 text-white border-blue-600'
+                                                    : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                                            }`}
                                         >
-                                            <span>{mode.icon}</span>
+                                            {ModeIcon && <ModeIcon className="w-3.5 h-3.5 shrink-0" />}
                                             <span>{mode.label}</span>
                                         </button>
-                                    ))}
-                                </div>
+                                    );
+                                })}
                             </div>
+                        </div>
 
-                            {/* Transit Mode Preferences - Only show when TRANSIT is selected */}
-                            {formData.travelMode === 'TRANSIT' && (
-                                <div className="bg-blue-50 dark:bg-blue-900/30 p-3 rounded-lg space-y-3">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">偏好大眾運輸類型 (可多選)</label>
-                                        <div className="flex flex-wrap gap-2">
-                                            {TRANSIT_MODE_OPTIONS.map(mode => (
+                        {formData.travelMode === 'TRANSIT' && (
+                            <div className="bg-blue-50/60 dark:bg-blue-500/10 border border-blue-200/60 dark:border-blue-500/20 p-3 rounded-xl space-y-3">
+                                <div>
+                                    <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-300 mb-2">偏好大眾運輸類型（可多選）</label>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {TRANSIT_MODE_OPTIONS.map(mode => {
+                                            const active = formData.transitModes.includes(mode.value as TransitModeType);
+                                            return (
                                                 <button
                                                     key={mode.value}
                                                     type="button"
                                                     onClick={() => handleTransitModeToggle(mode.value as TransitModeType)}
-                                                    className={`px-3 py-1.5 rounded-lg font-medium transition-all flex items-center gap-1 text-sm ${formData.transitModes.includes(mode.value as TransitModeType)
-                                                        ? 'bg-blue-600 text-white'
-                                                        : 'bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-800'
-                                                        }`}
+                                                    className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
+                                                        active
+                                                            ? 'bg-blue-600 text-white border-blue-600'
+                                                            : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800'
+                                                    }`}
                                                 >
-                                                    <span>{mode.icon}</span>
-                                                    <span>{mode.label}</span>
+                                                    {mode.label}
                                                 </button>
-                                            ))}
-                                        </div>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">不選擇則使用所有可用類型</p>
+                                            );
+                                        })}
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">路線偏好</label>
-                                        <select
-                                            className="w-full px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                                            value={formData.transitRoutingPreference}
-                                            onChange={e => setFormData({ ...formData, transitRoutingPreference: e.target.value as TransitRoutingPreference | '' })}
-                                        >
-                                            {TRANSIT_ROUTING_OPTIONS.map(option => (
-                                                <option key={option.value} value={option.value}>{option.label}</option>
-                                            ))}
-                                        </select>
-                                    </div>
+                                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1.5">不選擇則使用所有可用類型</p>
                                 </div>
-                            )}
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">預估交通時間 (分鐘，選填)</label>
-                                <div className="flex gap-2">
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        className="flex-1 px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                                        placeholder="例如：120"
-                                        value={formData.estimatedDuration}
-                                        onChange={e => setFormData({ ...formData, estimatedDuration: e.target.value })}
-                                    />
-                                    <button
-                                        type="button"
-                                        disabled={!formData.departureLocation || !formData.arrivalLocation || fetchingDuration}
-                                        onClick={handleFetchDuration}
-                                        className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 dark:disabled:text-gray-400 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap"
+                                <div>
+                                    <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-300 mb-1.5">路線偏好</label>
+                                    <select
+                                        className={inputBaseClass}
+                                        value={formData.transitRoutingPreference}
+                                        onChange={e => setFormData({ ...formData, transitRoutingPreference: e.target.value as TransitRoutingPreference | '' })}
                                     >
-                                        {fetchingDuration ? (
-                                            <><Loader2 className="w-4 h-4 animate-spin" /> 查詢中...</>
-                                        ) : (
-                                            <><Navigation2 className="w-4 h-4" /> 自動取得</>
-                                        )}
-                                    </button>
+                                        {TRANSIT_ROUTING_OPTIONS.map(option => (
+                                            <option key={option.value} value={option.value}>{option.label}</option>
+                                        ))}
+                                    </select>
                                 </div>
-                                {!formData.departureLocation || !formData.arrivalLocation ? (
-                                    <p className="text-xs text-gray-400 mt-1">請先填寫出發和到達地點</p>
-                                ) : null}
+                            </div>
+                        )}
+
+                        <div>
+                            <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">預估交通時間（分鐘，選填）</label>
+                            <div className="flex gap-2">
+                                <input
+                                    type="number"
+                                    min="0"
+                                    className={`${inputBaseClass} flex-1 tabular-nums`}
+                                    placeholder="例如：45"
+                                    value={formData.estimatedDuration}
+                                    onChange={e => setFormData({ ...formData, estimatedDuration: e.target.value })}
+                                />
+                                <button
+                                    type="button"
+                                    disabled={!formData.departureLocation || !formData.arrivalLocation || fetchingDuration}
+                                    onClick={handleFetchDuration}
+                                    className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-zinc-200 dark:disabled:bg-zinc-800 disabled:text-zinc-400 dark:disabled:text-zinc-600 disabled:cursor-not-allowed text-white rounded-xl text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap"
+                                >
+                                    {fetchingDuration ? (
+                                        <><Loader2 className="w-4 h-4 animate-spin" /><span>查詢中</span></>
+                                    ) : (
+                                        <><Navigation2 className="w-4 h-4" /><span>自動估算</span></>
+                                    )}
+                                </button>
                             </div>
                         </div>
-                    )}
-
-                    <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                        <div className="min-w-0">
-                            <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 truncate">開始時間</label>
-                            <input
-                                type="time"
-                                required
-                                className="w-full px-1.5 sm:px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm"
-                                value={formData.startTime}
-                                onChange={e => setFormData({ ...formData, startTime: e.target.value })}
-                            />
-                        </div>
-                        <div className="min-w-0">
-                            <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 truncate">結束時間 (選填)</label>
-                            <input
-                                type="time"
-                                className="w-full px-1.5 sm:px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm"
-                                value={formData.endTime}
-                                onChange={e => setFormData({ ...formData, endTime: e.target.value })}
-                            />
-                        </div>
                     </div>
+                )}
 
-                    {/* 參考網址 */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                            參考網址 (選填)
-                        </label>
-                        <div className="space-y-2">
-                            {formData.urls.map((url, index) => (
-                                <div key={index} className="flex gap-2">
-                                    <input
-                                        type="url"
-                                        value={url}
-                                        onChange={(e) => updateUrlField(index, e.target.value)}
-                                        className="flex-1 px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                                        placeholder="https://"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => removeUrlField(index)}
-                                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-transparent"
-                                    >
-                                        <Trash2 className="w-5 h-5" />
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                        <button
-                            type="button"
-                            onClick={addUrlField}
-                            className="mt-2 text-sm text-blue-600 dark:text-blue-400 font-medium hover:text-blue-700 flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-blue-50 transition-colors"
-                        >
-                            <Plus className="w-4 h-4" />
-                            新增網址
-                        </button>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">備註 (選填)</label>
-                        <textarea
-                            rows={3}
-                            className="w-full px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                            placeholder="任何細節或筆記..."
-                            value={formData.notes}
-                            onChange={e => setFormData({ ...formData, notes: e.target.value })}
+                <div className="grid grid-cols-2 gap-3">
+                    <div className="min-w-0">
+                        <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">開始時間</label>
+                        <input
+                            type="time"
+                            required
+                            className={`${inputBaseClass} tabular-nums`}
+                            value={formData.startTime}
+                            onChange={e => handleStartTimeChange(e.target.value)}
                         />
                     </div>
-
-                    <div className="pt-4 flex gap-3">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors font-medium"
-                        >
-                            取消
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition-colors flex items-center justify-center"
-                        >
-                            {loading ? '儲存中...' : '儲存活動'}
-                        </button>
+                    <div className="min-w-0">
+                        <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">結束時間（選填）</label>
+                        <input
+                            type="time"
+                            className={`${inputBaseClass} tabular-nums`}
+                            value={formData.endTime}
+                            onChange={e => setFormData({ ...formData, endTime: e.target.value })}
+                        />
                     </div>
-                </form>
-            </div>
-        </div>
+                </div>
+
+                {/* URLs */}
+                <div>
+                    <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">
+                        參考網址（選填）
+                    </label>
+                    <div className="space-y-2">
+                        {formData.urls.map((url, index) => (
+                            <div key={index} className="flex gap-2">
+                                <input
+                                    type="url"
+                                    value={url}
+                                    onChange={(e) => updateUrlField(index, e.target.value)}
+                                    className={`${inputBaseClass} flex-1`}
+                                    placeholder="https://"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => removeUrlField(index)}
+                                    aria-label="移除網址"
+                                    className="p-2.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                    <button
+                        type="button"
+                        onClick={addUrlField}
+                        className="mt-2 text-xs text-blue-600 dark:text-blue-400 font-medium inline-flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors"
+                    >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>新增網址</span>
+                    </button>
+                </div>
+
+                <div>
+                    <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">備註（選填）</label>
+                    <textarea
+                        rows={3}
+                        className={`${inputBaseClass} resize-none`}
+                        placeholder="任何細節或筆記..."
+                        value={formData.notes}
+                        onChange={e => setFormData({ ...formData, notes: e.target.value })}
+                    />
+                </div>
+            </form>
+        </Modal>
     );
 }

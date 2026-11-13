@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Activity } from '../types';
+import { parseLocalDate } from '../utils/date';
+import Modal from './Modal';
 
 interface MoveActivityModalProps {
     isOpen: boolean;
@@ -23,87 +24,75 @@ export default function MoveActivityModal({
 
     useEffect(() => {
         if (isOpen && activity) {
-            // Find current date of the activity and set it as initial or default to first day
-            const activityDateStr = format(activity.startTime.toDate(), 'yyyy-MM-dd');
-            setSelectedDateStr(activityDateStr);
+            setSelectedDateStr(format(activity.startTime.toDate(), 'yyyy-MM-dd'));
         }
     }, [isOpen, activity]);
 
-    if (!isOpen || !activity) return null;
+    if (!activity) return null;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedDateStr) return;
 
-        const targetDate = new Date(selectedDateStr);
+        const targetDate = parseLocalDate(selectedDateStr);
         setIsSubmitting(true);
         try {
             await onMove(activity.id, targetDate);
             onClose();
         } catch (error) {
-            console.error("Failed to move activity", error);
+            console.error('Failed to move activity', error);
         } finally {
             setIsSubmitting(false);
         }
     };
 
     return (
-        <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
-            <div
-                className="modal-panel bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-2xl w-full max-w-md shadow-xl overflow-hidden"
-                onClick={(e) => e.stopPropagation()}
-            >
-                <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-gray-800">
-                    <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">移動行程</h2>
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title="移動行程日期"
+            maxWidthClass="max-w-md"
+            footer={
+                <div className="flex gap-3">
                     <button
+                        type="button"
                         onClick={onClose}
-                        className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded-full transition-colors"
+                        disabled={isSubmitting}
+                        className="flex-1 px-4 py-2.5 text-sm text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700/80 rounded-xl font-medium transition-colors"
                     >
-                        <X className="w-5 h-5" />
+                        取消
+                    </button>
+                    <button
+                        type="submit"
+                        form="moveActivityForm"
+                        disabled={isSubmitting}
+                        className="flex-1 px-4 py-2.5 text-sm bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-xl font-medium transition-colors"
+                    >
+                        {isSubmitting ? '移動中...' : '確認移動'}
                     </button>
                 </div>
-
-                <form onSubmit={handleSubmit} className="p-6">
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            將「{activity.title}」移動至：
-                        </label>
-                        <select
-                            value={selectedDateStr}
-                            onChange={(e) => setSelectedDateStr(e.target.value)}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
-                            required
-                        >
-                            {days.map((day, index) => {
-                                const dateStr = format(day, 'yyyy-MM-dd');
-                                return (
-                                    <option key={dateStr} value={dateStr}>
-                                        第 {index + 1} 天 ({format(day, 'MM/dd')})
-                                    </option>
-                                );
-                            })}
-                        </select>
-                    </div>
-
-                    <div className="flex justify-end gap-3 mt-8">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="px-5 py-2.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl font-medium transition-colors"
-                            disabled={isSubmitting}
-                        >
-                            取消
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors flex items-center gap-2"
-                        >
-                            {isSubmitting ? '移動中...' : '確認移動'}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+            }
+        >
+            <form id="moveActivityForm" onSubmit={handleSubmit}>
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2.5">
+                    將「{activity.title}」移動至：
+                </label>
+                <select
+                    value={selectedDateStr}
+                    onChange={(e) => setSelectedDateStr(e.target.value)}
+                    className="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 rounded-xl border border-zinc-200 dark:border-zinc-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 outline-none transition-all tabular-nums"
+                    required
+                >
+                    {days.map((day, index) => {
+                        const dateStr = format(day, 'yyyy-MM-dd');
+                        return (
+                            <option key={dateStr} value={dateStr}>
+                                第 {index + 1} 天 ({format(day, 'MM/dd')})
+                            </option>
+                        );
+                    })}
+                </select>
+            </form>
+        </Modal>
     );
 }

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X, Building2, MapPin, Calendar, Clock, AlignLeft } from 'lucide-react';
+import { Building2, MapPin, Calendar, Clock, AlignLeft } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
 import type { HotelInfo } from '../types';
+import Modal from './Modal';
 
 interface CreateHotelModalProps {
     isOpen: boolean;
@@ -9,6 +10,9 @@ interface CreateHotelModalProps {
     onSubmit: (data: HotelInfo) => Promise<void>;
     initialData?: HotelInfo;
 }
+
+const inputBaseClass =
+    'w-full px-3.5 py-2.5 text-sm bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all';
 
 export default function CreateHotelModal({ isOpen, onClose, onSubmit, initialData }: CreateHotelModalProps) {
     const [loading, setLoading] = useState(false);
@@ -24,10 +28,10 @@ export default function CreateHotelModal({ isOpen, onClose, onSubmit, initialDat
     });
 
     useEffect(() => {
+        if (!isOpen) return;
         if (initialData) {
             const checkIn = initialData.checkIn.toDate();
             const checkOut = initialData.checkOut.toDate();
-
             const pad = (n: number) => n.toString().padStart(2, '0');
 
             setFormData({
@@ -54,8 +58,6 @@ export default function CreateHotelModal({ isOpen, onClose, onSubmit, initialDat
         }
     }, [initialData, isOpen]);
 
-    if (!isOpen) return null;
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -65,12 +67,12 @@ export default function CreateHotelModal({ isOpen, onClose, onSubmit, initialDat
 
             const hotelData: HotelInfo = {
                 id: initialData?.id || Date.now().toString(),
-                name: formData.name,
-                address: formData.address,
+                name: formData.name.trim(),
+                address: formData.address.trim(),
                 checkIn: Timestamp.fromDate(checkInDateObj),
                 checkOut: Timestamp.fromDate(checkOutDateObj),
-                bookingReference: formData.bookingReference,
-                notes: formData.notes
+                bookingReference: formData.bookingReference.trim(),
+                notes: formData.notes.trim()
             };
 
             await onSubmit(hotelData);
@@ -83,170 +85,157 @@ export default function CreateHotelModal({ isOpen, onClose, onSubmit, initialDat
     };
 
     return (
-        <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
-            <div
-                className="modal-panel bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-2xl w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto"
-                onClick={(e) => e.stopPropagation()}
-            >
-                <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-gray-800 sticky top-0 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 z-10">
-                    <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">
-                        {initialData ? '編輯飯店資訊' : '新增飯店資訊'}
-                    </h2>
-                    <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors">
-                        <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title={initialData ? '編輯飯店資訊' : '新增飯店資訊'}
+            maxWidthClass="max-w-2xl"
+            footer={
+                <div className="flex gap-3">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="flex-1 px-4 py-2.5 text-sm border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 rounded-xl hover:bg-zinc-50 dark:hover:bg-zinc-700/80 transition-colors font-medium"
+                    >
+                        取消
+                    </button>
+                    <button
+                        type="submit"
+                        form="hotelForm"
+                        disabled={loading}
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-sm font-medium py-2.5 rounded-xl transition-colors flex items-center justify-center"
+                    >
+                        {loading ? '儲存中...' : '儲存飯店資訊'}
                     </button>
                 </div>
-
-                <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                    {/* Name & Address */}
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">飯店名稱</label>
-                            <div className="relative">
-                                <Building2 className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                                <input
-                                    type="text"
-                                    required
-                                    className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                                    placeholder="例如：東京格拉斯麗新宿酒店"
-                                    value={formData.name}
-                                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                />
-                            </div>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">飯店地址</label>
-                            <div className="relative">
-                                <MapPin className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                                <input
-                                    type="text"
-                                    className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                                    placeholder="例如：東京都新宿區歌舞伎町1-19-1"
-                                    value={formData.address}
-                                    onChange={e => setFormData({ ...formData, address: e.target.value })}
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Check-In */}
-                    <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800 space-y-4">
-                        <h3 className="font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                            <span className="w-2 h-6 bg-blue-500 rounded-full" />
-                            入住資訊 (Check-in)
-                        </h3>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">日期</label>
-                                <div className="relative">
-                                    <Calendar className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                                    <input
-                                        type="date"
-                                        required
-                                        className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                                        value={formData.checkInDate}
-                                        onChange={e => setFormData({ ...formData, checkInDate: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">時間</label>
-                                <div className="relative">
-                                    <Clock className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                                    <input
-                                        type="time"
-                                        required
-                                        className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                                        value={formData.checkInTime}
-                                        onChange={e => setFormData({ ...formData, checkInTime: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Check-Out */}
-                    <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800 space-y-4">
-                        <h3 className="font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                            <span className="w-2 h-6 bg-emerald-500 rounded-full" />
-                            退房資訊 (Check-out)
-                        </h3>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">日期</label>
-                                <div className="relative">
-                                    <Calendar className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                                    <input
-                                        type="date"
-                                        required
-                                        min={formData.checkInDate || undefined}
-                                        className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                                        value={formData.checkOutDate}
-                                        onChange={e => setFormData({ ...formData, checkOutDate: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">時間</label>
-                                <div className="relative">
-                                    <Clock className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                                    <input
-                                        type="time"
-                                        required
-                                        className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                                        value={formData.checkOutTime}
-                                        onChange={e => setFormData({ ...formData, checkOutTime: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Extra Info */}
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">訂房代號 (選填)</label>
+            }
+        >
+            <form id="hotelForm" onSubmit={handleSubmit} className="space-y-5">
+                <div className="space-y-3.5">
+                    <div>
+                        <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">飯店名稱</label>
+                        <div className="relative">
+                            <Building2 className="absolute left-3.5 top-3 w-4 h-4 text-zinc-400" />
                             <input
                                 type="text"
-                                className="w-full px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100"
-                                placeholder="例如：ABC12345"
-                                value={formData.bookingReference}
-                                onChange={e => setFormData({ ...formData, bookingReference: e.target.value })}
+                                required
+                                className={`${inputBaseClass} pl-10`}
+                                placeholder="例如：東京格拉斯麗新宿酒店"
+                                value={formData.name}
+                                onChange={e => setFormData({ ...formData, name: e.target.value })}
                             />
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">備註 (選填)</label>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">飯店地址（選填）</label>
+                        <div className="relative">
+                            <MapPin className="absolute left-3.5 top-3 w-4 h-4 text-zinc-400" />
+                            <input
+                                type="text"
+                                className={`${inputBaseClass} pl-10`}
+                                placeholder="例如：東京都新宿區歌舞伎町1-19-1"
+                                value={formData.address}
+                                onChange={e => setFormData({ ...formData, address: e.target.value })}
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-zinc-50 dark:bg-zinc-950/60 p-4 rounded-2xl border border-zinc-200/70 dark:border-zinc-800 space-y-3.5">
+                    <h3 className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                        入住資訊 (Check-in)
+                    </h3>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="min-w-0">
+                            <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">日期</label>
                             <div className="relative">
-                                <AlignLeft className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                                <textarea
-                                    rows={3}
-                                    className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"
-                                    placeholder="輸入任何其他訂房相關資訊"
-                                    value={formData.notes}
-                                    onChange={e => setFormData({ ...formData, notes: e.target.value })}
+                                <Calendar className="absolute left-3 top-3 w-4 h-4 text-zinc-400 pointer-events-none" />
+                                <input
+                                    type="date"
+                                    required
+                                    className={`${inputBaseClass} pl-9 tabular-nums`}
+                                    value={formData.checkInDate}
+                                    onChange={e => setFormData({ ...formData, checkInDate: e.target.value })}
+                                />
+                            </div>
+                        </div>
+                        <div className="min-w-0">
+                            <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">時間</label>
+                            <div className="relative">
+                                <Clock className="absolute left-3 top-3 w-4 h-4 text-zinc-400 pointer-events-none" />
+                                <input
+                                    type="time"
+                                    required
+                                    className={`${inputBaseClass} pl-9 tabular-nums`}
+                                    value={formData.checkInTime}
+                                    onChange={e => setFormData({ ...formData, checkInTime: e.target.value })}
                                 />
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <div className="pt-4 flex gap-3">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors font-medium"
-                        >
-                            取消
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition-colors flex items-center justify-center"
-                        >
-                            {loading ? '儲存中...' : '儲存飯店資訊'}
-                        </button>
+                <div className="bg-zinc-50 dark:bg-zinc-950/60 p-4 rounded-2xl border border-zinc-200/70 dark:border-zinc-800 space-y-3.5">
+                    <h3 className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                        退房資訊 (Check-out)
+                    </h3>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="min-w-0">
+                            <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">日期</label>
+                            <div className="relative">
+                                <Calendar className="absolute left-3 top-3 w-4 h-4 text-zinc-400 pointer-events-none" />
+                                <input
+                                    type="date"
+                                    required
+                                    min={formData.checkInDate || undefined}
+                                    className={`${inputBaseClass} pl-9 tabular-nums`}
+                                    value={formData.checkOutDate}
+                                    onChange={e => setFormData({ ...formData, checkOutDate: e.target.value })}
+                                />
+                            </div>
+                        </div>
+                        <div className="min-w-0">
+                            <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">時間</label>
+                            <div className="relative">
+                                <Clock className="absolute left-3 top-3 w-4 h-4 text-zinc-400 pointer-events-none" />
+                                <input
+                                    type="time"
+                                    required
+                                    className={`${inputBaseClass} pl-9 tabular-nums`}
+                                    value={formData.checkOutTime}
+                                    onChange={e => setFormData({ ...formData, checkOutTime: e.target.value })}
+                                />
+                            </div>
+                        </div>
                     </div>
-                </form>
-            </div>
-        </div>
+                </div>
+
+                <div className="space-y-3.5">
+                    <div>
+                        <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">訂房代號（選填）</label>
+                        <input
+                            type="text"
+                            className={`${inputBaseClass} font-mono`}
+                            placeholder="例如：ABC12345"
+                            value={formData.bookingReference}
+                            onChange={e => setFormData({ ...formData, bookingReference: e.target.value })}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">備註（選填）</label>
+                        <div className="relative">
+                            <AlignLeft className="absolute left-3.5 top-3 w-4 h-4 text-zinc-400" />
+                            <textarea
+                                rows={3}
+                                className={`${inputBaseClass} pl-10 resize-none`}
+                                placeholder="輸入任何其他訂房相關資訊"
+                                value={formData.notes}
+                                onChange={e => setFormData({ ...formData, notes: e.target.value })}
+                            />
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </Modal>
     );
 }

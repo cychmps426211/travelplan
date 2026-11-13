@@ -4,9 +4,23 @@ import type { Trip } from '../types';
 
 const TRIPS_COLLECTION = 'trips';
 
+export type TripMutationPayload = Partial<Omit<Trip, 'id' | 'createdAt' | 'members' | 'startDate' | 'endDate'>> & {
+    startDate?: Date | Timestamp;
+    endDate?: Date | Timestamp;
+};
+
+function toMillis(value: unknown): number {
+    if (value && typeof value === 'object' && 'toDate' in value && typeof (value as Timestamp).toDate === 'function') {
+        return (value as Timestamp).toDate().getTime();
+    }
+    if (value instanceof Date) return value.getTime();
+    if (typeof value === 'string' || typeof value === 'number') return new Date(value).getTime();
+    return 0;
+}
+
 export const tripService = {
     // Create a new trip
-    createTrip: async (tripData: Omit<Trip, 'id' | 'createdAt' | 'members'>, userId: string) => {
+    createTrip: async (tripData: TripMutationPayload, userId: string) => {
         try {
             const docRef = await addDoc(collection(db, TRIPS_COLLECTION), {
                 ...tripData,
@@ -16,7 +30,7 @@ export const tripService = {
             });
             return docRef.id;
         } catch (error) {
-            console.error("Error creating trip:", error);
+            console.error('Error creating trip:', error);
             throw error;
         }
     },
@@ -30,12 +44,12 @@ export const tripService = {
             );
 
             const querySnapshot = await getDocs(q);
-            return querySnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
+            return querySnapshot.docs.map(docSnap => ({
+                id: docSnap.id,
+                ...docSnap.data()
             })) as Trip[];
         } catch (error) {
-            console.error("Error fetching trips:", error);
+            console.error('Error fetching trips:', error);
             throw error;
         }
     },
@@ -45,27 +59,22 @@ export const tripService = {
         const q = query(collection(db, TRIPS_COLLECTION));
 
         return onSnapshot(q, (snapshot) => {
-            const trips = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
+            const trips = snapshot.docs.map(docSnap => ({
+                id: docSnap.id,
+                ...docSnap.data()
             })) as Trip[];
-            // Client-side sort
-            trips.sort((a, b) => {
-                const dateA = a.startDate?.toDate ? a.startDate.toDate() : new Date(a.startDate as any);
-                const dateB = b.startDate?.toDate ? b.startDate.toDate() : new Date(b.startDate as any);
-                return dateA.getTime() - dateB.getTime();
-            });
+            trips.sort((a, b) => toMillis(a.startDate) - toMillis(b.startDate));
             callback(trips);
         });
     },
 
     // Update trip details
-    updateTrip: async (tripId: string, updates: Partial<Trip>) => {
+    updateTrip: async (tripId: string, updates: TripMutationPayload | Record<string, unknown>) => {
         try {
             const tripRef = doc(db, TRIPS_COLLECTION, tripId);
             await updateDoc(tripRef, updates);
         } catch (error) {
-            console.error("Error updating trip:", error);
+            console.error('Error updating trip:', error);
             throw error;
         }
     },
@@ -75,7 +84,7 @@ export const tripService = {
         try {
             await deleteDoc(doc(db, TRIPS_COLLECTION, tripId));
         } catch (error) {
-            console.error("Error deleting trip:", error);
+            console.error('Error deleting trip:', error);
             throw error;
         }
     }

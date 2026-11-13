@@ -28,27 +28,27 @@ export default function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
     let statusBadge;
     if (daysUntilStart > 0) {
         statusBadge = (
-            <div className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg text-sm font-medium">
-                <Clock className="w-4 h-4" />
-                <span>距離啟程還有 {daysUntilStart} 天</span>
-            </div>
+            <span className="inline-flex items-center gap-1.5 text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 border border-blue-200/60 dark:border-blue-500/20 px-2.5 py-1 rounded-lg text-xs font-medium tabular-nums">
+                <Clock className="w-3.5 h-3.5" />
+                <span>還有 {daysUntilStart} 天出發</span>
+            </span>
         );
     } else if (daysUntilEnd >= 0) {
         statusBadge = (
-            <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1.5 rounded-lg text-sm font-medium">
-                <span className="relative flex h-2.5 w-2.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 dark:bg-emerald-500 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 dark:bg-emerald-400"></span>
+            <span className="inline-flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200/60 dark:border-emerald-500/20 px-2.5 py-1 rounded-lg text-xs font-medium">
+                <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>
                 <span>進行中</span>
-            </div>
+            </span>
         );
     } else {
         statusBadge = (
-            <div className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-lg text-sm font-medium">
-                <CheckCircle2 className="w-4 h-4" />
+            <span className="inline-flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200/60 dark:border-zinc-700/60 px-2.5 py-1 rounded-lg text-xs font-medium">
+                <CheckCircle2 className="w-3.5 h-3.5" />
                 <span>已結束</span>
-            </div>
+            </span>
         );
     }
 
@@ -77,28 +77,39 @@ export default function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
         setShowDeleteConfirm(false);
     };
 
+    const coverGradient =
+        GRADIENT_COLORS[trip.coverColor as keyof typeof GRADIENT_COLORS]?.gradient ||
+        GRADIENT_COLORS[DEFAULT_GRADIENT].gradient;
+
     return (
         <>
-            <div
-                className="cq-card group block h-full bg-white dark:bg-gray-900 rounded-3xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-1.5 transition-all duration-300 flex flex-col cursor-pointer mt-1"
+            <article
+                className="cq-card group h-full bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-200/80 dark:border-zinc-800 shadow-[0_1px_2px_rgba(0,0,0,0.03)] hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-md transition-all duration-200 flex flex-col cursor-pointer"
                 onClick={handleCardClick}
             >
-                {/* Gradient Background Container */}
-                <div className="relative h-48 overflow-hidden">
+                {/* Cover Area */}
+                <div className="relative h-44 overflow-hidden">
                     <div
-                        className={`absolute inset-0 bg-gradient-to-br ${!trip.coverImageUrl ? (GRADIENT_COLORS[trip.coverColor as keyof typeof GRADIENT_COLORS]?.gradient ||
-                            GRADIENT_COLORS[DEFAULT_GRADIENT].gradient) : ''
-                            }`}
-                        style={trip.coverImageUrl ? { backgroundImage: `url(${trip.coverImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}}
+                        className={`absolute inset-0 bg-gradient-to-br ${!trip.coverImageUrl ? coverGradient : ''}`}
+                        style={
+                            trip.coverImageUrl
+                                ? {
+                                      backgroundImage: `url(${trip.coverImageUrl})`,
+                                      backgroundSize: 'cover',
+                                      backgroundPosition: 'center',
+                                  }
+                                : {}
+                        }
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 transition-opacity group-hover:opacity-90"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-black/10" />
 
-                    {/* Action Buttons - Always visible */}
-                    <div className="absolute top-3 right-3 flex gap-2 z-10 transition-transform duration-300 transform translate-y-0 opacity-100 group-hover:-translate-y-1">
+                    {/* Action Buttons - always reachable on touch, subtle reveal on desktop hover */}
+                    <div className="absolute top-3 right-3 flex gap-1.5 z-10 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-150">
                         <button
                             type="button"
                             onClick={handleEditClick}
-                            className="p-2 bg-black/40 hover:bg-white text-white hover:text-blue-600 rounded-full backdrop-blur-md transition-colors border border-white/20 hover:border-white shadow-sm"
+                            aria-label={`編輯 ${trip.title}`}
+                            className="w-9 h-9 flex items-center justify-center bg-black/45 hover:bg-black/70 text-white rounded-xl backdrop-blur-md transition-colors border border-white/15"
                             title="編輯旅程"
                         >
                             <Edit2 className="w-4 h-4" />
@@ -106,54 +117,54 @@ export default function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
                         <button
                             type="button"
                             onClick={handleDeleteClick}
-                            className="p-2 bg-black/40 hover:bg-red-500 text-white rounded-full backdrop-blur-md transition-colors border border-white/20 hover:border-red-400 shadow-sm"
+                            aria-label={`刪除 ${trip.title}`}
+                            className="w-9 h-9 flex items-center justify-center bg-black/45 hover:bg-red-600 text-white rounded-xl backdrop-blur-md transition-colors border border-white/15"
                             title="刪除旅程"
                         >
                             <Trash2 className="w-4 h-4" />
                         </button>
                     </div>
 
-                    <div className="absolute bottom-4 left-4 right-4 text-white z-10">
+                    <div className="absolute bottom-3.5 left-4 right-4 text-white z-10">
                         <h3
-                            className="cq-trip-title text-2xl font-bold mb-1 tracking-tight truncate drop-shadow-md"
+                            className="cq-trip-title text-xl font-bold mb-1 tracking-tight truncate"
                             style={{ viewTransitionName: `trip-title-${trip.id}` }}
                         >
                             {trip.title}
                         </h3>
                         <div
-                            className="flex items-center gap-2 text-sm font-medium text-white/90 drop-shadow-sm w-fit"
+                            className="flex items-center gap-1.5 text-xs font-medium text-white/85 w-fit"
                             style={{ viewTransitionName: `trip-dest-${trip.id}` }}
                         >
-                            <MapPin className="w-4 h-4 shrink-0" />
+                            <MapPin className="w-3.5 h-3.5 shrink-0 opacity-85" />
                             <span className="truncate">{trip.destination}</span>
                         </div>
                     </div>
                 </div>
 
                 {/* Content Body */}
-                <div className="cq-card-body p-6 flex-1 flex flex-col justify-between">
-                    <div className="cq-trip-meta space-y-4">
-                        <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400 text-sm font-medium">
-                            <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg shrink-0">
-                                <Calendar className="w-4 h-4 text-blue-500 dark:text-blue-400" />
-                            </div>
+                <div className="cq-card-body p-4 sm:p-5 flex-1 flex flex-col justify-between gap-4">
+                    <div className="cq-trip-meta space-y-2.5 text-xs font-medium text-zinc-600 dark:text-zinc-400">
+                        <div className="flex items-center gap-2 tabular-nums">
+                            <Calendar className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500 shrink-0" />
                             <span>
-                                {format(trip.startDate.toDate(), 'yyyy/MM/dd')} - {format(trip.endDate.toDate(), 'yyyy/MM/dd')}
+                                {format(trip.startDate.toDate(), 'yyyy/MM/dd')} – {format(trip.endDate.toDate(), 'MM/dd')}
                             </span>
                         </div>
-                        <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400 text-sm font-medium">
-                            <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg shrink-0">
-                                <Clock className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-                            </div>
-                            <span>{days} 天旅程</span>
+                        <div className="flex items-center gap-2 tabular-nums">
+                            <Clock className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500 shrink-0" />
+                            <span>共 {days} 天</span>
                         </div>
                     </div>
 
-                    <div className="flex justify-end mt-5 pt-4 border-t border-gray-100 dark:border-gray-800/60">
+                    <div className="flex items-center justify-between pt-3 border-t border-zinc-100 dark:border-zinc-800/80">
+                        <span className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+                            {trip.currency || 'TWD'}
+                        </span>
                         {statusBadge}
                     </div>
                 </div>
-            </div>
+            </article>
 
             {/* Delete Confirmation Dialog */}
             <ConfirmDialog

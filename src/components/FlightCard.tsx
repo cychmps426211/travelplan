@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Plane, Clock, Edit2, CheckCircle2, Trash2 } from 'lucide-react';
+import type { Timestamp } from 'firebase/firestore';
 import type { FlightInfo } from '../types';
 import { format, differenceInDays, differenceInHours, differenceInMinutes } from 'date-fns';
 import ConfirmDialog from './ConfirmDialog';
@@ -26,65 +27,72 @@ export default function FlightCard({ flight, type, onEdit, onDelete }: FlightCar
     const timeLeft = !hasDeparted ? { days: daysUntil, hours: hoursUntil, minutes: minutesUntil } : null;
 
     // Helper to format UTC timestamp to Local Time string using stored offset
-    const formatLocalTime = (timestamp: any, offsetStr?: string) => {
+    const formatLocalTime = (timestamp: Timestamp, offsetStr?: string) => {
         const date = timestamp.toDate();
         if (!offsetStr) return format(date, 'HH:mm');
 
-        // Convert UTC date to target timezone date object for display
         const sign = offsetStr.startsWith('-') ? -1 : 1;
         const [h, m] = offsetStr.slice(1).split(':').map(Number);
         const offsetMinutes = sign * ((h * 60) + m);
 
-        // Get UTC time in ms
-        const utcMillis = date.getTime();
-        // Add offset to get "Local" time in ms (as if it were UTC)
-        const targetMillis = utcMillis + (offsetMinutes * 60 * 1000);
+        const targetMillis = date.getTime() + (offsetMinutes * 60 * 1000);
         const targetDate = new Date(targetMillis);
 
-        // Format utilizing UTC methods to avoid local browser timezone interference
         const hours = targetDate.getUTCHours().toString().padStart(2, '0');
         const minutes = targetDate.getUTCMinutes().toString().padStart(2, '0');
         return `${hours}:${minutes}`;
     };
 
-    const getDayMonth = (timestamp: any, offsetStr?: string) => {
+    const getDayMonth = (timestamp: Timestamp, offsetStr?: string) => {
         const date = timestamp.toDate();
-        if (!offsetStr) return format(date, 'MMM d');
+        if (!offsetStr) return format(date, 'MM/dd');
 
         const sign = offsetStr.startsWith('-') ? -1 : 1;
         const [h, m] = offsetStr.slice(1).split(':').map(Number);
         const offsetMinutes = sign * ((h * 60) + m);
         const targetDate = new Date(date.getTime() + (offsetMinutes * 60 * 1000));
-        // Use UTC methods
         const months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
         return `${months[targetDate.getUTCMonth()]}${targetDate.getUTCDate()}日`;
     };
 
-    // Duration in real time
     const diffMillis = arrTime.getTime() - depTime.getTime();
     const hours = Math.floor(diffMillis / (1000 * 60 * 60));
     const minutes = Math.floor((diffMillis % (1000 * 60 * 60)) / (1000 * 60));
 
     return (
         <>
-            <div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-xl border border-gray-200 dark:border-gray-800 p-5 hover:shadow-md transition-shadow relative group">
-                <div className="flex justify-between items-start mb-4">
-                    <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${type === 'outbound' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'}`}>
-                            <Plane className={`w-5 h-5 ${type === 'return' ? 'rotate-180' : ''}`} />
+            <div className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 p-4 sm:p-5 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors relative group">
+                <div className="flex justify-between items-start gap-3 mb-5">
+                    <div className="flex items-center gap-3 min-w-0">
+                        <div
+                            className={`p-2.5 rounded-xl border shrink-0 ${
+                                type === 'outbound'
+                                    ? 'bg-blue-50 text-blue-600 border-blue-200/60 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20'
+                                    : 'bg-emerald-50 text-emerald-600 border-emerald-200/60 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20'
+                            }`}
+                        >
+                            <Plane className={`w-4 h-4 ${type === 'return' ? 'rotate-180' : ''}`} />
                         </div>
-                        <div>
-                            <h3 className="font-bold text-gray-900 dark:text-gray-100">
+                        <div className="min-w-0">
+                            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
                                 {type === 'outbound' ? '去程航班' : '回程航班'}
                             </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">{flight.airline} • {flight.flightNumber}</p>
+                            <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
+                                {flight.airline} · <span className="font-mono">{flight.flightNumber}</span>
+                            </p>
                         </div>
                     </div>
-                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+
+                    {/* Touch-friendly actions: visible on mobile, reveal on desktop hover */}
+                    <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity shrink-0">
                         <button
                             type="button"
-                            onClick={(e) => { e.stopPropagation(); onEdit(); }}
-                            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onEdit();
+                            }}
+                            aria-label="編輯航班"
+                            className="w-9 h-9 flex items-center justify-center text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-colors"
                             title="編輯"
                         >
                             <Edit2 className="w-4 h-4" />
@@ -95,7 +103,8 @@ export default function FlightCard({ flight, type, onEdit, onDelete }: FlightCar
                                 e.stopPropagation();
                                 setShowDeleteConfirm(true);
                             }}
-                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            aria-label="刪除航班"
+                            className="w-9 h-9 flex items-center justify-center text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors"
                             title="刪除"
                         >
                             <Trash2 className="w-4 h-4" />
@@ -103,97 +112,94 @@ export default function FlightCard({ flight, type, onEdit, onDelete }: FlightCar
                     </div>
                 </div>
 
-                <div className="flex items-center justify-between mb-6">
-                    <div className="text-center min-w-[70px] sm:min-w-[80px]">
-                        <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
+                {/* Boarding Pass Route Timeline */}
+                <div className="flex items-center justify-between gap-2 mb-5">
+                    <div className="text-left min-w-[76px] sm:min-w-[96px]">
+                        <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 tabular-nums tracking-tight">
                             {formatLocalTime(flight.departureTime, flight.departureTimezone)}
-                            <span className="block sm:inline text-[10px] sm:text-xs text-gray-400 font-normal sm:ml-1 sm:align-top">
-                                (UTC{flight.departureTimezone})
-                            </span>
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 whitespace-nowrap">{getDayMonth(flight.departureTime, flight.departureTimezone)}</div>
-                        <div className="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">{flight.departureAirport}</div>
-                    </div>
-
-                    <div className="flex-1 px-2 sm:px-4 md:px-8 flex flex-col items-center">
-                        <div className="text-[10px] sm:text-xs text-gray-400 mb-1 font-medium whitespace-nowrap">{hours}小時 {minutes}分</div>
-                        <div className="w-full h-px bg-gray-200 dark:bg-gray-700 relative flex items-center justify-center">
-                            <div className={`absolute w-full h-0.5 ${type === 'outbound' ? 'bg-blue-100 dark:bg-blue-900' : 'bg-emerald-100 dark:bg-emerald-900'}`}></div>
-                            <div className={`p-1 rounded-full ${type === 'outbound' ? 'bg-blue-50 dark:bg-blue-900/30' : 'bg-emerald-50 dark:bg-emerald-900/30'} z-10`}>
-                                <Plane className={`w-3 h-3 ${type === 'return' ? 'rotate-180 text-emerald-400' : 'text-blue-400'}`} />
-                            </div>
+                        <div className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5 tabular-nums">
+                            {getDayMonth(flight.departureTime, flight.departureTimezone)} · UTC{flight.departureTimezone}
+                        </div>
+                        <div className="text-sm sm:text-base font-semibold text-blue-600 dark:text-blue-400 mt-1.5">
+                            {flight.departureAirport}
                         </div>
                     </div>
 
-                    <div className="text-center min-w-[70px] sm:min-w-[80px]">
-                        <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    <div className="flex-1 px-2 sm:px-6 flex flex-col items-center">
+                        <div className="text-[11px] text-zinc-400 dark:text-zinc-500 mb-1.5 font-medium whitespace-nowrap tabular-nums">
+                            {hours}小時 {minutes}分
+                        </div>
+                        <div className="w-full flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700 shrink-0" />
+                            <div className="flex-1 border-t border-dashed border-zinc-300 dark:border-zinc-700" />
+                            <Plane
+                                className={`w-3.5 h-3.5 shrink-0 ${
+                                    type === 'return'
+                                        ? 'rotate-180 text-emerald-500 dark:text-emerald-400'
+                                        : 'text-blue-500 dark:text-blue-400'
+                                }`}
+                            />
+                            <div className="flex-1 border-t border-dashed border-zinc-300 dark:border-zinc-700" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700 shrink-0" />
+                        </div>
+                    </div>
+
+                    <div className="text-right min-w-[76px] sm:min-w-[96px]">
+                        <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 tabular-nums tracking-tight">
                             {formatLocalTime(flight.arrivalTime, flight.arrivalTimezone)}
-                            <span className="block sm:inline text-[10px] sm:text-xs text-gray-400 font-normal sm:ml-1 sm:align-top">
-                                (UTC{flight.arrivalTimezone})
-                            </span>
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 whitespace-nowrap">{getDayMonth(flight.arrivalTime, flight.arrivalTimezone)}</div>
-                        <div className="text-xl sm:text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">{flight.arrivalAirport}</div>
+                        <div className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5 tabular-nums">
+                            {getDayMonth(flight.arrivalTime, flight.arrivalTimezone)} · UTC{flight.arrivalTimezone}
+                        </div>
+                        <div className="text-sm sm:text-base font-semibold text-emerald-600 dark:text-emerald-400 mt-1.5">
+                            {flight.arrivalAirport}
+                        </div>
                     </div>
                 </div>
 
                 {/* Countdown */}
                 {timeLeft && !hasDeparted && (() => {
-                    // Calculate "progress" based on a 30-day window (arbitrary "start" for visual effect)
-                    // If more than 30 days, bar is just starting (5%).
-                    // If less than 30 days, it fills up.
                     const totalMinutesIn30Days = 30 * 24 * 60;
                     const minutesLeft = timeLeft.days * 24 * 60 + timeLeft.hours * 60 + timeLeft.minutes;
-                    const progress = Math.max(5, Math.min(100, 100 - (minutesLeft / totalMinutesIn30Days * 100)));
+                    const progress = Math.max(6, Math.min(100, 100 - (minutesLeft / totalMinutesIn30Days) * 100));
 
                     return (
-                        <div className="mt-4">
-                            <div className="flex justify-between items-end mb-2">
-                                <span className="text-xs font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1">
-                                    <Clock className="w-3.5 h-3.5" />
+                        <div className="pt-3.5 border-t border-zinc-100 dark:border-zinc-800/80">
+                            <div className="flex justify-between items-center mb-2">
+                                <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+                                    <Clock className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
                                     距離起飛還有
                                 </span>
-                                <span className="text-xs font-mono text-slate-500 dark:text-gray-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+                                <span className="text-xs font-medium tabular-nums text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 px-2.5 py-0.5 rounded-md">
                                     {timeLeft.days}天 {timeLeft.hours}小時 {timeLeft.minutes}分
                                 </span>
                             </div>
-                            <div className="relative h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-visible">
-                                {/* Gradient Bar */}
+                            <div className="relative h-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
                                 <div
-                                    className="absolute top-0 left-0 h-full rounded-full bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-500 shadow-[0_0_10px_rgba(59,130,246,0.5)] transition-all duration-1000 ease-out"
+                                    className={`h-full rounded-full transition-all duration-700 ${
+                                        type === 'outbound'
+                                            ? 'bg-blue-600 dark:bg-blue-500'
+                                            : 'bg-emerald-600 dark:bg-emerald-500'
+                                    }`}
                                     style={{ width: `${progress}%` }}
                                 />
-                                {/* Animated Glitter/Pulse overlay */}
-                                <div
-                                    className="absolute top-0 left-0 h-full w-full rounded-full opacity-30 bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.5)_50%,transparent_75%)] bg-[length:20px_20px] animate-[pulse_2s_cubic-bezier(0.4,0,0.6,1)_infinite]"
-                                    style={{ width: `${progress}%` }}
-                                />
-                                {/* Traveling Plane Icon */}
-                                <div
-                                    className="absolute top-1/2 -translate-y-1/2 transition-all duration-1000 ease-out z-10"
-                                    style={{ left: `${progress}%`, transform: `translate(-50%, -50%)` }}
-                                >
-                                    <div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-1 rounded-full shadow-md border border-blue-100">
-                                        <Plane className="w-3 h-3 text-blue-600 dark:text-blue-400 rotate-90" fill="currentColor" />
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     );
                 })()}
                 {hasDeparted && (
-                    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 flex items-center justify-center gap-2 text-sm text-gray-500 dark:text-gray-400 font-medium">
-                        <CheckCircle2 className="w-4 h-4" />
+                    <div className="bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/60 dark:border-zinc-800 rounded-xl p-2.5 flex items-center justify-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 font-medium">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
                         <span>航班已起飛</span>
                     </div>
                 )}
             </div>
 
-            {/* Delete Confirmation Dialog */}
             <ConfirmDialog
                 isOpen={showDeleteConfirm}
                 title="刪除航班"
-                message={`確定要刪除此${type === 'outbound' ? '去程' : '回程'}航班嗎？`}
+                message={`確定要刪除${type === 'outbound' ? '去程' : '回程'}航班嗎？`}
                 onConfirm={() => {
                     setShowDeleteConfirm(false);
                     onDelete();

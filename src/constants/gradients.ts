@@ -1,34 +1,34 @@
-// Predefined gradient colors for trip cards
+// Refined editorial gradient presets for trip cards
 export const GRADIENT_COLORS = {
     blue: {
-        name: '藍色海洋',
-        gradient: 'from-blue-400 to-cyan-600',
-        preview: 'bg-gradient-to-br from-blue-400 to-cyan-600'
+        name: '海霧藍',
+        gradient: 'from-slate-700 via-sky-800 to-cyan-900',
+        preview: 'bg-gradient-to-br from-slate-700 via-sky-800 to-cyan-900'
     },
     purple: {
-        name: '紫色夢幻',
-        gradient: 'from-purple-400 to-pink-600',
-        preview: 'bg-gradient-to-br from-purple-400 to-pink-600'
+        name: '暮光紫',
+        gradient: 'from-slate-800 via-violet-900 to-fuchsia-950',
+        preview: 'bg-gradient-to-br from-slate-800 via-violet-900 to-fuchsia-950'
     },
     sunset: {
-        name: '日落',
-        gradient: 'from-orange-400 to-red-600',
-        preview: 'bg-gradient-to-br from-orange-400 to-red-600'
+        name: '暖砂橘',
+        gradient: 'from-stone-700 via-amber-800 to-orange-950',
+        preview: 'bg-gradient-to-br from-stone-700 via-amber-800 to-orange-950'
     },
     forest: {
-        name: '森林',
-        gradient: 'from-green-400 to-emerald-600',
-        preview: 'bg-gradient-to-br from-green-400 to-emerald-600'
+        name: '深林苔',
+        gradient: 'from-zinc-800 via-emerald-900 to-teal-950',
+        preview: 'bg-gradient-to-br from-zinc-800 via-emerald-900 to-teal-950'
     },
     night: {
-        name: '夜空',
-        gradient: 'from-indigo-500 to-purple-700',
-        preview: 'bg-gradient-to-br from-indigo-500 to-purple-700'
+        name: '午夜靛',
+        gradient: 'from-zinc-900 via-indigo-950 to-slate-900',
+        preview: 'bg-gradient-to-br from-zinc-900 via-indigo-950 to-slate-900'
     },
     coral: {
-        name: '珊瑚',
-        gradient: 'from-pink-400 to-rose-600',
-        preview: 'bg-gradient-to-br from-pink-400 to-rose-600'
+        name: '枯木玫',
+        gradient: 'from-stone-800 via-rose-900 to-pink-950',
+        preview: 'bg-gradient-to-br from-stone-800 via-rose-900 to-pink-950'
     }
 } as const;
 
