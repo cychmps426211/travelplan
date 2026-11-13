@@ -8,6 +8,7 @@ import CreateTripModal from '../components/CreateTripModal';
 import { Plus, Map, LogOut, Loader2, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { getTodayDateStr, getTripEndDateStr, getTripStartDateStr } from '../utils/date';
 
 export default function Dashboard() {
     const { user, logout } = useAuth();
@@ -35,25 +36,25 @@ export default function Dashboard() {
     useEffect(() => {
         if (user) {
             const unsubscribe = tripService.subscribeToAllTrips((data) => {
-                const now = new Date();
+                const todayStr = getTodayDateStr();
 
                 const sortedTrips = [...data].sort((a, b) => {
-                    const aEndDate = a.endDate?.toDate() || new Date(0);
-                    const bEndDate = b.endDate?.toDate() || new Date(0);
-                    const aStartDate = a.startDate?.toDate() || new Date(0);
-                    const bStartDate = b.startDate?.toDate() || new Date(0);
+                    const aEndStr = getTripEndDateStr(a);
+                    const bEndStr = getTripEndDateStr(b);
+                    const aStartStr = getTripStartDateStr(a);
+                    const bStartStr = getTripStartDateStr(b);
 
-                    const isAEnded = aEndDate.getTime() < now.getTime();
-                    const isBEnded = bEndDate.getTime() < now.getTime();
+                    const isAEnded = aEndStr < todayStr;
+                    const isBEnded = bEndStr < todayStr;
 
                     if (isAEnded && !isBEnded) return 1;
                     if (!isAEnded && isBEnded) return -1;
 
                     if (isAEnded && isBEnded) {
-                        return bEndDate.getTime() - aEndDate.getTime();
+                        return bEndStr.localeCompare(aEndStr);
                     }
 
-                    return aStartDate.getTime() - bStartDate.getTime();
+                    return aStartStr.localeCompare(bStartStr);
                 });
 
                 setTrips(sortedTrips);

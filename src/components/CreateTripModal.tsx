@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { MapPin, Palette, Upload, DollarSign, Check } from 'lucide-react';
-import { format } from 'date-fns';
 import { GRADIENT_COLORS, DEFAULT_GRADIENT, type GradientColorKey } from '../constants/gradients';
 import type { Trip } from '../types';
 import type { TripMutationPayload } from '../services/tripService';
-import { parseLocalDate } from '../utils/date';
+import { getTripEndDateStr, getTripStartDateStr, wallClockToCompatTimestamp } from '../utils/date';
 import { useToast } from '../hooks/useToast';
 import Modal from './Modal';
 import DatePicker from './DatePicker';
@@ -50,8 +49,8 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
             setFormData({
                 title: initialData.title,
                 destination: initialData.destination,
-                startDate: format(initialData.startDate.toDate(), 'yyyy-MM-dd'),
-                endDate: format(initialData.endDate.toDate(), 'yyyy-MM-dd'),
+                startDate: getTripStartDateStr(initialData),
+                endDate: getTripEndDateStr(initialData),
                 coverColor: (initialData.coverColor as GradientColorKey) || DEFAULT_GRADIENT,
                 coverImageUrl: initialData.coverImageUrl || '',
                 currency: initialData.currency || 'TWD'
@@ -134,8 +133,10 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
             const finalData: TripMutationPayload = {
                 title: formData.title.trim(),
                 destination: formData.destination.trim(),
-                startDate: parseLocalDate(formData.startDate),
-                endDate: parseLocalDate(formData.endDate),
+                startDateStr: formData.startDate,
+                endDateStr: formData.endDate,
+                startDate: wallClockToCompatTimestamp(formData.startDate, '00:00'),
+                endDate: wallClockToCompatTimestamp(formData.endDate, '00:00'),
                 coverColor: formData.coverColor,
                 currency: formData.currency,
                 ...(formData.coverImageUrl ? { coverImageUrl: formData.coverImageUrl } : {})

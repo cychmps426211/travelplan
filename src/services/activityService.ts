@@ -1,6 +1,7 @@
 import { db } from '../firebase';
 import { collection, addDoc, query, orderBy, deleteDoc, doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import type { Activity } from '../types';
+import { getActivityStartKey } from '../utils/date';
 
 // Constant removed as it was unused
 
@@ -17,6 +18,7 @@ export const activityService = {
                 id: doc.id,
                 ...doc.data()
             })) as Activity[];
+            activities.sort((a, b) => getActivityStartKey(a).localeCompare(getActivityStartKey(b)));
             callback(activities);
         });
     },
@@ -30,7 +32,7 @@ export const activityService = {
     },
 
     // Update activity
-    updateActivity: async (tripId: string, activityId: string, updates: Partial<Activity>) => {
+    updateActivity: async (tripId: string, activityId: string, updates: Partial<Activity> | Record<string, unknown>) => {
         await updateDoc(doc(db, `trips/${tripId}/activities`, activityId), updates);
     },
 

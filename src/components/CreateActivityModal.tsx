@@ -1,12 +1,17 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Calendar, Loader2, Navigation2, Plus, Trash2 } from 'lucide-react';
-import { Timestamp } from 'firebase/firestore';
 import { format } from 'date-fns';
 import Modal from './Modal';
 import CustomSelect, { type SelectOption } from './CustomSelect';
 import TimePicker from './TimePicker';
 import { ACTIVITY_TYPES, TRAVEL_MODE_ICONS } from '../constants/activityTypes';
-import { parseLocalDate, addMinutesToTimeStr, timeStrToMinutes } from '../utils/date';
+import {
+    addMinutesToTimeStr,
+    getActivityEndParts,
+    getActivityStartParts,
+    timeStrToMinutes,
+    wallClockToCompatTimestamp,
+} from '../utils/date';
 import { useToast } from '../hooks/useToast';
 import type { Activity } from '../types';
 import {
@@ -149,17 +154,18 @@ export default function CreateActivityModal({
     useEffect(() => {
         if (!isOpen) return;
 
-        if (selectedDate) {
+        const startParts = initialData ? getActivityStartParts(initialData) : null;
+        const endParts = initialData ? getActivityEndParts(initialData) : null;
+
+        if (startParts?.date && !availableDays) {
+            setSelectedDayString(startParts.date);
+        } else if (selectedDate) {
             setSelectedDayString(format(selectedDate, 'yyyy-MM-dd'));
         }
 
         if (initialData) {
-            const startStr = initialData.startTime
-                ? new Date(initialData.startTime.seconds * 1000).toTimeString().slice(0, 5)
-                : defaultStartTime;
-            const endStr = initialData.endTime
-                ? new Date(initialData.endTime.seconds * 1000).toTimeString().slice(0, 5)
-                : (initialData.startTime ? '' : addMinutesToTimeStr(startStr, 60));
+            const startStr = startParts ? startParts.time : defaultStartTime;
+            const endStr = endParts ? endParts.time : (startParts ? '' : addMinutesToTimeStr(startStr, 60));
 
             setFormData({
                 title: initialData.title || '',
@@ -194,7 +200,7 @@ export default function CreateActivityModal({
                 urls: ['']
             });
         }
-    }, [initialData, isOpen, selectedDate, defaultStartTime]);
+    }, [initialData, isOpen, selectedDate, defaultStartTime, availableDays]);
 
     const dayOptions = useMemo<SelectOption[]>(
         () =>
@@ -222,11 +228,11 @@ export default function CreateActivityModal({
             return;
         }
 
-        const targetDate = availableDays && availableDays.length > 0 && selectedDayString
-            ? parseLocalDate(selectedDayString)
-            : selectedDate;
+        const targetDateStr = availableDays && availableDays.length > 0 && selectedDayString
+            ? selectedDayString
+            : (selectedDayString || (selectedDate ? format(selectedDate, 'yyyy-MM-dd') : ''));
 
-        if (!targetDate) return;
+        if (!targetDateStr) return;
 
         if (!formData.startTime) {
             showToast('請選擇開始時間', 'error');
@@ -240,21 +246,16 @@ export default function CreateActivityModal({
 
         setLoading(true);
         try {
-            const [startHour, startMinute] = formData.startTime.split(':');
-            const startDate = new Date(targetDate);
-            startDate.setHours(parseInt(startHour, 10), parseInt(startMinute, 10), 0, 0);
-
             const activityData: ActivityFormSubmitData = {
                 title: formData.title.trim(),
                 type: formData.type,
-                startTime: Timestamp.fromDate(startDate),
+                startTime: wallClockToCompatTimestamp(targetDateStr, formData.startTime),
+                startTimeStr: `${targetDateStr}T${formData.startTime}`,
             };
 
             if (formData.endTime) {
-                const [endHour, endMinute] = formData.endTime.split(':');
-                const endDate = new Date(targetDate);
-                endDate.setHours(parseInt(endHour, 10), parseInt(endMinute, 10), 0, 0);
-                activityData.endTime = Timestamp.fromDate(endDate);
+                activityData.endTime = wallClockToCompatTimestamp(targetDateStr, formData.endTime);
+                activityData.endTimeStr = `${targetDateStr}T${formData.endTime}`;
             }
 
             if (formData.location.trim()) {

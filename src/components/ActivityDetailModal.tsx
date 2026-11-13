@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { X, MapPin, Clock, FileText, Navigation, ExternalLink, Plus, Trash2, Check, Edit2, ListChecks, Link as LinkIcon, Navigation2 } from 'lucide-react';
 import type { Activity, ChecklistItem } from '../types';
-import { format } from 'date-fns';
 import GoogleMapRoute from './GoogleMapRoute';
 import Modal from './Modal';
 import { getActivityMeta, TRAVEL_MODE_ICONS } from '../constants/activityTypes';
-import { formatDuration, getHostnameLabel } from '../utils/date';
+import { formatDateStrSlash, formatDuration, getActivityEndParts, getActivityStartParts, getHostnameLabel } from '../utils/date';
 import { useToast } from '../hooks/useToast';
 
 interface ActivityDetailModalProps {
@@ -67,6 +66,8 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
 
     if (!activity) return null;
 
+    const startParts = getActivityStartParts(activity);
+    const endParts = getActivityEndParts(activity);
     const meta = getActivityMeta(activity.type);
     const TypeIcon = meta.icon;
     const travelModeInfo = activity.travelMode ? TRAVEL_MODE_ICONS[activity.travelMode] : null;
@@ -217,10 +218,10 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                 <div className="flex items-center gap-3 text-sm text-zinc-700 dark:text-zinc-300">
                     <Clock className="w-4 h-4 text-blue-500 dark:text-blue-400 shrink-0" />
                     <div className="tabular-nums font-medium">
-                        <span>{format(activity.startTime.toDate(), 'yyyy/MM/dd HH:mm')}</span>
-                        {activity.endTime && (
+                        <span>{startParts ? `${formatDateStrSlash(startParts.date)} ${startParts.time}` : ''}</span>
+                        {endParts && (
                             <span className="text-zinc-400 dark:text-zinc-500">
-                                {' – '}{format(activity.endTime.toDate(), 'HH:mm')}
+                                {' – '}{endParts.time}
                             </span>
                         )}
                     </div>

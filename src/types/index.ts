@@ -24,6 +24,8 @@ export interface HotelInfo {
     address?: string;
     checkIn: Timestamp;
     checkOut: Timestamp;
+    checkInStr?: string; // Floating wall-clock "YYYY-MM-DDTHH:mm"
+    checkOutStr?: string; // Floating wall-clock "YYYY-MM-DDTHH:mm"
     bookingReference?: string;
     notes?: string;
 }
@@ -43,6 +45,8 @@ export interface Trip {
     destination: string;
     startDate: Timestamp;
     endDate: Timestamp;
+    startDateStr?: string; // Floating wall-clock "YYYY-MM-DD"
+    endDateStr?: string; // Floating wall-clock "YYYY-MM-DD"
     createdBy: string;
     members: string[]; // List of UIDs including creator
     createdAt: Timestamp;
@@ -62,6 +66,8 @@ export interface Activity {
     type: 'sightseeing' | 'food' | 'shopping' | 'transport' | 'lodging' | 'other';
     startTime: Timestamp;
     endTime?: Timestamp;
+    startTimeStr?: string; // Floating wall-clock "YYYY-MM-DDTHH:mm"
+    endTimeStr?: string; // Floating wall-clock "YYYY-MM-DDTHH:mm"
     location?: string;
     departureLocation?: string; // For transport type
     arrivalLocation?: string;   // For transport type

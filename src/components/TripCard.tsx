@@ -1,11 +1,17 @@
 import { useState } from 'react';
 import type { Trip } from '../types';
 import { Calendar, MapPin, Trash2, Clock, CheckCircle2, Edit2 } from 'lucide-react';
-import { format, differenceInDays, differenceInCalendarDays } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import ConfirmDialog from './ConfirmDialog';
 import { GRADIENT_COLORS, DEFAULT_GRADIENT } from '../constants/gradients';
 import { runWithViewTransition } from '../utils/viewTransition';
+import {
+    diffCalendarDays,
+    formatDateStrSlash,
+    getTodayDateStr,
+    getTripEndDateStr,
+    getTripStartDateStr,
+} from '../utils/date';
 
 interface TripCardProps {
     trip: Trip;
@@ -16,14 +22,14 @@ interface TripCardProps {
 export default function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
     const navigate = useNavigate();
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const days = differenceInDays(trip.endDate.toDate(), trip.startDate.toDate()) + 1;
+    const startDateStr = getTripStartDateStr(trip);
+    const endDateStr = getTripEndDateStr(trip);
+    const days = diffCalendarDays(endDateStr, startDateStr) + 1;
 
     // Status Logic
-    const now = new Date();
-    const startDate = trip.startDate.toDate();
-    const endDate = trip.endDate.toDate();
-    const daysUntilStart = differenceInCalendarDays(startDate, now);
-    const daysUntilEnd = differenceInCalendarDays(endDate, now);
+    const todayStr = getTodayDateStr();
+    const daysUntilStart = diffCalendarDays(startDateStr, todayStr);
+    const daysUntilEnd = diffCalendarDays(endDateStr, todayStr);
 
     let statusBadge;
     if (daysUntilStart > 0) {
@@ -148,7 +154,7 @@ export default function TripCard({ trip, onEdit, onDelete }: TripCardProps) {
                         <div className="flex items-center gap-2 tabular-nums">
                             <Calendar className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500 shrink-0" />
                             <span>
-                                {format(trip.startDate.toDate(), 'yyyy/MM/dd')} – {format(trip.endDate.toDate(), 'MM/dd')}
+                                {formatDateStrSlash(startDateStr)} – {formatDateStrSlash(endDateStr, false)}
                             </span>
                         </div>
                         <div className="flex items-center gap-2 tabular-nums">

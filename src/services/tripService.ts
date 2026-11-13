@@ -1,6 +1,7 @@
 import { db } from '../firebase';
 import { collection, addDoc, query, where, getDocs, Timestamp, deleteDoc, doc, onSnapshot, updateDoc } from 'firebase/firestore';
 import type { Trip } from '../types';
+import { getTripStartDateStr } from '../utils/date';
 
 const TRIPS_COLLECTION = 'trips';
 
@@ -8,15 +9,6 @@ export type TripMutationPayload = Partial<Omit<Trip, 'id' | 'createdAt' | 'membe
     startDate?: Date | Timestamp;
     endDate?: Date | Timestamp;
 };
-
-function toMillis(value: unknown): number {
-    if (value && typeof value === 'object' && 'toDate' in value && typeof (value as Timestamp).toDate === 'function') {
-        return (value as Timestamp).toDate().getTime();
-    }
-    if (value instanceof Date) return value.getTime();
-    if (typeof value === 'string' || typeof value === 'number') return new Date(value).getTime();
-    return 0;
-}
 
 export const tripService = {
     // Create a new trip
@@ -63,7 +55,7 @@ export const tripService = {
                 id: docSnap.id,
                 ...docSnap.data()
             })) as Trip[];
-            trips.sort((a, b) => toMillis(a.startDate) - toMillis(b.startDate));
+            trips.sort((a, b) => getTripStartDateStr(a).localeCompare(getTripStartDateStr(b)));
             callback(trips);
         });
     },

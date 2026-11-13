@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { doc, onSnapshot, Timestamp, deleteField } from 'firebase/firestore';
+import { doc, onSnapshot, deleteField } from 'firebase/firestore';
 import { db } from '../firebase';
 import type { Trip, Activity, FlightInfo, ChecklistItem, HotelInfo, PlanItem } from '../types';
 import { activityService } from '../services/activityService';
 import { tripService } from '../services/tripService';
 import { useToast } from '../hooks/useToast';
-import { format, eachDayOfInterval, isSameDay, startOfDay } from 'date-fns';
+import { format } from 'date-fns';
 import {
     MapPin,
     ArrowLeft,
@@ -37,7 +37,21 @@ import MoveActivityModal from '../components/MoveActivityModal';
 import DayMapModal from '../components/DayMapModal';
 import CalculatorModal from '../components/CalculatorModal';
 import { getActivityMeta } from '../constants/activityTypes';
-import { formatDuration, parseLocalDate, addMinutesToTimeStr } from '../utils/date';
+import {
+    addDaysToDateStr,
+    addMinutesToTimeStr,
+    diffCalendarDays,
+    eachDayStrOfInterval,
+    formatDateStrSlash,
+    formatDuration,
+    getActivityEndParts,
+    getActivityStartParts,
+    getTodayDateStr,
+    getTripEndDateStr,
+    getTripStartDateStr,
+    parseLocalDate,
+    wallClockToCompatTimestamp,
+} from '../utils/date';
 
 type Tab = 'overview' | 'hotels' | 'planItems' | string; // string for ISO date yyyy-MM-dd
 
@@ -114,13 +128,15 @@ export default function TripDetail() {
                 setTrip(tripData);
 
                 // Smart default tab: if trip is ongoing right now, jump straight to today's itinerary
-                if (initializedTripIdRef.current !== docSnap.id && tripData.startDate && tripData.endDate) {
-                    initializedTripIdRef.current = docSnap.id;
-                    const today = startOfDay(new Date());
-                    const start = startOfDay(tripData.startDate.toDate());
-                    const end = startOfDay(tripData.endDate.toDate());
-                    if (today >= start && today <= end) {
-                        setActiveTab(format(today, 'yyyy-MM-dd'));
+                if (initializedTripIdRef.current !== docSnap.id) {
+                    const todayStr = getTodayDateStr();
+                    const startStr = getTripStartDateStr(tripData);
+                    const endStr = getTripEndDateStr(tripData);
+                    if (startStr && endStr) {
+                        initializedTripIdRef.current = docSnap.id;
+                        if (todayStr >= startStr && todayStr <= endStr) {
+                            setActiveTab(todayStr);
+                        }
                     }
                 }
             } else {
@@ -151,7 +167,12 @@ export default function TripDetail() {
         if (!id) return;
         try {
             if (editingActivity) {
-                await activityService.updateActivity(id, editingActivity.id, activityData);
+                const updates: Record<string, unknown> = { ...activityData };
+                if (!activityData.endTimeStr && (editingActivity.endTime || editingActivity.endTimeStr)) {
+                    updates.endTime = deleteField();
+                    updates.endTimeStr = deleteField();
+                }
+                await activityService.updateActivity(id, editingActivity.id, updates);
                 showToast('已更新活動', 'success');
             } else {
                 await activityService.addActivity(id, activityData);
@@ -184,24 +205,27 @@ export default function TripDetail() {
         if (!id || !moveActivityModal.activity) return;
         try {
             const activity = moveActivityModal.activity;
-            const originalStart = activity.startTime.toDate();
+            const targetDateStr = format(targetDate, 'yyyy-MM-dd');
+            const origStartParts = getActivityStartParts(activity);
+            const startClock = origStartParts?.time || '09:00';
 
-            const newStart = new Date(originalStart);
-            newStart.setFullYear(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+            const updates: Record<string, unknown> = {
+                startTimeStr: `${targetDateStr}T${startClock}`,
+                startTime: wallClockToCompatTimestamp(targetDateStr, startClock),
+            };
 
-            let newEnd: Date | undefined;
-            if (activity.endTime) {
-                const originalEnd = activity.endTime.toDate();
-                newEnd = new Date(originalEnd);
-                const diffTime = originalEnd.getTime() - originalStart.getTime();
-                newEnd.setTime(newStart.getTime() + diffTime);
+            const origEndParts = getActivityEndParts(activity);
+            if (origEndParts) {
+                const dayOffset = origStartParts
+                    ? Math.max(0, diffCalendarDays(origEndParts.date, origStartParts.date))
+                    : 0;
+                const targetEndDateStr = dayOffset > 0 ? addDaysToDateStr(targetDateStr, dayOffset) : targetDateStr;
+                updates.endTimeStr = `${targetEndDateStr}T${origEndParts.time}`;
+                updates.endTime = wallClockToCompatTimestamp(targetEndDateStr, origEndParts.time);
             }
 
-            await activityService.updateActivity(id, activityId, {
-                startTime: Timestamp.fromDate(newStart),
-                ...(newEnd ? { endTime: Timestamp.fromDate(newEnd) } : {})
-            });
-            showToast(`已移動至 ${format(targetDate, 'MM/dd')}`, 'success');
+            await activityService.updateActivity(id, activityId, updates);
+            showToast(`已移動至 ${formatDateStrSlash(targetDateStr, false)}`, 'success');
         } catch (error) {
             console.error('Error moving activity: ', error);
             showToast('移動活動失敗', 'error');
@@ -317,18 +341,19 @@ export default function TripDetail() {
 
     const currentDayActivities = useMemo(() => {
         if (!isDayTab) return [];
-        const target = parseLocalDate(activeTab);
-        return activities.filter(a => isSameDay(a.startTime.toDate(), target));
+        return activities.filter(a => getActivityStartParts(a)?.date === activeTab);
     }, [activities, activeTab, isDayTab]);
 
     // Smart default start time for newly added activity on the current day
     const defaultNewActivityStartTime = useMemo(() => {
         if (currentDayActivities.length === 0) return '09:00';
         const last = currentDayActivities[currentDayActivities.length - 1];
-        if (last.endTime) {
-            return format(last.endTime.toDate(), 'HH:mm');
+        const lastEnd = getActivityEndParts(last);
+        if (lastEnd) {
+            return lastEnd.time;
         }
-        return addMinutesToTimeStr(format(last.startTime.toDate(), 'HH:mm'), 60);
+        const lastStart = getActivityStartParts(last);
+        return addMinutesToTimeStr(lastStart?.time || '09:00', 60);
     }, [currentDayActivities]);
 
     if (loading || !trip) {
@@ -339,9 +364,10 @@ export default function TripDetail() {
         );
     }
 
-    const tripStartDate = trip.startDate.toDate();
-    const tripEndDate = trip.endDate.toDate();
-    const days = eachDayOfInterval({ start: tripStartDate, end: tripEndDate });
+    const tripStartDateStr = getTripStartDateStr(trip);
+    const tripEndDateStr = getTripEndDateStr(trip);
+    const dayStrings = eachDayStrOfInterval(tripStartDateStr, tripEndDateStr);
+    const days = dayStrings.map(parseLocalDate);
     const unscheduledCount = (trip.planItems || []).filter(i => !i.isScheduled).length;
 
     return (
@@ -387,7 +413,7 @@ export default function TripDetail() {
                             <div className="flex items-center gap-1.5 tabular-nums">
                                 <Calendar className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500 shrink-0" />
                                 <span>
-                                    {format(tripStartDate, 'yyyy/MM/dd')} – {format(tripEndDate, 'MM/dd')}
+                                    {formatDateStrSlash(tripStartDateStr)} – {formatDateStrSlash(tripEndDateStr, false)}
                                 </span>
                             </div>
                         </div>
@@ -444,8 +470,7 @@ export default function TripDetail() {
                     {/* Horizontal Day Strip */}
                     <div className="-mx-4 px-4 overflow-x-auto scrollbar-hide">
                         <div className="flex items-center gap-1.5 pb-0.5">
-                            {days.map((day, index) => {
-                                const dateStr = format(day, 'yyyy-MM-dd');
+                            {dayStrings.map((dateStr, index) => {
                                 const isActive = activeTab === dateStr;
                                 return (
                                     <button
@@ -463,7 +488,7 @@ export default function TripDetail() {
                                     >
                                         <span className="font-semibold">D{index + 1}</span>
                                         <span className={isActive ? 'text-blue-100' : 'text-zinc-400 dark:text-zinc-500'}>
-                                            {format(day, 'MM/dd')}
+                                            {formatDateStrSlash(dateStr, false)}
                                         </span>
                                     </button>
                                 );
@@ -645,7 +670,7 @@ export default function TripDetail() {
                             <>
                                 <div className="mb-4 flex justify-between items-center">
                                     <h2 className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider tabular-nums">
-                                        {format(parseLocalDate(activeTab), 'MM/dd')} 當日行程
+                                        {formatDateStrSlash(activeTab, false)} 當日行程
                                         {currentDayActivities.length > 0 && ` · ${currentDayActivities.length} 項`}
                                     </h2>
                                     <div className="hidden sm:flex items-center gap-2">
@@ -692,6 +717,8 @@ export default function TripDetail() {
                                             const isExpanded = expandedActivities[activity.id];
                                             const meta = getActivityMeta(activity.type);
                                             const Icon = meta.icon;
+                                            const startParts = getActivityStartParts(activity);
+                                            const endParts = getActivityEndParts(activity);
 
                                             return (
                                                 <div
@@ -702,11 +729,11 @@ export default function TripDetail() {
                                                     {/* Time Column */}
                                                     <div className="flex flex-col items-end w-12 sm:w-14 pt-0.5 shrink-0 tabular-nums">
                                                         <span className="font-semibold text-zinc-900 dark:text-zinc-50 text-sm sm:text-base leading-tight">
-                                                            {format(activity.startTime.toDate(), 'HH:mm')}
+                                                            {startParts?.time || ''}
                                                         </span>
-                                                        {activity.endTime && (
+                                                        {endParts && (
                                                             <span className="text-[11px] text-zinc-400 dark:text-zinc-500 font-medium mt-0.5">
-                                                                {format(activity.endTime.toDate(), 'HH:mm')}
+                                                                {endParts.time}
                                                             </span>
                                                         )}
                                                     </div>
@@ -955,7 +982,7 @@ export default function TripDetail() {
                     setAddPlanItemToItinerary({ isOpen: false, planItem: null });
                 }}
                 onSubmit={handleActivitySubmit}
-                selectedDate={isDayTab ? parseLocalDate(activeTab) : tripStartDate}
+                selectedDate={parseLocalDate(isDayTab ? activeTab : tripStartDateStr)}
                 defaultStartTime={defaultNewActivityStartTime}
                 initialData={
                     addPlanItemToItinerary.isOpen && addPlanItemToItinerary.planItem
@@ -975,7 +1002,7 @@ export default function TripDetail() {
                 isOpen={isMapModalOpen}
                 onClose={() => setIsMapModalOpen(false)}
                 activities={currentDayActivities}
-                dayTitle={`${format(isDayTab ? parseLocalDate(activeTab) : tripStartDate, 'yyyy/MM/dd')} 行程`}
+                dayTitle={`${formatDateStrSlash(isDayTab ? activeTab : tripStartDateStr)} 行程`}
             />
 
             <CreateFlightModal

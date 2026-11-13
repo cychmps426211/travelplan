@@ -1,6 +1,7 @@
 import { Building2, MapPin, Calendar, Clock, Edit2, Trash2, AlignLeft, Copy } from 'lucide-react';
 import type { HotelInfo } from '../types';
 import { useToast } from '../hooks/useToast';
+import { formatDateStrWithWeekday, getHotelCheckInParts, getHotelCheckOutParts } from '../utils/date';
 
 interface HotelCardProps {
     hotel: HotelInfo;
@@ -10,24 +11,8 @@ interface HotelCardProps {
 
 export default function HotelCard({ hotel, onEdit, onDelete }: HotelCardProps) {
     const { showToast } = useToast();
-    const checkIn = hotel.checkIn.toDate();
-    const checkOut = hotel.checkOut.toDate();
-
-    const formatDate = (date: Date) => {
-        return date.toLocaleDateString('zh-TW', {
-            month: '2-digit',
-            day: '2-digit',
-            weekday: 'short'
-        });
-    };
-
-    const formatTime = (date: Date) => {
-        return date.toLocaleTimeString('zh-TW', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false
-        });
-    };
+    const checkIn = getHotelCheckInParts(hotel);
+    const checkOut = getHotelCheckOutParts(hotel);
 
     const handleCopyBookingRef = async () => {
         if (!hotel.bookingReference) return;
@@ -97,12 +82,12 @@ export default function HotelCard({ hotel, onEdit, onDelete }: HotelCardProps) {
                         <div className="flex items-center gap-1.5 mb-1 tabular-nums">
                             <Calendar className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400 shrink-0" />
                             <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                                {formatDate(checkIn)}
+                                {checkIn ? formatDateStrWithWeekday(checkIn.date) : ''}
                             </span>
                         </div>
                         <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 tabular-nums">
                             <Clock className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500 shrink-0" />
-                            <span>{formatTime(checkIn)} 之後</span>
+                            <span>{checkIn?.time || ''} 之後</span>
                         </div>
                     </div>
 
@@ -114,12 +99,12 @@ export default function HotelCard({ hotel, onEdit, onDelete }: HotelCardProps) {
                         <div className="flex items-center gap-1.5 mb-1 tabular-nums">
                             <Calendar className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400 shrink-0" />
                             <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                                {formatDate(checkOut)}
+                                {checkOut ? formatDateStrWithWeekday(checkOut.date) : ''}
                             </span>
                         </div>
                         <div className="flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400 tabular-nums">
                             <Clock className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500 shrink-0" />
-                            <span>{formatTime(checkOut)} 之前</span>
+                            <span>{checkOut?.time || ''} 之前</span>
                         </div>
                     </div>
                 </div>

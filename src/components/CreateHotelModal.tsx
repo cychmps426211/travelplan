@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Building2, MapPin, AlignLeft } from 'lucide-react';
-import { Timestamp } from 'firebase/firestore';
 import type { HotelInfo } from '../types';
 import { useToast } from '../hooks/useToast';
+import { getHotelCheckInParts, getHotelCheckOutParts, wallClockToCompatTimestamp } from '../utils/date';
 import Modal from './Modal';
 import DatePicker from './DatePicker';
 import TimePicker from './TimePicker';
@@ -34,17 +34,16 @@ export default function CreateHotelModal({ isOpen, onClose, onSubmit, initialDat
     useEffect(() => {
         if (!isOpen) return;
         if (initialData) {
-            const checkIn = initialData.checkIn.toDate();
-            const checkOut = initialData.checkOut.toDate();
-            const pad = (n: number) => n.toString().padStart(2, '0');
+            const checkInParts = getHotelCheckInParts(initialData);
+            const checkOutParts = getHotelCheckOutParts(initialData);
 
             setFormData({
                 name: initialData.name,
                 address: initialData.address || '',
-                checkInDate: `${checkIn.getFullYear()}-${pad(checkIn.getMonth() + 1)}-${pad(checkIn.getDate())}`,
-                checkInTime: `${pad(checkIn.getHours())}:${pad(checkIn.getMinutes())}`,
-                checkOutDate: `${checkOut.getFullYear()}-${pad(checkOut.getMonth() + 1)}-${pad(checkOut.getDate())}`,
-                checkOutTime: `${pad(checkOut.getHours())}:${pad(checkOut.getMinutes())}`,
+                checkInDate: checkInParts?.date || '',
+                checkInTime: checkInParts?.time || '15:00',
+                checkOutDate: checkOutParts?.date || '',
+                checkOutTime: checkOutParts?.time || '11:00',
                 bookingReference: initialData.bookingReference || '',
                 notes: initialData.notes || ''
             });
@@ -79,15 +78,14 @@ export default function CreateHotelModal({ isOpen, onClose, onSubmit, initialDat
 
         setLoading(true);
         try {
-            const checkInDateObj = new Date(`${formData.checkInDate}T${formData.checkInTime}:00`);
-            const checkOutDateObj = new Date(`${formData.checkOutDate}T${formData.checkOutTime}:00`);
-
             const hotelData: HotelInfo = {
                 id: initialData?.id || Date.now().toString(),
                 name: formData.name.trim(),
                 address: formData.address.trim(),
-                checkIn: Timestamp.fromDate(checkInDateObj),
-                checkOut: Timestamp.fromDate(checkOutDateObj),
+                checkIn: wallClockToCompatTimestamp(formData.checkInDate, formData.checkInTime),
+                checkOut: wallClockToCompatTimestamp(formData.checkOutDate, formData.checkOutTime),
+                checkInStr: `${formData.checkInDate}T${formData.checkInTime}`,
+                checkOutStr: `${formData.checkOutDate}T${formData.checkOutTime}`,
                 bookingReference: formData.bookingReference.trim(),
                 notes: formData.notes.trim()
             };

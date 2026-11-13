@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Activity } from '../types';
-import { parseLocalDate } from '../utils/date';
+import { getActivityStartParts, parseLocalDate } from '../utils/date';
 import Modal from './Modal';
 import CustomSelect, { type SelectOption } from './CustomSelect';
 
@@ -26,7 +26,8 @@ export default function MoveActivityModal({
 
     useEffect(() => {
         if (isOpen && activity) {
-            setSelectedDateStr(format(activity.startTime.toDate(), 'yyyy-MM-dd'));
+            const startParts = getActivityStartParts(activity);
+            setSelectedDateStr(startParts?.date || '');
         }
     }, [isOpen, activity]);
 
