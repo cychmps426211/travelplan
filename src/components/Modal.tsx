@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from 'react';
 import { X } from 'lucide-react';
+import { useBottomSheetDrag } from '../hooks/useBottomSheetDrag';
 
 interface ModalProps {
     isOpen: boolean;
@@ -17,8 +18,8 @@ interface ModalProps {
 
 /**
  * Unified responsive modal shell:
- * - Bottom sheet ergonomics on mobile (thumb-friendly, safe-area padded)
- * - Centered crisp dialog on desktop
+ * - Bottom sheet ergonomics on mobile (swipe-down handle, thumb-friendly, safe-area padded)
+ * - Centered crisp dialog on desktop respecting maxWidthClass
  * - Escape key closing & background scroll lock
  */
 export default function Modal({
@@ -34,6 +35,11 @@ export default function Modal({
     panelClassName = '',
     zIndexClass = 'z-50',
 }: ModalProps) {
+    const { backdropRef, panelRef, handleRef } = useBottomSheetDrag({
+        isOpen,
+        onClose,
+    });
+
     useEffect(() => {
         if (!isOpen) return;
 
@@ -60,43 +66,56 @@ export default function Modal({
             role="dialog"
             aria-modal="true"
             aria-label={title || '對話視窗'}
-            className={`modal-backdrop fixed inset-0 ${zIndexClass} flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm`}
-            onClick={onClose}
+            className={`fixed inset-0 ${zIndexClass} flex items-end sm:items-center justify-center sm:p-4`}
         >
+            {/* Backdrop */}
             <div
-                className={`modal-panel w-full min-w-0 max-w-full ${maxWidthClass} bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-zinc-200/80 dark:border-zinc-800 rounded-t-3xl sm:rounded-2xl shadow-2xl max-h-[92dvh] sm:max-h-[88vh] flex flex-col overflow-hidden ${panelClassName}`}
+                ref={backdropRef}
+                className="modal-backdrop absolute inset-0 bg-black/60 backdrop-blur-sm"
+                onClick={onClose}
+            />
+
+            {/* Panel */}
+            <div
+                ref={panelRef}
+                className={`modal-panel relative z-10 w-full min-w-0 ${maxWidthClass} bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-zinc-200/80 dark:border-zinc-800 rounded-t-3xl sm:rounded-2xl shadow-2xl max-h-[92dvh] sm:max-h-[88vh] flex flex-col overflow-hidden ${panelClassName}`}
                 onClick={(e) => e.stopPropagation()}
             >
-                {/* Mobile drag handle indicator */}
-                <div className="sm:hidden flex justify-center pt-2.5 pb-0.5 shrink-0">
-                    <div className="w-9 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
-                </div>
-
-                {title !== undefined && (
-                    <div className="flex items-center justify-between gap-3 px-5 py-4 sm:px-6 border-b border-zinc-100 dark:border-zinc-800/80 shrink-0">
-                        <div className="flex items-center gap-3 min-w-0">
-                            {headerLeading}
-                            <div className="min-w-0">
-                                <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight truncate">
-                                    {title}
-                                </h2>
-                                {subtitle && (
-                                    <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
-                                        {subtitle}
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            aria-label="關閉視窗"
-                            className="p-2 -mr-1.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-colors shrink-0"
-                        >
-                            <X className="w-5 h-5" />
-                        </button>
+                {/* Mobile swipe-down drag zone (handle + header) */}
+                <div
+                    ref={handleRef}
+                    className="touch-none sm:touch-auto select-none sm:select-text shrink-0"
+                >
+                    <div className="sm:hidden flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing">
+                        <div className="w-9 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
                     </div>
-                )}
+
+                    {title !== undefined && (
+                        <div className="flex items-center justify-between gap-3 px-5 py-3.5 sm:px-6 sm:py-4 border-b border-zinc-100 dark:border-zinc-800/80">
+                            <div className="flex items-center gap-3 min-w-0">
+                                {headerLeading}
+                                <div className="min-w-0">
+                                    <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50 tracking-tight truncate">
+                                        {title}
+                                    </h2>
+                                    {subtitle && (
+                                        <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate mt-0.5">
+                                            {subtitle}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                aria-label="關閉視窗"
+                                className="p-2 -mr-1.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-colors shrink-0"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                    )}
+                </div>
 
                 <div className={`overflow-y-auto overflow-x-hidden flex-1 min-w-0 overscroll-contain ${bodyClassName}`}>
                     {children}

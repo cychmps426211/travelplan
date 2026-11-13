@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
+import { useBottomSheetDrag } from '../hooks/useBottomSheetDrag';
 
 interface PickerPopoverProps {
     isOpen: boolean;
@@ -23,7 +24,7 @@ interface DesktopPosition {
 
 /**
  * Shared overlay shell for custom selects, time pickers, and date pickers.
- * - Mobile (< 640px): bottom sheet with safe-area padding
+ * - Mobile (< 640px): bottom sheet with swipe-down handle and safe-area padding
  * - Desktop (>= 640px): portal-mounted floating popover with click-absorbing backdrop
  */
 export default function PickerPopover({
@@ -36,11 +37,18 @@ export default function PickerPopover({
     children,
     panelClassName = '',
 }: PickerPopoverProps) {
-    const panelRef = useRef<HTMLDivElement>(null);
+    const desktopPanelRef = useRef<HTMLDivElement>(null);
     const [isMobile, setIsMobile] = useState(() =>
         typeof window !== 'undefined' ? window.innerWidth < 640 : false
     );
     const [desktopPos, setDesktopPos] = useState<DesktopPosition | null>(null);
+
+    const { backdropRef: mobileBackdropRef, panelRef: mobilePanelRef, handleRef } =
+        useBottomSheetDrag({
+            isOpen,
+            onClose,
+            enabled: isMobile,
+        });
 
     const updateLayout = useCallback(() => {
         const mobile = window.innerWidth < 640;
@@ -96,7 +104,7 @@ export default function PickerPopover({
         };
 
         const handleViewportChange = (e: Event) => {
-            if (e.type === 'scroll' && panelRef.current?.contains(e.target as Node)) {
+            if (e.type === 'scroll' && desktopPanelRef.current?.contains(e.target as Node)) {
                 return;
             }
             updateLayout();
@@ -119,38 +127,45 @@ export default function PickerPopover({
     if (isMobile) {
         return createPortal(
             <div
-                className="modal-backdrop fixed inset-0 z-[70] flex items-end justify-center bg-black/55 backdrop-blur-[2px]"
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onClose();
-                }}
+                className="fixed inset-0 z-[70] flex items-end justify-center"
+                onClick={(e) => e.stopPropagation()}
             >
                 <div
-                    ref={panelRef}
+                    ref={mobileBackdropRef}
+                    className="modal-backdrop absolute inset-0 bg-black/55 backdrop-blur-[2px]"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onClose();
+                    }}
+                />
+                <div
+                    ref={mobilePanelRef}
                     role="dialog"
                     aria-modal="true"
                     aria-label={title || '選擇選項'}
                     onClick={(e) => e.stopPropagation()}
-                    className={`modal-panel w-full bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border-t border-zinc-200/80 dark:border-zinc-800 rounded-t-3xl shadow-2xl max-h-[82dvh] flex flex-col overflow-hidden pb-safe ${panelClassName}`}
+                    className={`modal-panel relative z-10 w-full bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border-t border-zinc-200/80 dark:border-zinc-800 rounded-t-3xl shadow-2xl max-h-[82dvh] flex flex-col overflow-hidden pb-safe ${panelClassName}`}
                 >
-                    <div className="flex justify-center pt-2.5 pb-1 shrink-0">
-                        <div className="w-9 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
-                    </div>
-                    {title && (
-                        <div className="flex items-center justify-between gap-3 px-5 py-3 border-b border-zinc-100 dark:border-zinc-800/80 shrink-0">
-                            <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50 truncate">
-                                {title}
-                            </h3>
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                aria-label="關閉"
-                                className="p-1.5 -mr-1.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-colors"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
+                    <div ref={handleRef} className="touch-none select-none shrink-0">
+                        <div className="flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing">
+                            <div className="w-9 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
                         </div>
-                    )}
+                        {title && (
+                            <div className="flex items-center justify-between gap-3 px-5 py-3 border-b border-zinc-100 dark:border-zinc-800/80">
+                                <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50 truncate">
+                                    {title}
+                                </h3>
+                                <button
+                                    type="button"
+                                    onClick={onClose}
+                                    aria-label="關閉"
+                                    className="p-1.5 -mr-1.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-colors"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+                        )}
+                    </div>
                     <div className="overflow-y-auto overflow-x-hidden overscroll-contain flex-1">
                         {children}
                     </div>
@@ -171,7 +186,7 @@ export default function PickerPopover({
             }}
         >
             <div
-                ref={panelRef}
+                ref={desktopPanelRef}
                 onClick={(e) => e.stopPropagation()}
                 style={{
                     position: 'fixed',

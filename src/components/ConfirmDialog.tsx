@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { AlertTriangle } from 'lucide-react';
+import { useBottomSheetDrag } from '../hooks/useBottomSheetDrag';
 
 interface ConfirmDialogProps {
     isOpen: boolean;
@@ -18,6 +19,11 @@ export default function ConfirmDialog({
     onConfirm,
     onCancel,
 }: ConfirmDialogProps) {
+    const { backdropRef, panelRef, handleRef } = useBottomSheetDrag({
+        isOpen,
+        onClose: onCancel,
+    });
+
     useEffect(() => {
         if (!isOpen) return;
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -40,24 +46,30 @@ export default function ConfirmDialog({
         >
             {/* Backdrop */}
             <div
+                ref={backdropRef}
                 className="modal-backdrop absolute inset-0 bg-black/60 backdrop-blur-sm"
                 onClick={onCancel}
             />
 
             {/* Dialog */}
-            <div className="modal-panel relative bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-zinc-200/80 dark:border-zinc-800 rounded-t-3xl sm:rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
-                <div className="sm:hidden flex justify-center pt-2.5">
-                    <div className="w-9 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
-                </div>
+            <div
+                ref={panelRef}
+                className="modal-panel relative z-10 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-zinc-200/80 dark:border-zinc-800 rounded-t-3xl sm:rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
+            >
+                <div ref={handleRef} className="touch-none sm:touch-auto select-none sm:select-text">
+                    <div className="sm:hidden flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing">
+                        <div className="w-9 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+                    </div>
 
-                <div className="p-6 pb-5">
-                    <div className="flex items-start gap-4">
-                        <div className="p-2.5 bg-red-50 dark:bg-red-500/10 border border-red-200/60 dark:border-red-500/20 rounded-xl shrink-0">
-                            <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
-                        </div>
-                        <div className="min-w-0">
-                            <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">{title}</h3>
-                            <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1 leading-relaxed">{message}</p>
+                    <div className="p-6 pb-5 pt-4 sm:pt-6">
+                        <div className="flex items-start gap-4">
+                            <div className="p-2.5 bg-red-50 dark:bg-red-500/10 border border-red-200/60 dark:border-red-500/20 rounded-xl shrink-0">
+                                <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
+                            </div>
+                            <div className="min-w-0">
+                                <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">{title}</h3>
+                                <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1 leading-relaxed">{message}</p>
+                            </div>
                         </div>
                     </div>
                 </div>

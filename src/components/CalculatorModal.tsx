@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { X, Calculator } from 'lucide-react';
+import { useBottomSheetDrag } from '../hooks/useBottomSheetDrag';
 
 interface CalculatorModalProps {
     isOpen: boolean;
@@ -8,6 +9,10 @@ interface CalculatorModalProps {
 }
 
 export default function CalculatorModal({ isOpen, onClose, baseCurrency }: CalculatorModalProps) {
+    const { backdropRef, panelRef, handleRef } = useBottomSheetDrag({
+        isOpen,
+        onClose,
+    });
     const [displayValue, setDisplayValue] = useState<string>('0');
     const [previousValue, setPreviousValue] = useState<string | null>(null);
     const [operator, setOperator] = useState<string | null>(null);
@@ -195,31 +200,38 @@ export default function CalculatorModal({ isOpen, onClose, baseCurrency }: Calcu
             role="dialog"
             aria-modal="true"
             aria-label="匯率計算機"
-            className="modal-backdrop fixed inset-0 z-[60] flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm"
-            onClick={onClose}
+            className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center sm:p-4"
         >
             <div
-                className="modal-panel bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 rounded-t-3xl sm:rounded-3xl w-full sm:max-w-[340px] shadow-2xl overflow-hidden pb-safe sm:pb-0"
+                ref={backdropRef}
+                className="modal-backdrop absolute inset-0 bg-black/60 backdrop-blur-sm"
+                onClick={onClose}
+            />
+            <div
+                ref={panelRef}
+                className="modal-panel relative z-10 bg-white dark:bg-zinc-950 border border-zinc-200/80 dark:border-zinc-800 rounded-t-3xl sm:rounded-3xl w-full sm:max-w-[340px] shadow-2xl overflow-hidden pb-safe sm:pb-0"
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="sm:hidden flex justify-center pt-2.5 pb-1">
-                    <div className="w-9 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
-                </div>
-
-                {/* Header */}
-                <div className="flex justify-between items-center px-5 pt-3 pb-1">
-                    <div className="text-zinc-600 dark:text-zinc-300 flex items-center gap-2">
-                        <Calculator className="w-4 h-4 text-amber-500" />
-                        <span className="text-sm font-semibold">匯率計算機</span>
+                <div ref={handleRef} className="touch-none sm:touch-auto select-none">
+                    <div className="sm:hidden flex justify-center pt-3 pb-1 cursor-grab active:cursor-grabbing">
+                        <div className="w-9 h-1 rounded-full bg-zinc-300 dark:bg-zinc-700" />
                     </div>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        aria-label="關閉計算機"
-                        className="p-2 -mr-1.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-colors"
-                    >
-                        <X className="w-4 h-4" />
-                    </button>
+
+                    {/* Header */}
+                    <div className="flex justify-between items-center px-5 pt-2.5 pb-1">
+                        <div className="text-zinc-600 dark:text-zinc-300 flex items-center gap-2">
+                            <Calculator className="w-4 h-4 text-amber-500" />
+                            <span className="text-sm font-semibold">匯率計算機</span>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            aria-label="關閉計算機"
+                            className="p-2 -mr-1.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-colors"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Display */}
