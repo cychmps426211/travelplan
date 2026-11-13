@@ -75,7 +75,12 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
             }));
         } catch (error) {
             console.error('Failed to fetch travel duration:', error);
-            alert('無法取得預估時間，請確認地點名稱是否正確');
+            const isZeroResults = error instanceof Error && error.message.includes('ZERO_RESULTS');
+            if (isZeroResults && formData.travelMode === 'TRANSIT') {
+                alert('無法自動取得大眾運輸時間（Google API 不支援日本等部分地區的大眾運輸查詢，或系統時間超出班表範圍）。建議手動輸入預估時間，或改用其他交通方式估算。');
+            } else {
+                alert('無法取得預估時間，請確認地點名稱是否正確');
+            }
         } finally {
             setFetchingDuration(false);
         }
@@ -129,9 +134,9 @@ export default function CreateActivityModal({ isOpen, onClose, onSubmit, selecte
                 departureLocation: initialData.departureLocation || '',
                 arrivalLocation: initialData.arrivalLocation || '',
                 estimatedDuration: initialData.estimatedDuration?.toString() || '',
-                travelMode: 'TRANSIT' as TravelModeType,
-                transitModes: [] as TransitModeType[],
-                transitRoutingPreference: '' as TransitRoutingPreference | '',
+                travelMode: (initialData.travelMode || 'TRANSIT') as TravelModeType,
+                transitModes: (initialData.transitModes || []) as TransitModeType[],
+                transitRoutingPreference: (initialData.transitRoutingPreference || '') as TransitRoutingPreference | '',
                 notes: initialData.notes || '',
                 urls: initialData.urls && initialData.urls.length > 0 ? initialData.urls : [''] as string[]
             });
