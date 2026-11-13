@@ -339,7 +339,7 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                                                         if (e.key === 'Enter') handleSaveEdit();
                                                         if (e.key === 'Escape') handleCancelEdit();
                                                     }}
-                                                    className="flex-1 min-w-0 px-2.5 py-1.5 text-sm bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-blue-400 dark:border-blue-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                                                    className="flex-1 min-w-0 px-2.5 py-1.5 text-base sm:text-sm bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-blue-400 dark:border-blue-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/30"
                                                     autoFocus
                                                 />
                                                 <button
@@ -367,7 +367,7 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                                                     value={editingAddress}
                                                     onChange={(e) => setEditingAddress(e.target.value)}
                                                     placeholder="地址（選填，可開啟 Google 地圖）"
-                                                    className="flex-1 min-w-0 px-2.5 py-1.5 text-xs bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                    className="flex-1 min-w-0 px-2.5 py-1.5 text-base sm:text-xs bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                 />
                                             </div>
                                             <div className="flex items-center gap-2">
@@ -377,7 +377,7 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                                                     value={editingRemark}
                                                     onChange={(e) => setEditingRemark(e.target.value)}
                                                     placeholder="備註（選填）"
-                                                    className="flex-1 min-w-0 px-2.5 py-1.5 text-xs bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                    className="flex-1 min-w-0 px-2.5 py-1.5 text-base sm:text-xs bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500"
                                                 />
                                             </div>
                                         </div>
@@ -472,7 +472,7 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                                         if (e.key === 'Enter' && !showAddressInput && !showRemarkInput) handleAddItem();
                                     }}
                                     placeholder={activity.type === 'food' ? '新增美食項目...' : activity.type === 'shopping' ? '新增購物項目...' : '新增項目...'}
-                                    className="flex-1 min-w-0 px-3.5 py-2 text-sm bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 outline-none transition-all"
+                                    className="flex-1 min-w-0 px-3.5 py-2 text-base sm:text-sm bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 outline-none transition-all"
                                 />
                                 <button
                                     type="button"
@@ -521,7 +521,7 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                                             if (e.key === 'Enter') handleAddItem();
                                         }}
                                         placeholder="地址（選填）"
-                                        className="flex-1 min-w-0 px-3 py-1.5 text-xs bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 rounded-lg focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none"
+                                        className="flex-1 min-w-0 px-3 py-1.5 text-base sm:text-xs bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 rounded-lg focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none"
                                     />
                                 </div>
                             )}
@@ -536,7 +536,7 @@ export default function ActivityDetailModal({ activity, onClose, onUpdateCheckli
                                             if (e.key === 'Enter') handleAddItem();
                                         }}
                                         placeholder="備註（選填）"
-                                        className="flex-1 min-w-0 px-3 py-1.5 text-xs bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 rounded-lg focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none"
+                                        className="flex-1 min-w-0 px-3 py-1.5 text-base sm:text-xs bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 rounded-lg focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none"
                                     />
                                 </div>
                             )}

@@ -7,6 +7,19 @@ import type { TripMutationPayload } from '../services/tripService';
 import { parseLocalDate } from '../utils/date';
 import { useToast } from '../hooks/useToast';
 import Modal from './Modal';
+import DatePicker from './DatePicker';
+import CustomSelect, { type SelectOption } from './CustomSelect';
+
+const CURRENCY_OPTIONS: SelectOption[] = [
+    { value: 'TWD', label: '台幣 (TWD)' },
+    { value: 'JPY', label: '日圓 (JPY)' },
+    { value: 'KRW', label: '韓元 (KRW)' },
+    { value: 'THB', label: '泰銖 (THB)' },
+    { value: 'USD', label: '美元 (USD)' },
+    { value: 'EUR', label: '歐元 (EUR)' },
+    { value: 'HKD', label: '港幣 (HKD)' },
+    { value: 'CNY', label: '人民幣 (CNY)' },
+];
 
 interface CreateTripModalProps {
     isOpen: boolean;
@@ -16,7 +29,7 @@ interface CreateTripModalProps {
 }
 
 const inputBaseClass =
-    'w-full px-3.5 py-2.5 text-sm bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all';
+    'w-full min-w-0 max-w-full min-h-[46px] sm:min-h-[42px] px-3.5 py-2.5 text-base sm:text-sm bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all';
 
 export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData }: CreateTripModalProps) {
     const { showToast } = useToast();
@@ -108,6 +121,14 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!formData.startDate || !formData.endDate) {
+            showToast('請選擇旅程開始與結束日期', 'error');
+            return;
+        }
+        if (formData.endDate < formData.startDate) {
+            showToast('結束日期不能早於開始日期', 'error');
+            return;
+        }
         setLoading(true);
         try {
             const finalData: TripMutationPayload = {
@@ -157,8 +178,8 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
                 </div>
             }
         >
-            <form id="tripForm" onSubmit={handleSubmit} className="space-y-4">
-                <div>
+            <form id="tripForm" onSubmit={handleSubmit} className="space-y-4 w-full min-w-0 max-w-full">
+                <div className="min-w-0">
                     <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">旅程名稱</label>
                     <input
                         type="text"
@@ -233,10 +254,10 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
                     </div>
                 </div>
 
-                <div>
+                <div className="min-w-0">
                     <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">目的地</label>
                     <div className="relative">
-                        <MapPin className="absolute left-3.5 top-3 w-4 h-4 text-zinc-400" />
+                        <MapPin className="absolute left-3.5 top-3.5 sm:top-3 w-4 h-4 text-zinc-400" />
                         <input
                             type="text"
                             required
@@ -248,54 +269,39 @@ export default function CreateTripModal({ isOpen, onClose, onSubmit, initialData
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3 min-w-0">
                     <div className="min-w-0">
                         <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">開始日期</label>
-                        <input
-                            type="date"
-                            required
-                            className={`${inputBaseClass} tabular-nums`}
+                        <DatePicker
+                            label="開始日期"
                             value={formData.startDate}
-                            onChange={e => setFormData({ ...formData, startDate: e.target.value })}
+                            onChange={val => setFormData(prev => ({
+                                ...prev,
+                                startDate: val,
+                                endDate: prev.endDate && prev.endDate < val ? val : prev.endDate,
+                            }))}
                         />
                     </div>
                     <div className="min-w-0">
                         <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">結束日期</label>
-                        <input
-                            type="date"
-                            required
+                        <DatePicker
+                            label="結束日期"
                             min={formData.startDate || undefined}
-                            className={`${inputBaseClass} tabular-nums`}
                             value={formData.endDate}
-                            onChange={e => setFormData({ ...formData, endDate: e.target.value })}
+                            onChange={val => setFormData({ ...formData, endDate: val })}
                         />
                     </div>
                 </div>
 
-                <div>
+                <div className="min-w-0">
                     <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">當地主要貨幣</label>
-                    <div className="relative">
-                        <DollarSign className="absolute left-3.5 top-3 w-4 h-4 text-zinc-400" />
-                        <select
-                            className={`${inputBaseClass} pl-10 appearance-none`}
-                            value={formData.currency}
-                            onChange={e => setFormData({ ...formData, currency: e.target.value })}
-                        >
-                            <option value="TWD">台幣 (TWD)</option>
-                            <option value="JPY">日圓 (JPY)</option>
-                            <option value="KRW">韓元 (KRW)</option>
-                            <option value="THB">泰銖 (THB)</option>
-                            <option value="USD">美元 (USD)</option>
-                            <option value="EUR">歐元 (EUR)</option>
-                            <option value="HKD">港幣 (HKD)</option>
-                            <option value="CNY">人民幣 (CNY)</option>
-                        </select>
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-3.5 pointer-events-none">
-                            <svg className="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </div>
-                    </div>
+                    <CustomSelect
+                        label="當地主要貨幣"
+                        leadingIcon={<DollarSign className="w-4 h-4" />}
+                        options={CURRENCY_OPTIONS}
+                        value={formData.currency}
+                        onChange={val => setFormData({ ...formData, currency: val })}
+                    />
                 </div>
             </form>
         </Modal>

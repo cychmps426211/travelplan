@@ -12,7 +12,7 @@ interface CreatePlanItemModalProps {
 }
 
 const inputBaseClass =
-    'w-full px-3.5 py-2.5 text-sm bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all';
+    'w-full min-w-0 max-w-full min-h-[46px] sm:min-h-[42px] px-3.5 py-2.5 text-base sm:text-sm bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all';
 
 export default function CreatePlanItemModal({ isOpen, onClose, onSubmit, initialData }: CreatePlanItemModalProps) {
     const { showToast } = useToast();
@@ -107,8 +107,8 @@ export default function CreatePlanItemModal({ isOpen, onClose, onSubmit, initial
                 </div>
             }
         >
-            <form id="planItemForm" onSubmit={handleSubmit} className="space-y-4">
-                <div>
+            <form id="planItemForm" onSubmit={handleSubmit} className="space-y-4 w-full min-w-0 max-w-full">
+                <div className="min-w-0">
                     <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">
                         名稱 <span className="text-red-500">*</span>
                     </label>
@@ -122,7 +122,7 @@ export default function CreatePlanItemModal({ isOpen, onClose, onSubmit, initial
                     />
                 </div>
 
-                <div>
+                <div className="min-w-0">
                     <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">
                         地點（選填）
                     </label>
@@ -135,25 +135,25 @@ export default function CreatePlanItemModal({ isOpen, onClose, onSubmit, initial
                     />
                 </div>
 
-                <div>
+                <div className="min-w-0">
                     <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">
                         參考網址（選填）
                     </label>
-                    <div className="space-y-2">
+                    <div className="space-y-2 min-w-0">
                         {urls.map((url, index) => (
-                            <div key={index} className="flex gap-2">
+                            <div key={index} className="flex gap-2 min-w-0">
                                 <input
                                     type="url"
                                     value={url}
                                     onChange={(e) => updateUrlField(index, e.target.value)}
-                                    className={`${inputBaseClass} flex-1`}
+                                    className={`${inputBaseClass} flex-1 min-w-0`}
                                     placeholder="https://"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => removeUrlField(index)}
                                     aria-label="移除網址"
-                                    className="p-2.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors"
+                                    className="p-2.5 shrink-0 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors"
                                 >
                                     <Trash2 className="w-4 h-4" />
                                 </button>
@@ -170,7 +170,7 @@ export default function CreatePlanItemModal({ isOpen, onClose, onSubmit, initial
                     </button>
                 </div>
 
-                <div>
+                <div className="min-w-0">
                     <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">
                         備註（選填）
                     </label>

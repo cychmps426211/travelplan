@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
-import { Loader2, Navigation2, Plus, Trash2 } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { Calendar, Loader2, Navigation2, Plus, Trash2 } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
 import { format } from 'date-fns';
 import Modal from './Modal';
+import CustomSelect, { type SelectOption } from './CustomSelect';
+import TimePicker from './TimePicker';
 import { ACTIVITY_TYPES, TRAVEL_MODE_ICONS } from '../constants/activityTypes';
 import { parseLocalDate, addMinutesToTimeStr, timeStrToMinutes } from '../utils/date';
 import { useToast } from '../hooks/useToast';
@@ -32,7 +34,7 @@ interface CreateActivityModalProps {
 }
 
 const inputBaseClass =
-    'w-full px-3.5 py-2.5 text-sm bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all';
+    'w-full min-w-0 max-w-full min-h-[46px] sm:min-h-[42px] px-3.5 py-2.5 text-base sm:text-sm bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all';
 
 export default function CreateActivityModal({
     isOpen,
@@ -194,14 +196,42 @@ export default function CreateActivityModal({
         }
     }, [initialData, isOpen, selectedDate, defaultStartTime]);
 
+    const dayOptions = useMemo<SelectOption[]>(
+        () =>
+            (availableDays || []).map((day, index) => ({
+                value: format(day, 'yyyy-MM-dd'),
+                label: `第 ${index + 1} 天 (${format(day, 'MM/dd')})`,
+            })),
+        [availableDays]
+    );
+
+    const routingOptions = useMemo<SelectOption<TransitRoutingPreference | ''>[]>(
+        () =>
+            TRANSIT_ROUTING_OPTIONS.map((option) => ({
+                value: option.value as TransitRoutingPreference | '',
+                label: option.label,
+            })),
+        []
+    );
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (availableDays && availableDays.length > 0 && !selectedDayString) {
+            showToast('請選擇活動日期', 'error');
+            return;
+        }
 
         const targetDate = availableDays && availableDays.length > 0 && selectedDayString
             ? parseLocalDate(selectedDayString)
             : selectedDate;
 
         if (!targetDate) return;
+
+        if (!formData.startTime) {
+            showToast('請選擇開始時間', 'error');
+            return;
+        }
 
         if (formData.endTime && timeStrToMinutes(formData.endTime) < timeStrToMinutes(formData.startTime)) {
             showToast('結束時間不能早於開始時間', 'error');
@@ -291,27 +321,22 @@ export default function CreateActivityModal({
                 </div>
             }
         >
-            <form id="activityForm" onSubmit={handleSubmit} className="space-y-4">
+            <form id="activityForm" onSubmit={handleSubmit} className="space-y-4 w-full min-w-0 max-w-full">
                 {availableDays && availableDays.length > 0 && (
-                    <div>
+                    <div className="min-w-0">
                         <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">選擇日期</label>
-                        <select
-                            className={inputBaseClass}
+                        <CustomSelect
+                            label="選擇日期"
+                            placeholder="請選擇日期"
+                            leadingIcon={<Calendar className="w-4 h-4" />}
+                            options={dayOptions}
                             value={selectedDayString}
-                            onChange={e => setSelectedDayString(e.target.value)}
-                            required
-                        >
-                            <option value="" disabled>請選擇日期</option>
-                            {availableDays.map((day, index) => (
-                                <option key={index} value={format(day, 'yyyy-MM-dd')}>
-                                    第 {index + 1} 天 ({format(day, 'MM/dd')})
-                                </option>
-                            ))}
-                        </select>
+                            onChange={setSelectedDayString}
+                        />
                     </div>
                 )}
 
-                <div>
+                <div className="min-w-0">
                     <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">標題</label>
                     <input
                         type="text"
@@ -324,9 +349,9 @@ export default function CreateActivityModal({
                 </div>
 
                 {/* Tactile 3x2 Category Selector */}
-                <div>
+                <div className="min-w-0">
                     <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">類型</label>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 gap-1.5 sm:gap-2 min-w-0">
                         {ACTIVITY_TYPES.map(typeItem => {
                             const Icon = typeItem.icon;
                             const isSelected = formData.type === typeItem.value;
@@ -335,14 +360,14 @@ export default function CreateActivityModal({
                                     key={typeItem.value}
                                     type="button"
                                     onClick={() => setFormData({ ...formData, type: typeItem.value })}
-                                    className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border text-xs sm:text-sm font-medium transition-colors ${
+                                    className={`min-w-0 flex items-center justify-center gap-1 sm:gap-2 py-2.5 px-2 sm:px-3 rounded-xl border text-xs sm:text-sm font-medium transition-colors ${
                                         isSelected
                                             ? typeItem.activePillClass
                                             : 'bg-zinc-50 dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800/80'
                                     }`}
                                 >
                                     <Icon className="w-4 h-4 shrink-0" />
-                                    <span>{typeItem.label}</span>
+                                    <span className="truncate">{typeItem.label}</span>
                                 </button>
                             );
                         })}
@@ -350,7 +375,7 @@ export default function CreateActivityModal({
                 </div>
 
                 {formData.type !== 'transport' ? (
-                    <div>
+                    <div className="min-w-0">
                         <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">位置（選填）</label>
                         <input
                             type="text"
@@ -361,9 +386,9 @@ export default function CreateActivityModal({
                         />
                     </div>
                 ) : (
-                    <div className="space-y-4 p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-950/60 border border-zinc-200/70 dark:border-zinc-800">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
+                    <div className="space-y-4 p-3 sm:p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-950/60 border border-zinc-200/70 dark:border-zinc-800 min-w-0 max-w-full">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 min-w-0">
+                            <div className="min-w-0">
                                 <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">出發地點（選填）</label>
                                 <input
                                     type="text"
@@ -373,7 +398,7 @@ export default function CreateActivityModal({
                                     onChange={e => setFormData({ ...formData, departureLocation: e.target.value })}
                                 />
                             </div>
-                            <div>
+                            <div className="min-w-0">
                                 <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">到達地點（選填）</label>
                                 <input
                                     type="text"
@@ -385,9 +410,9 @@ export default function CreateActivityModal({
                             </div>
                         </div>
 
-                        <div>
+                        <div className="min-w-0">
                             <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">交通方式</label>
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 min-w-0">
                                 {TRAVEL_MODE_OPTIONS.map(mode => {
                                     const ModeIcon = TRAVEL_MODE_ICONS[mode.value]?.icon;
                                     const active = formData.travelMode === mode.value;
@@ -396,14 +421,14 @@ export default function CreateActivityModal({
                                             key={mode.value}
                                             type="button"
                                             onClick={() => setFormData({ ...formData, travelMode: mode.value as TravelModeType })}
-                                            className={`px-2.5 py-2 rounded-xl border text-xs font-medium transition-colors flex items-center justify-center gap-1.5 ${
+                                            className={`min-w-0 px-2.5 py-2 rounded-xl border text-xs font-medium transition-colors flex items-center justify-center gap-1.5 ${
                                                 active
                                                     ? 'bg-blue-600 text-white border-blue-600'
                                                     : 'bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800'
                                             }`}
                                         >
                                             {ModeIcon && <ModeIcon className="w-3.5 h-3.5 shrink-0" />}
-                                            <span>{mode.label}</span>
+                                            <span className="truncate">{mode.label}</span>
                                         </button>
                                     );
                                 })}
@@ -411,8 +436,8 @@ export default function CreateActivityModal({
                         </div>
 
                         {formData.travelMode === 'TRANSIT' && (
-                            <div className="bg-blue-50/60 dark:bg-blue-500/10 border border-blue-200/60 dark:border-blue-500/20 p-3 rounded-xl space-y-3">
-                                <div>
+                            <div className="bg-blue-50/60 dark:bg-blue-500/10 border border-blue-200/60 dark:border-blue-500/20 p-2.5 sm:p-3 rounded-xl space-y-3 min-w-0 max-w-full">
+                                <div className="min-w-0">
                                     <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-300 mb-2">偏好大眾運輸類型（可多選）</label>
                                     <div className="flex flex-wrap gap-1.5">
                                         {TRANSIT_MODE_OPTIONS.map(mode => {
@@ -435,28 +460,25 @@ export default function CreateActivityModal({
                                     </div>
                                     <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1.5">不選擇則使用所有可用類型</p>
                                 </div>
-                                <div>
+                                <div className="min-w-0">
                                     <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-300 mb-1.5">路線偏好</label>
-                                    <select
-                                        className={inputBaseClass}
+                                    <CustomSelect
+                                        label="路線偏好"
+                                        options={routingOptions}
                                         value={formData.transitRoutingPreference}
-                                        onChange={e => setFormData({ ...formData, transitRoutingPreference: e.target.value as TransitRoutingPreference | '' })}
-                                    >
-                                        {TRANSIT_ROUTING_OPTIONS.map(option => (
-                                            <option key={option.value} value={option.value}>{option.label}</option>
-                                        ))}
-                                    </select>
+                                        onChange={val => setFormData({ ...formData, transitRoutingPreference: val })}
+                                    />
                                 </div>
                             </div>
                         )}
 
-                        <div>
+                        <div className="min-w-0">
                             <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">預估交通時間（分鐘，選填）</label>
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 min-w-0">
                                 <input
                                     type="number"
                                     min="0"
-                                    className={`${inputBaseClass} flex-1 tabular-nums`}
+                                    className={`${inputBaseClass} flex-1 min-w-0 tabular-nums`}
                                     placeholder="例如：45"
                                     value={formData.estimatedDuration}
                                     onChange={e => setFormData({ ...formData, estimatedDuration: e.target.value })}
@@ -465,7 +487,7 @@ export default function CreateActivityModal({
                                     type="button"
                                     disabled={!formData.departureLocation || !formData.arrivalLocation || fetchingDuration}
                                     onClick={handleFetchDuration}
-                                    className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-zinc-200 dark:disabled:bg-zinc-800 disabled:text-zinc-400 dark:disabled:text-zinc-600 disabled:cursor-not-allowed text-white rounded-xl text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap"
+                                    className="px-3.5 py-2 shrink-0 bg-emerald-600 hover:bg-emerald-700 disabled:bg-zinc-200 dark:disabled:bg-zinc-800 disabled:text-zinc-400 dark:disabled:text-zinc-600 disabled:cursor-not-allowed text-white rounded-xl text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap"
                                 >
                                     {fetchingDuration ? (
                                         <><Loader2 className="w-4 h-4 animate-spin" /><span>查詢中</span></>
@@ -478,48 +500,48 @@ export default function CreateActivityModal({
                     </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3 min-w-0">
                     <div className="min-w-0">
                         <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">開始時間</label>
-                        <input
-                            type="time"
-                            required
-                            className={`${inputBaseClass} tabular-nums`}
+                        <TimePicker
+                            label="開始時間"
                             value={formData.startTime}
-                            onChange={e => handleStartTimeChange(e.target.value)}
+                            onChange={handleStartTimeChange}
                         />
                     </div>
                     <div className="min-w-0">
                         <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">結束時間（選填）</label>
-                        <input
-                            type="time"
-                            className={`${inputBaseClass} tabular-nums`}
+                        <TimePicker
+                            label="結束時間（選填）"
+                            placeholder="未設定"
+                            allowEmpty
+                            fallbackTime={addMinutesToTimeStr(formData.startTime || '09:00', 60)}
                             value={formData.endTime}
-                            onChange={e => setFormData({ ...formData, endTime: e.target.value })}
+                            onChange={val => setFormData({ ...formData, endTime: val })}
                         />
                     </div>
                 </div>
 
                 {/* URLs */}
-                <div>
+                <div className="min-w-0">
                     <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">
                         參考網址（選填）
                     </label>
-                    <div className="space-y-2">
+                    <div className="space-y-2 min-w-0">
                         {formData.urls.map((url, index) => (
-                            <div key={index} className="flex gap-2">
+                            <div key={index} className="flex gap-2 min-w-0">
                                 <input
                                     type="url"
                                     value={url}
                                     onChange={(e) => updateUrlField(index, e.target.value)}
-                                    className={`${inputBaseClass} flex-1`}
+                                    className={`${inputBaseClass} flex-1 min-w-0`}
                                     placeholder="https://"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => removeUrlField(index)}
                                     aria-label="移除網址"
-                                    className="p-2.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors"
+                                    className="p-2.5 shrink-0 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors"
                                 >
                                     <Trash2 className="w-4 h-4" />
                                 </button>
@@ -536,7 +558,7 @@ export default function CreateActivityModal({
                     </button>
                 </div>
 
-                <div>
+                <div className="min-w-0">
                     <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">備註（選填）</label>
                     <textarea
                         rows={3}

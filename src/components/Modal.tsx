@@ -30,7 +30,7 @@ export default function Modal({
     maxWidthClass = 'max-w-lg',
     footer,
     children,
-    bodyClassName = 'p-5 sm:p-6',
+    bodyClassName = 'p-4 sm:p-6',
     panelClassName = '',
     zIndexClass = 'z-50',
 }: ModalProps) {
@@ -64,7 +64,7 @@ export default function Modal({
             onClick={onClose}
         >
             <div
-                className={`modal-panel w-full ${maxWidthClass} bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-zinc-200/80 dark:border-zinc-800 rounded-t-3xl sm:rounded-2xl shadow-2xl max-h-[92dvh] sm:max-h-[88vh] flex flex-col overflow-hidden ${panelClassName}`}
+                className={`modal-panel w-full min-w-0 max-w-full ${maxWidthClass} bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 border border-zinc-200/80 dark:border-zinc-800 rounded-t-3xl sm:rounded-2xl shadow-2xl max-h-[92dvh] sm:max-h-[88vh] flex flex-col overflow-hidden ${panelClassName}`}
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Mobile drag handle indicator */}
@@ -98,7 +98,7 @@ export default function Modal({
                     </div>
                 )}
 
-                <div className={`overflow-y-auto flex-1 overscroll-contain ${bodyClassName}`}>
+                <div className={`overflow-y-auto overflow-x-hidden flex-1 min-w-0 overscroll-contain ${bodyClassName}`}>
                     {children}
                 </div>
 

@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Building2, MapPin, Calendar, Clock, AlignLeft } from 'lucide-react';
+import { Building2, MapPin, AlignLeft } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
 import type { HotelInfo } from '../types';
+import { useToast } from '../hooks/useToast';
 import Modal from './Modal';
+import DatePicker from './DatePicker';
+import TimePicker from './TimePicker';
 
 interface CreateHotelModalProps {
     isOpen: boolean;
@@ -12,9 +15,10 @@ interface CreateHotelModalProps {
 }
 
 const inputBaseClass =
-    'w-full px-3.5 py-2.5 text-sm bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all';
+    'w-full min-w-0 max-w-full min-h-[46px] sm:min-h-[42px] px-3.5 py-2.5 text-base sm:text-sm bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all';
 
 export default function CreateHotelModal({ isOpen, onClose, onSubmit, initialData }: CreateHotelModalProps) {
+    const { showToast } = useToast();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
@@ -60,6 +64,19 @@ export default function CreateHotelModal({ isOpen, onClose, onSubmit, initialDat
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!formData.checkInDate || !formData.checkInTime) {
+            showToast('請選擇入住日期與時間', 'error');
+            return;
+        }
+        if (!formData.checkOutDate || !formData.checkOutTime) {
+            showToast('請選擇退房日期與時間', 'error');
+            return;
+        }
+        if (formData.checkOutDate < formData.checkInDate) {
+            showToast('退房日期不能早於入住日期', 'error');
+            return;
+        }
+
         setLoading(true);
         try {
             const checkInDateObj = new Date(`${formData.checkInDate}T${formData.checkInTime}:00`);
@@ -110,12 +127,12 @@ export default function CreateHotelModal({ isOpen, onClose, onSubmit, initialDat
                 </div>
             }
         >
-            <form id="hotelForm" onSubmit={handleSubmit} className="space-y-5">
-                <div className="space-y-3.5">
-                    <div>
+            <form id="hotelForm" onSubmit={handleSubmit} className="space-y-5 w-full min-w-0 max-w-full">
+                <div className="space-y-3.5 min-w-0">
+                    <div className="min-w-0">
                         <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">飯店名稱</label>
                         <div className="relative">
-                            <Building2 className="absolute left-3.5 top-3 w-4 h-4 text-zinc-400" />
+                            <Building2 className="absolute left-3.5 top-3.5 sm:top-3 w-4 h-4 text-zinc-400" />
                             <input
                                 type="text"
                                 required
@@ -126,10 +143,10 @@ export default function CreateHotelModal({ isOpen, onClose, onSubmit, initialDat
                             />
                         </div>
                     </div>
-                    <div>
+                    <div className="min-w-0">
                         <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">飯店地址（選填）</label>
                         <div className="relative">
-                            <MapPin className="absolute left-3.5 top-3 w-4 h-4 text-zinc-400" />
+                            <MapPin className="absolute left-3.5 top-3.5 sm:top-3 w-4 h-4 text-zinc-400" />
                             <input
                                 type="text"
                                 className={`${inputBaseClass} pl-10`}
@@ -141,77 +158,61 @@ export default function CreateHotelModal({ isOpen, onClose, onSubmit, initialDat
                     </div>
                 </div>
 
-                <div className="bg-zinc-50 dark:bg-zinc-950/60 p-4 rounded-2xl border border-zinc-200/70 dark:border-zinc-800 space-y-3.5">
+                <div className="bg-zinc-50 dark:bg-zinc-950/60 p-3.5 sm:p-4 rounded-2xl border border-zinc-200/70 dark:border-zinc-800 space-y-3.5 min-w-0 max-w-full">
                     <h3 className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
                         入住資訊 (Check-in)
                     </h3>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-3 min-w-0">
                         <div className="min-w-0">
                             <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">日期</label>
-                            <div className="relative">
-                                <Calendar className="absolute left-3 top-3 w-4 h-4 text-zinc-400 pointer-events-none" />
-                                <input
-                                    type="date"
-                                    required
-                                    className={`${inputBaseClass} pl-9 tabular-nums`}
-                                    value={formData.checkInDate}
-                                    onChange={e => setFormData({ ...formData, checkInDate: e.target.value })}
-                                />
-                            </div>
+                            <DatePicker
+                                label="入住日期"
+                                value={formData.checkInDate}
+                                onChange={val => setFormData(prev => ({
+                                    ...prev,
+                                    checkInDate: val,
+                                    checkOutDate: prev.checkOutDate && prev.checkOutDate < val ? val : prev.checkOutDate,
+                                }))}
+                            />
                         </div>
                         <div className="min-w-0">
                             <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">時間</label>
-                            <div className="relative">
-                                <Clock className="absolute left-3 top-3 w-4 h-4 text-zinc-400 pointer-events-none" />
-                                <input
-                                    type="time"
-                                    required
-                                    className={`${inputBaseClass} pl-9 tabular-nums`}
-                                    value={formData.checkInTime}
-                                    onChange={e => setFormData({ ...formData, checkInTime: e.target.value })}
-                                />
-                            </div>
+                            <TimePicker
+                                label="入住時間"
+                                value={formData.checkInTime}
+                                onChange={val => setFormData({ ...formData, checkInTime: val })}
+                            />
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-zinc-50 dark:bg-zinc-950/60 p-4 rounded-2xl border border-zinc-200/70 dark:border-zinc-800 space-y-3.5">
+                <div className="bg-zinc-50 dark:bg-zinc-950/60 p-3.5 sm:p-4 rounded-2xl border border-zinc-200/70 dark:border-zinc-800 space-y-3.5 min-w-0 max-w-full">
                     <h3 className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
                         退房資訊 (Check-out)
                     </h3>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-3 min-w-0">
                         <div className="min-w-0">
                             <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">日期</label>
-                            <div className="relative">
-                                <Calendar className="absolute left-3 top-3 w-4 h-4 text-zinc-400 pointer-events-none" />
-                                <input
-                                    type="date"
-                                    required
-                                    min={formData.checkInDate || undefined}
-                                    className={`${inputBaseClass} pl-9 tabular-nums`}
-                                    value={formData.checkOutDate}
-                                    onChange={e => setFormData({ ...formData, checkOutDate: e.target.value })}
-                                />
-                            </div>
+                            <DatePicker
+                                label="退房日期"
+                                min={formData.checkInDate || undefined}
+                                value={formData.checkOutDate}
+                                onChange={val => setFormData({ ...formData, checkOutDate: val })}
+                            />
                         </div>
                         <div className="min-w-0">
                             <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">時間</label>
-                            <div className="relative">
-                                <Clock className="absolute left-3 top-3 w-4 h-4 text-zinc-400 pointer-events-none" />
-                                <input
-                                    type="time"
-                                    required
-                                    className={`${inputBaseClass} pl-9 tabular-nums`}
-                                    value={formData.checkOutTime}
-                                    onChange={e => setFormData({ ...formData, checkOutTime: e.target.value })}
-                                />
-                            </div>
+                            <TimePicker
+                                label="退房時間"
+                                value={formData.checkOutTime}
+                                onChange={val => setFormData({ ...formData, checkOutTime: val })}
+                            />
                         </div>
                     </div>
                 </div>
 
-                <div className="space-y-3.5">
-                    <div>
+                <div className="space-y-3.5 min-w-0">
+                    <div className="min-w-0">
                         <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">訂房代號（選填）</label>
                         <input
                             type="text"
@@ -221,10 +222,10 @@ export default function CreateHotelModal({ isOpen, onClose, onSubmit, initialDat
                             onChange={e => setFormData({ ...formData, bookingReference: e.target.value })}
                         />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                         <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">備註（選填）</label>
                         <div className="relative">
-                            <AlignLeft className="absolute left-3.5 top-3 w-4 h-4 text-zinc-400" />
+                            <AlignLeft className="absolute left-3.5 top-3.5 sm:top-3 w-4 h-4 text-zinc-400" />
                             <textarea
                                 rows={3}
                                 className={`${inputBaseClass} pl-10 resize-none`}

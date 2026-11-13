@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Activity } from '../types';
 import { parseLocalDate } from '../utils/date';
 import Modal from './Modal';
+import CustomSelect, { type SelectOption } from './CustomSelect';
 
 interface MoveActivityModalProps {
     isOpen: boolean;
@@ -27,6 +29,15 @@ export default function MoveActivityModal({
             setSelectedDateStr(format(activity.startTime.toDate(), 'yyyy-MM-dd'));
         }
     }, [isOpen, activity]);
+
+    const dayOptions = useMemo<SelectOption[]>(
+        () =>
+            days.map((day, index) => ({
+                value: format(day, 'yyyy-MM-dd'),
+                label: `第 ${index + 1} 天 (${format(day, 'MM/dd')})`,
+            })),
+        [days]
+    );
 
     if (!activity) return null;
 
@@ -73,25 +84,17 @@ export default function MoveActivityModal({
                 </div>
             }
         >
-            <form id="moveActivityForm" onSubmit={handleSubmit}>
+            <form id="moveActivityForm" onSubmit={handleSubmit} className="w-full min-w-0 max-w-full">
                 <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2.5">
                     將「{activity.title}」移動至：
                 </label>
-                <select
+                <CustomSelect
+                    label="選擇目標日期"
+                    leadingIcon={<Calendar className="w-4 h-4" />}
+                    options={dayOptions}
                     value={selectedDateStr}
-                    onChange={(e) => setSelectedDateStr(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-sm bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 rounded-xl border border-zinc-200 dark:border-zinc-800 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 outline-none transition-all tabular-nums"
-                    required
-                >
-                    {days.map((day, index) => {
-                        const dateStr = format(day, 'yyyy-MM-dd');
-                        return (
-                            <option key={dateStr} value={dateStr}>
-                                第 {index + 1} 天 ({format(day, 'MM/dd')})
-                            </option>
-                        );
-                    })}
-                </select>
+                    onChange={setSelectedDateStr}
+                />
             </form>
         </Modal>
     );

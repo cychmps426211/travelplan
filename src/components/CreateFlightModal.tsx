@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Plane, Calendar, Clock, Globe } from 'lucide-react';
+import { Plane, Globe } from 'lucide-react';
 import { Timestamp } from 'firebase/firestore';
 import type { FlightInfo } from '../types';
+import { useToast } from '../hooks/useToast';
 import Modal from './Modal';
+import DatePicker from './DatePicker';
+import TimePicker from './TimePicker';
+import CustomSelect from './CustomSelect';
 
 interface CreateFlightModalProps {
     isOpen: boolean;
@@ -42,9 +46,10 @@ const TIMEZONES = [
 ];
 
 const inputBaseClass =
-    'w-full px-3.5 py-2.5 text-sm bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all';
+    'w-full min-w-0 max-w-full min-h-[46px] sm:min-h-[42px] px-3.5 py-2.5 text-base sm:text-sm bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 outline-none transition-all';
 
 export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialData, type }: CreateFlightModalProps) {
+    const { showToast } = useToast();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         airline: '',
@@ -110,6 +115,15 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!formData.departureDate || !formData.departureTime) {
+            showToast('請選擇出發日期與時間', 'error');
+            return;
+        }
+        if (!formData.arrivalDate || !formData.arrivalTime) {
+            showToast('請選擇抵達日期與時間', 'error');
+            return;
+        }
+
         setLoading(true);
         try {
             const depIso = `${formData.departureDate}T${formData.departureTime}:00${formData.departureTimezone}`;
@@ -161,13 +175,13 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
                 </div>
             }
         >
-            <form id="flightForm" onSubmit={handleSubmit} className="space-y-5">
+            <form id="flightForm" onSubmit={handleSubmit} className="space-y-5 w-full min-w-0 max-w-full">
                 {/* Airline & Flight Number */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                    <div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 min-w-0">
+                    <div className="min-w-0">
                         <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">航空公司</label>
                         <div className="relative">
-                            <Plane className="absolute left-3.5 top-3 w-4 h-4 text-zinc-400" />
+                            <Plane className="absolute left-3.5 top-3.5 sm:top-3 w-4 h-4 text-zinc-400" />
                             <input
                                 type="text"
                                 required
@@ -178,7 +192,7 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
                             />
                         </div>
                     </div>
-                    <div>
+                    <div className="min-w-0">
                         <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">航班號碼</label>
                         <input
                             type="text"
@@ -192,12 +206,12 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
                 </div>
 
                 {/* Departure */}
-                <div className="bg-zinc-50 dark:bg-zinc-950/60 p-4 rounded-2xl border border-zinc-200/70 dark:border-zinc-800 space-y-3.5">
+                <div className="bg-zinc-50 dark:bg-zinc-950/60 p-3.5 sm:p-4 rounded-2xl border border-zinc-200/70 dark:border-zinc-800 space-y-3.5 min-w-0 max-w-full">
                     <h3 className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
                         出發資訊
                     </h3>
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="col-span-2">
+                    <div className="grid grid-cols-2 gap-3 min-w-0">
+                        <div className="col-span-2 min-w-0">
                             <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">出發機場</label>
                             <input
                                 type="text"
@@ -210,55 +224,40 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
                         </div>
                         <div className="min-w-0">
                             <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">日期</label>
-                            <div className="relative">
-                                <Calendar className="absolute left-3 top-3 w-4 h-4 text-zinc-400 pointer-events-none" />
-                                <input
-                                    type="date"
-                                    required
-                                    className={`${inputBaseClass} pl-9 tabular-nums`}
-                                    value={formData.departureDate}
-                                    onChange={e => setFormData({ ...formData, departureDate: e.target.value })}
-                                />
-                            </div>
+                            <DatePicker
+                                label="出發日期"
+                                value={formData.departureDate}
+                                onChange={val => setFormData({ ...formData, departureDate: val })}
+                            />
                         </div>
                         <div className="min-w-0">
                             <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">時間</label>
-                            <div className="relative">
-                                <Clock className="absolute left-3 top-3 w-4 h-4 text-zinc-400 pointer-events-none" />
-                                <input
-                                    type="time"
-                                    required
-                                    className={`${inputBaseClass} pl-9 tabular-nums`}
-                                    value={formData.departureTime}
-                                    onChange={e => setFormData({ ...formData, departureTime: e.target.value })}
-                                />
-                            </div>
+                            <TimePicker
+                                label="出發時間"
+                                value={formData.departureTime}
+                                onChange={val => setFormData({ ...formData, departureTime: val })}
+                            />
                         </div>
-                        <div className="col-span-2">
+                        <div className="col-span-2 min-w-0">
                             <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">出發時區</label>
-                            <div className="relative">
-                                <Globe className="absolute left-3.5 top-3 w-4 h-4 text-zinc-400 pointer-events-none" />
-                                <select
-                                    className={`${inputBaseClass} pl-10 appearance-none`}
-                                    value={formData.departureTimezone}
-                                    onChange={e => setFormData({ ...formData, departureTimezone: e.target.value })}
-                                >
-                                    {TIMEZONES.map(tz => (
-                                        <option key={tz.value} value={tz.value}>{tz.label}</option>
-                                    ))}
-                                </select>
-                            </div>
+                            <CustomSelect
+                                label="出發時區"
+                                leadingIcon={<Globe className="w-4 h-4" />}
+                                options={TIMEZONES}
+                                value={formData.departureTimezone}
+                                onChange={val => setFormData({ ...formData, departureTimezone: val })}
+                            />
                         </div>
                     </div>
                 </div>
 
                 {/* Arrival */}
-                <div className="bg-zinc-50 dark:bg-zinc-950/60 p-4 rounded-2xl border border-zinc-200/70 dark:border-zinc-800 space-y-3.5">
+                <div className="bg-zinc-50 dark:bg-zinc-950/60 p-3.5 sm:p-4 rounded-2xl border border-zinc-200/70 dark:border-zinc-800 space-y-3.5 min-w-0 max-w-full">
                     <h3 className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
                         抵達資訊
                     </h3>
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="col-span-2">
+                    <div className="grid grid-cols-2 gap-3 min-w-0">
+                        <div className="col-span-2 min-w-0">
                             <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">抵達機場</label>
                             <input
                                 type="text"
@@ -271,44 +270,30 @@ export default function CreateFlightModal({ isOpen, onClose, onSubmit, initialDa
                         </div>
                         <div className="min-w-0">
                             <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">日期</label>
-                            <div className="relative">
-                                <Calendar className="absolute left-3 top-3 w-4 h-4 text-zinc-400 pointer-events-none" />
-                                <input
-                                    type="date"
-                                    required
-                                    className={`${inputBaseClass} pl-9 tabular-nums`}
-                                    value={formData.arrivalDate}
-                                    onChange={e => setFormData({ ...formData, arrivalDate: e.target.value })}
-                                />
-                            </div>
+                            <DatePicker
+                                label="抵達日期"
+                                min={undefined}
+                                value={formData.arrivalDate}
+                                onChange={val => setFormData({ ...formData, arrivalDate: val })}
+                            />
                         </div>
                         <div className="min-w-0">
                             <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">時間</label>
-                            <div className="relative">
-                                <Clock className="absolute left-3 top-3 w-4 h-4 text-zinc-400 pointer-events-none" />
-                                <input
-                                    type="time"
-                                    required
-                                    className={`${inputBaseClass} pl-9 tabular-nums`}
-                                    value={formData.arrivalTime}
-                                    onChange={e => setFormData({ ...formData, arrivalTime: e.target.value })}
-                                />
-                            </div>
+                            <TimePicker
+                                label="抵達時間"
+                                value={formData.arrivalTime}
+                                onChange={val => setFormData({ ...formData, arrivalTime: val })}
+                            />
                         </div>
-                        <div className="col-span-2">
+                        <div className="col-span-2 min-w-0">
                             <label className="block text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">抵達時區</label>
-                            <div className="relative">
-                                <Globe className="absolute left-3.5 top-3 w-4 h-4 text-zinc-400 pointer-events-none" />
-                                <select
-                                    className={`${inputBaseClass} pl-10 appearance-none`}
-                                    value={formData.arrivalTimezone}
-                                    onChange={e => setFormData({ ...formData, arrivalTimezone: e.target.value })}
-                                >
-                                    {TIMEZONES.map(tz => (
-                                        <option key={tz.value} value={tz.value}>{tz.label}</option>
-                                    ))}
-                                </select>
-                            </div>
+                            <CustomSelect
+                                label="抵達時區"
+                                leadingIcon={<Globe className="w-4 h-4" />}
+                                options={TIMEZONES}
+                                value={formData.arrivalTimezone}
+                                onChange={val => setFormData({ ...formData, arrivalTimezone: val })}
+                            />
                         </div>
                     </div>
                 </div>
